@@ -4,7 +4,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('lib'))
-from snmpryte import __version__, __author__
+from snmpryte import __version__, __author__, __email__
 
 try:
     from setuptools import setup, find_packages
@@ -15,6 +15,7 @@ except ImportError:
 setup(name='snmpryte',
       version=__version__,
       author=__author__,
+      author_email=__email__,
       license='GPLv3',
       install_requires=['pysnmp'],
       package_dir={'' : 'lib'},
