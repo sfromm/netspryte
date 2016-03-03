@@ -22,11 +22,11 @@ import snmpryte.snmp
 class HostSystem(object):
 
     CONF = {
-        'sysDescr' : '1.3.6.1.2.1.1.1',
+        'sysDescr'    : '1.3.6.1.2.1.1.1',
         'sysObjectID' : '1.3.6.1.2.1.1.2',
-        'sysUpTime' : '1.3.6.1.2.1.1.3',
-        'sysContact' : '1.3.6.1.2.1.1.4',
-        'sysName' : '1.3.6.1.2.1.1.5',
+        'sysUpTime'   : '1.3.6.1.2.1.1.3',
+        'sysContact'  : '1.3.6.1.2.1.1.4',
+        'sysName'     : '1.3.6.1.2.1.1.5',
         'sysLocation' : '1.3.6.1.2.1.1.6',
         'sysServices' : '1.3.6.1.2.1.1.7',
     }
@@ -46,7 +46,7 @@ class HostSystem(object):
         self.snmp         = snmp
         self._system = self._get_configuration()
         self._system = self._system['0']
-        for k,v in self.system.iteritems():
+        for k, v in self.system.iteritems():
             setattr(self, k, v)
 
     def _get_configuration(self):

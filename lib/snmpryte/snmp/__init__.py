@@ -84,7 +84,7 @@ def get_snmp_data(snmp, snmp_oids, snmp_conversion):
         if oid['name'] in snmp_conversion:
             objects[index][oid['name']] = snmp_oids[oid['name']][int(obj[1])]
         else:
-            objects[index][oid['name']] = obj[1] 
+            objects[index][oid['name']] = obj[1]
     return objects
 
 class SNMPSession(object):

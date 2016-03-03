@@ -22,34 +22,33 @@ import snmpryte.snmp
 class HostInterface():
 
     CONF = {
-        'ifIndex' : '1.3.6.1.2.1.2.2.1.1',
-        'ifDescr' : '1.3.6.1.2.1.2.2.1.2',
-        'ifType' : '1.3.6.1.2.1.2.2.1.3',
-        'ifMtu' : '1.3.6.1.2.1.2.2.1.4',
-        'ifSpeed' : '1.3.6.1.2.1.2.2.1.5',
+        'ifIndex'       : '1.3.6.1.2.1.2.2.1.1',
+        'ifDescr'       : '1.3.6.1.2.1.2.2.1.2',
+        'ifType'        : '1.3.6.1.2.1.2.2.1.3',
+        'ifMtu'         : '1.3.6.1.2.1.2.2.1.4',
+        'ifSpeed'       : '1.3.6.1.2.1.2.2.1.5',
         'ifPhysAddress' : '.1.3.6.1.2.1.2.2.1.6',
         'ifAdminStatus' : '1.3.6.1.2.1.2.2.1.7',
-        'ifOperStatus' : '1.3.6.1.2.1.2.2.1.8',
-        'ifName' : '1.3.6.1.2.1.31.1.1.1.1',
-        'ifHighSpeed' : '1.3.6.1.2.1.31.1.1.1.15',
-        'ifAlias' : '1.3.6.1.2.1.31.1.1.1.18',
+        'ifOperStatus'  : '1.3.6.1.2.1.2.2.1.8',
+        'ifName'        : '1.3.6.1.2.1.31.1.1.1.1',
+        'ifHighSpeed'   : '1.3.6.1.2.1.31.1.1.1.15',
+        'ifAlias'       : '1.3.6.1.2.1.31.1.1.1.18',
     }
 
     STAT = {
-        'ifInUcastPkts' : '1.3.6.1.2.1.2.2.1.11',
-        'ifInNUcastPkts' : '1.3.6.1.2.1.2.2.1.12',
-        'ifInDiscards' : '1.3.6.1.2.1.2.2.1.13',
-        'ifInErrors' : '1.3.6.1.2.1.2.2.1.14',
+        'ifInUcastPkts'     : '1.3.6.1.2.1.2.2.1.11',
+        'ifInNUcastPkts'    : '1.3.6.1.2.1.2.2.1.12',
+        'ifInDiscards'      : '1.3.6.1.2.1.2.2.1.13',
+        'ifInErrors'        : '1.3.6.1.2.1.2.2.1.14',
         'ifInUnknownProtos' : '1.3.6.1.2.1.2.2.1.15',
-        'ifOutUcastPkts' : '1.3.6.1.2.1.2.2.1.17',
-        'ifOutNUcastPkts' : '1.3.6.1.2.1.2.2.1.18',
-        'ifOutDiscards' : '1.3.6.1.2.1.2.2.1.19',
-        'ifOutErrors' : '1.3.6.1.2.1.2.2.1.20',
-        'ifOutQLen' : '1.3.6.1.2.1.2.2.1.21',
+        'ifOutUcastPkts'    : '1.3.6.1.2.1.2.2.1.17',
+        'ifOutNUcastPkts'   : '1.3.6.1.2.1.2.2.1.18',
+        'ifOutDiscards'     : '1.3.6.1.2.1.2.2.1.19',
+        'ifOutErrors'       : '1.3.6.1.2.1.2.2.1.20',
+        'ifOutQLen'         : '1.3.6.1.2.1.2.2.1.21',
     }
 
-    CONVERSION = {
-    }
+    CONVERSION = { }
 
     def __init__(self, snmp):
         self.snmp = snmp
@@ -64,4 +63,3 @@ class HostInterface():
 
     def get_interface_stats(self):
         pass
-
