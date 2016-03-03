@@ -1,5 +1,5 @@
 # Written by Stephen Fromm <stephenf nero net>
-# (C) 2015 University of Oregon
+# (C) 2015-2016 University of Oregon
 
 # This file is part of snmpryte
 #
@@ -18,7 +18,7 @@
 
 class SnmpryteError(Exception):
     '''
-    A base class for all errors from Mopticon code.
+    A base class for all errors from snmpryte code.
     Usage:
 
         raise SnmpryteError('error message')

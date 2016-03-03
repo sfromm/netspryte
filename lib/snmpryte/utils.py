@@ -1,25 +1,25 @@
 # Written by Stephen Fromm <stephenf nero net>
 # (C) 2016 University of Oregon
 #
-# This file is part of mopticon
+# This file is part of snmpryte
 #
-# mopticon is free software: you can redistribute it and/or modify
+# snmpryte is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# mopticon is distributed in the hope that it will be useful,
+# snmpryte is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with mopticon.  If not, see <http://www.gnu.org/licenses/>.
+# along with snmpryte.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
 from snmpryte import constants as C
 
-def setup_logging(program='mopticon'):
+def setup_logging(program='snmpryte'):
     ''' set up logging '''
     C.DEFAULT_LOG_LEVEL = int(C.DEFAULT_LOG_LEVEL)
     if C.DEFAULT_LOG_LEVEL >= 2:
