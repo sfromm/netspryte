@@ -1,6 +1,6 @@
 NAME = 'snmpryte'
 PYTHON=python
-EPEP8 = "E501,E201,E202,E221,E241,E302,E303"
+EPEP8 = "E501,E201,E202,E203,E221,E241,E302,E303"
 
 test: clean
 	PYTHONPATH=lib \
@@ -21,3 +21,12 @@ clean:
 pep8:
 	@echo "Running PEP8 compliance tests"
 	-pep8 -r --ignore=$(EPEP8) lib/ 
+
+python:
+	$(PYTHON) setup.py build
+
+install:
+	$(PYTHON) setup.py install
+
+sdist: clean
+	$(PYTHON) setup.py sdist
