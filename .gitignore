@@ -1,0 +1,11 @@
+# build / distutils
+.coverage
+*.py[co]
+*.*.swp
+*~
+build
+alembic.ini
+# rpm
+MANIFEST
+dist
+rpm-build
