@@ -94,6 +94,8 @@ class SNMPSession(object):
         ''' Initialize a MSnmp object '''
         self._host      = C.DEFAULT_SNMP_HOST
         self._port      = C.DEFAULT_SNMP_PORT
+        self._timeout   = C.DEFAULT_SNMP_TIMEOUT
+        self._retries   = C.DEFAULT_SNMP_RETRIES
         self._version   = C.DEFAULT_SNMP_VERSION
         self._community = C.DEFAULT_SNMP_COMMUNITY
         self._username  = C.DEFAULT_SNMP_USERNAME
@@ -112,7 +114,8 @@ class SNMPSession(object):
         else:
             self._auth = cmdgen.CommunityData(self._community)
         self._cmdgen = cmdgen.CommandGenerator()
-        self._transport = cmdgen.UdpTransportTarget((self._host, self._port))
+        self._transport = cmdgen.UdpTransportTarget((self._host, self._port),
+                                                    timeout=self._timeout, retries=self._retries)
 
     @property
     def host(self):
@@ -132,6 +135,28 @@ class SNMPSession(object):
             self._port = int(arg)
         except ValueError:
             raise ValueError("SNMP port must be an integer")
+
+    @property
+    def timeout(self):
+        return self._timeout
+
+    @port.setter
+    def timeout(self, arg):
+        try:
+            self._timeout = int(arg)
+        except ValueError:
+            raise ValueError("SNMP timeout must be an integer")
+
+    @property
+    def retries(self):
+        return self._retries
+
+    @port.setter
+    def retries(self, arg):
+        try:
+            self._retries = int(arg)
+        except ValueError:
+            raise ValueError("SNMP retries must be an integer")
 
     @property
     def version(self):
