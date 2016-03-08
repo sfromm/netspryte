@@ -31,6 +31,7 @@ from pysnmp.proto.rfc1902 import (
     Unsigned32,
 )
 from snmpryte import constants as C
+from snmpryte.errors import *
 
 def mk_pretty_value(arg):
     ''' Inspect SNMP value type and return it '''
@@ -70,7 +71,7 @@ def deconstruct_oid(arg, oid_set):
 
 def get_snmp_data(snmp, snmp_oids, snmp_conversion):
     ''' take a dictionary of snmp oids and return object with data '''
-    objects = dict()
+    data = dict()
     results = snmp.walk( *[ oid for oid in snmp_oids.values() ] )
     for obj in results:
         logging.debug("Processing OID=%s, value=%s", obj[0], obj[1])
@@ -79,13 +80,13 @@ def get_snmp_data(snmp, snmp_oids, snmp_conversion):
             continue
         index = oid['index']
 
-        if index not in objects:
-            objects[index] = {}
-        if oid['name'] in snmp_conversion:
-            objects[index][oid['name']] = snmp_oids[oid['name']][int(obj[1])]
+        if index not in data:
+            data[index] = {}
+        if oid['name'] in snmp_conversion and int(obj[1]) in snmp_conversion[oid['name']]:
+            data[index][oid['name']] = snmp_conversion[oid['name']][int(obj[1])]
         else:
-            objects[index][oid['name']] = obj[1]
-    return objects
+            data[index][oid['name']] = obj[1]
+    return data
 
 class SNMPSession(object):
     ''' a class to handle SNMP queries '''
@@ -224,9 +225,9 @@ class SNMPSession(object):
             *oids
         )
         if errorIndication:
-            raise SnmpryteSNMPException(str(errorIndication))
+            raise SnmpryteSNMPError(str(errorIndication))
         if errorStatus:
-            raise SnmpryteSNMPException(errorStatus.prettyPrint())
+            raise SnmpryteSNMPError(errorStatus.prettyPrint())
         if cmd in [self._cmdgen.getCmd, self._cmdgen.setCmd]:
             for oid, value in varBinds:
                 results.append(mk_pretty_value(value))
