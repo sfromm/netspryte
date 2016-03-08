@@ -18,7 +18,6 @@
 
 import logging
 import snmpryte.snmp
-import snmpryte.snmp.host.interface
 from snmpryte.snmp.host import HostSystem
 
 import pprint
