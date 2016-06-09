@@ -33,16 +33,43 @@ from pysnmp.proto.rfc1902 import (
 from snmpryte import constants as C
 from snmpryte.errors import *
 
+def value_is_metric(arg):
+    if isinstance(arg, Counter32) or isinstance(arg, Counter64):
+        return True
+    elif isinstance(arg, Gauge32):
+        return True
+    else:
+        return False
+
+def get_value_type(arg):
+    if isinstance(arg, Counter32) or isinstance(arg, Counter64):
+        return 'counter'
+    elif isinstance(arg, TimeTicks):
+        return 'counter'
+    elif isinstance(arg, Gauge32) or isinstance(arg, Integer) or isinstance(arg, Integer32):
+        return 'gauge'
+    elif isinstance(arg, Unsigned32):
+        return 'gauge'
+    else:
+        return 'gauge'
+
 def mk_pretty_value(arg):
     ''' Inspect SNMP value type and return it '''
-    if isinstance(arg, Counter32):
-        return int(arg.prettyPrint())
     if isinstance(arg, OctetString):
-        try:
-            return arg.asOctets().decode(arg.encoding)
-        except UnicodeDecodeError:
-            return arg.asOctets()
+        return clean_octet_string(arg)
+    if isinstance(arg, Integer):
+        return arg.prettyPrint()
+    if isinstance(arg, Gauge32):
+        return arg.prettyPrint()
+    if isinstance(arg, Counter32) or isinstance(arg, Counter64):
+        return arg.prettyPrint()
     return arg
+
+def clean_octet_string(arg):
+    try:
+        return arg.asOctets().decode(arg.encoding).strip()
+    except UnicodeDecodeError:
+        return arg.asOctets()
 
 def strip_oid(oid, arg):
     ''' strip a substring OID from another OID '''
@@ -77,6 +104,7 @@ def get_snmp_data(snmp, snmp_oids, snmp_conversion):
         logging.debug("Processing OID=%s, value=%s", obj[0], obj[1])
         oid = deconstruct_oid(obj[0], snmp_oids)
         if 'index' not in oid:
+            logging.debug("No match for OID=%s", obj[0])
             continue
         index = oid['index']
 
@@ -230,12 +258,16 @@ class SNMPSession(object):
             raise SnmpryteSNMPError(errorStatus.prettyPrint())
         if cmd in [self._cmdgen.getCmd, self._cmdgen.setCmd]:
             for oid, value in varBinds:
-                results.append(mk_pretty_value(value))
+                if isinstance(value, OctetString):
+                    value = clean_octet_string(value)
+                results.append(value)
         else:
             for row in varBinds:
                 for oid, value in row:
-                    results.append((oid.prettyPrint(), mk_pretty_value(value)))
-                    logging.debug("%s: %s=%s", self.host, oid.prettyPrint(), mk_pretty_value(value))
+                    if isinstance(value, OctetString):
+                        value = clean_octet_string(value)
+                    results.append((oid.prettyPrint(), value))
+                    logging.debug("snmp get %s: %s=%s", self.host, oid.prettyPrint(), mk_pretty_value(value))
         return results
 
     def get(self, *oids):
@@ -252,7 +284,11 @@ class SNMPSession(object):
         if self.version == '1' or not self.bulk:
             return self._cmd(self._cmdgen.nextCmd, *oids)
         args = [0, self.bulk] + list(oids)
-        return self._cmd(self._cmdgen.bulkCmd, *args)
+        try:
+            return self._cmd(self._cmdgen.bulkCmd, *args)
+        except SnmpryteSNMPError as e:
+            logging.error("caught snmp error with %s: %s", self.host, str(e))
+            return results
 
     def set(self, *args):
         ''' set an oid value via SET '''
