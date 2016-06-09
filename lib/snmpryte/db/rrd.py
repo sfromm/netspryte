@@ -28,10 +28,10 @@ from snmpryte import constants as C
 
 class RrdDatabaseBackend(BaseDatabaseBackend):
 
-    def __init__(self, path=None):
-        super(RrdDatabaseBackend, self).__init__("rrd")
-        if path:
-            self._path = path
+    def __init__(self, backend, **kwargs):
+        super(RrdDatabaseBackend, self).__init__(backend, **kwargs)
+        if 'path' in kwargs:
+            self._path = kwargs['path']
 
     def write(self, data):
         ''' write data to rrd database '''

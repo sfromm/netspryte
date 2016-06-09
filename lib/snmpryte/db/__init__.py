@@ -20,9 +20,17 @@ import logging
 
 class BaseDatabaseBackend(object):
 
-    def __init__(self, backend):
+    def __init__(self, backend, **kwargs):
         ''' base backend for a database '''
-        self.backend = backend
+        self._backend = backend
 
     def write(self, data):
         pass
+
+    @property
+    def backend(self):
+        return self._backend
+
+    @backend.setter
+    def backend(self, arg):
+        self._backend = arg

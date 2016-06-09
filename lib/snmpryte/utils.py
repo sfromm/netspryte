@@ -114,9 +114,9 @@ def parse_json_from_file(path):
 def get_db_backend():
     backend = C.DEFAULT_DATABASE
     if backend == "rrd":
-        return snmpryte.db.rrd.RrdDatabaseBackend()
+        return snmpryte.db.rrd.RrdDatabaseBackend(backend)
     else:
-        return snmpryte.db.rrd.RrdDatabaseBackend()
+        return snmpryte.db.rrd.RrdDatabaseBackend(backend)
 
 def mk_json_filename(device, *args):
     ''' create a json filename based on the collected object '''
