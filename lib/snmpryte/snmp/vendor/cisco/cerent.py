@@ -268,11 +268,11 @@ class CiscoCerent(HostSystem):
 
     def __init__(self, snmp):
         self.snmp = snmp
-        self._objects = self._get_configuration()
+        self._data = self._get_configuration()
 
     def _get_configuration(self):
         return snmpryte.snmp.get_snmp_data(self.snmp, CiscoCerent.DATA, CiscoCerent.CONVERSION)
 
     @property
-    def objects(self):
-        return self._objects
+    def data(self):
+        return self._data
