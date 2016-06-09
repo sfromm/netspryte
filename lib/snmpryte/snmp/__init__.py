@@ -38,6 +38,8 @@ def value_is_metric(arg):
         return True
     elif isinstance(arg, Gauge32):
         return True
+    elif isinstance(arg, int):
+        return True
     else:
         return False
 
