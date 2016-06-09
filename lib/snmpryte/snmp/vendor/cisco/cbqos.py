@@ -19,11 +19,12 @@
 import logging
 import snmpryte.snmp
 import snmpryte.snmp.host.interface
-import pprint
+from snmpryte.snmp.vendor.cisco import CiscoDevice
+from snmpryte.utils import *
 
-class CiscoCBQOS():
+class CiscoCBQOS(CiscoDevice):
 
-    CONF = {
+    DATA = {
         'cbQosIfType'                 : '1.3.6.1.4.1.9.9.166.1.1.1.1.2',
         'cbQosPolicyDirection'        : '1.3.6.1.4.1.9.9.166.1.1.1.1.3',
         'cbQosIfIndex'                : '1.3.6.1.4.1.9.9.166.1.1.1.1.4',
@@ -32,7 +33,6 @@ class CiscoCBQOS():
         'cbQosParentObjectsIndex'     : '1.3.6.1.4.1.9.9.166.1.5.1.1.4',
         'cbQosPolicyMapName'          : '1.3.6.1.4.1.9.9.166.1.6.1.1.1',
         'cbQosCMName'                 : '1.3.6.1.4.1.9.9.166.1.7.1.1.1',
-        'cbQosPoliceCfgRate'          : '1.3.6.1.4.1.9.9.166.1.12.1.1.1',
         'cbQosPoliceCfgBurstSize'     : '1.3.6.1.4.1.9.9.166.1.12.1.1.2',
         'cbQosPoliceCfgExtBurstSize'  : '1.3.6.1.4.1.9.9.166.1.12.1.1.3',
         'cbQosPoliceCfgConformAction' : '1.3.6.1.4.1.9.9.166.1.12.1.1.4',
@@ -42,19 +42,13 @@ class CiscoCBQOS():
     }
 
     STAT = {
-        'cbQosPoliceConformedPkt'     : '1.3.6.1.4.1.9.9.166.1.17.1.1.2',
         'cbQosPoliceConformedPkt64'   : '1.3.6.1.4.1.9.9.166.1.17.1.1.3',
-        'cbQosPoliceConformedByte'    : '1.3.6.1.4.1.9.9.166.1.17.1.1.5',
         'cbQosPoliceConformedByte64'  : '1.3.6.1.4.1.9.9.166.1.17.1.1.6',
         'cbQosPoliceConformedBitRate' : '1.3.6.1.4.1.9.9.166.1.17.1.1.7',
-        'cbQosPoliceExceededPkt'      : '1.3.6.1.4.1.9.9.166.1.17.1.1.9',
         'cbQosPoliceExceededPkt64'    : '1.3.6.1.4.1.9.9.166.1.17.1.1.10',
-        'cbQosPoliceExceededByte'     : '1.3.6.1.4.1.9.9.166.1.17.1.1.12',
         'cbQosPoliceExceededByte64'   : '1.3.6.1.4.1.9.9.166.1.17.1.1.13',
         'cbQosPoliceExceededBitRate'  : '1.3.6.1.4.1.9.9.166.1.17.1.1.14',
-        'cbQosPoliceViolatedPkt'      : '1.3.6.1.4.1.9.9.166.1.17.1.1.16',
         'cbQosPoliceViolatedPkt64'    : '1.3.6.1.4.1.9.9.166.1.17.1.1.17',
-        'cbQosPoliceViolatedByte'     : '1.3.6.1.4.1.9.9.166.1.17.1.1.19',
         'cbQosPoliceViolatedByte64'   : '1.3.6.1.4.1.9.9.166.1.17.1.1.20',
         'cbQosPoliceViolatedBitRate'  : '1.3.6.1.4.1.9.9.166.1.17.1.1.21',
     }
@@ -75,7 +69,7 @@ class CiscoCBQOS():
             8 : 'set',
             9 : 'compression'
         },
-        'cbQosPoliceConformAction': {
+        'cbQosPoliceCfgConformAction': {
             1 : 'transmit',
             2 : 'setIpDSCP',
             3 : 'setIpPrecedence',
@@ -90,7 +84,7 @@ class CiscoCBQOS():
             12 : 'setIpDscpTunnel',
             13 : 'setIpPrecedenceTunnel',
         },
-        'cbQosPoliceExceedAction': {
+        'cbQosPoliceCfgExceedAction': {
             1 : 'transmit',
             2 : 'setIpDSCP',
             3 : 'setIpPrecedence',
@@ -105,7 +99,7 @@ class CiscoCBQOS():
             12 : 'setIpDscpTunnel',
             13 : 'setIpPrecedenceTunnel',
         },
-        'cbQosPoliceViolateAction': {
+        'cbQosPoliceCfgViolateAction': {
             1 : 'transmit',
             2 : 'setIpDSCP',
             3 : 'setIpPrecedence',
@@ -122,51 +116,72 @@ class CiscoCBQOS():
         },
     }
 
+    NAME = 'cbqos'
+
+    XLATE = {
+        'cbQos' : '',
+        '64'    : '',
+        'Bit'   : '',
+    }
+
     def __init__(self, snmp):
         self.snmp = snmp
+        super(CiscoCBQOS, self).__init__(snmp)
+        logging.info("inspecting %s for cbqos data", snmp.host)
         host = snmpryte.snmp.host.interface.HostInterface(self.snmp)
         self.interfaces = host.interfaces
-        self.objects = self._get_configuration()
+        data = self._get_configuration()
+        self._data = data
+        stat = self.get_cbqos_stats()
+        merge_dicts(data, stat)
+        self._data = data
 
     def _get_configuration(self):
         ''' get cbqos objects '''
-        objects = snmpryte.snmp.get_snmp_data(self.snmp, CiscoCBQOS.CONF, CiscoCBQOS.CONVERSION)
-
-        instances = [ k for k in objects.keys() if '.' not in k ]
+        data = snmpryte.snmp.get_snmp_data(self.snmp, CiscoCBQOS.DATA, CiscoCBQOS.CONVERSION)
+        instances = [ k for k in data.keys() if '.' not in k ]
         # merge related instances into together for a coherent view
-        for obj in objects.keys():
+        for obj in data.keys():
             if obj in instances:
                 continue
-            if 'cbQosParentObjectsIndex' in objects[obj]:
-                objects[obj]['parent'] = obj.split('.')[0] + "." + str(objects[obj]['cbQosParentObjectsIndex'])
-            cfg_index = str(objects[obj]['cbQosConfigIndex'])
+            if 'cbQosParentObjectsIndex' in data[obj]:
+                data[obj]['parent'] = obj.split('.')[0] + "." + str(data[obj]['cbQosParentObjectsIndex'])
+            cfg_index = str(data[obj]['cbQosConfigIndex'])
             if cfg_index in instances:
-                objects[obj].update(objects[cfg_index])
+                data[obj].update(data[cfg_index])
             base = obj.split('.')[0]
-            if base in objects:
-                objects[obj].update(objects[base])
-            if 'cbQosIfIndex' in objects[obj]:
-                ifidx = str(objects[obj]['cbQosIfIndex'])
-                objects[obj].update( self.interfaces[ifidx] )
+            if base in data:
+                data[obj].update(data[base])
+            if 'cbQosIfIndex' in data[obj]:
+                ifidx = str(data[obj]['cbQosIfIndex'])
+                data[obj].update( self.interfaces[ifidx] )
+            # The MIB erroneously marks this as a COUNTER64 to get the requisite number of bits
+            # but it behaves like a GAUGE.  Unfortunately, there is no GAUGE64 object.  So ...
+            # convert it to an int() so that it is treated like a GAUGE.
+            if 'cbQosPoliceCfgRate64' in data[obj]:
+                data[obj]['cbQosPoliceCfgRate64'] = int(data[obj]['cbQosPoliceCfgRate64'])
+        return data
 
-        return objects
+    @property
+    def data(self):
+        return self._data
 
-
-    def get_policy_maps(self):
+    @property
+    def policy_maps(self):
         ''' get policy maps '''
-        return self.objects
+        return self._data
 
-    def get_class_maps(self):
+    @property
+    def class_maps(self):
         ''' get class maps '''
-        return self.objects
+        return self._data
 
-    def get_policers(self):
+    @property
+    def policers(self):
         ''' get policer information '''
-        for k in self.objects.keys():
-            if 'cbQosObjectsType' in objects[k]:
-                print objects[k]['cbQosObjectsType']
+        return self._data
 
-    def get_policer_stats(self):
+    def get_cbqos_stats(self):
         ''' get policer stats '''
         stats = dict()
         results = self.snmp.walk( *[ k for k in CiscoCBQOS.STAT.values() ] )
@@ -179,10 +194,24 @@ class CiscoCBQOS():
 
             if index not in stats:
                 stats[index] = {}
-                if index in self.objects:
-                    stats[index].update(self.objects[index])
-                    parent = self.objects[index]['parent']
+                if index in self.data:
+                    stats[index].update(self.data[index])
+                    parent = self.data[index]['parent']
                     if parent not in stats:
-                        stats[parent] = self.objects[parent]
+                        stats[parent] = self.data[parent]
             stats[index][oid['name']] = obj[1]
         return stats
+
+    def get_policy_map_name(self, idx):
+        key = 'cbQosPolicyMapName'
+        if key not in self.data[idx]:
+            return self.get_policy_map_name(self.data[idx]['parent'])
+        else:
+            return self.data[idx][key]
+
+    def get_class_map_name(self, key):
+        key = 'cbQosCMName'
+        if key not in self.data[idx]:
+            return self.get_policy_map_name(self.data[idx]['parent'])
+        else:
+            return self.data[idx][key]
