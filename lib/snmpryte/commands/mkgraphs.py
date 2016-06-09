@@ -40,6 +40,8 @@ class MkGraphsCommand(BaseCommand):
         super(MkGraphsCommand, self).__init__(daemonize)
         self.parser.add_argument('globs', type=str, nargs='*',
                                  help='list of directory globs to graph')
+        self.parser.add_argument('--wwwdir', default=C.DEFAULT_WWWDIR,
+                                 help='Path to www directory')
 
     def run(self):
         args = self.parser.parse_args()
