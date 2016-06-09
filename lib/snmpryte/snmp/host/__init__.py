@@ -18,6 +18,7 @@
 
 import logging
 import snmpryte.snmp
+from snmpryte.errors import *
 
 class HostSystem(object):
 
@@ -44,12 +45,15 @@ class HostSystem(object):
         self._sysLocation = None
         self._sysServices = None
         self.snmp         = snmp
-        self._system = self._get_configuration()
-        self._system = self._system['0']
+        system = self._get_system()
+        if not system:
+            raise SnmpryteError("failed to gather base snmp host information")
+        key = system.keys()[0]
+        self._system = system[key]
         for k, v in self.system.iteritems():
             setattr(self, k, v)
 
-    def _get_configuration(self):
+    def _get_system(self):
         return snmpryte.snmp.get_snmp_data(self.snmp, HostSystem.CONF, HostSystem.CONVERSION)
 
     @property
