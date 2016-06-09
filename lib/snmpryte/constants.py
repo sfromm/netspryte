@@ -90,6 +90,7 @@ DEFAULT_DATABASE       = get_config(p, DEFAULTS, "database",       "SNMPRYTE_DAT
 DEFAULT_WORKERS        = get_config(p, DEFAULTS, "workers",        "SNMPRYTE_WORKERS",        4)
 DEFAULT_DEVICES        = get_config(p, DEFAULTS, "devices",        "SNMPRYTE_DEVICES",        ["localhost"], islist=True)
 DEFAULT_DATADIR        = get_config(p, DEFAULTS, "datadir",        "SNMPRYTE_DATADIR",        "data")
+DEFAULT_WWWDIR         = get_config(p, DEFAULTS, "wwwdir",         "SNMPRYTE_DATADIR",         "www")
 
 DEFAULT_ALLOWED_SNMP_VERSIONS = ['1', '2c', '3']
 DEFAULT_ALLOWED_SNMP_LEVELS   = ['authNoPriv', 'authPriv']
