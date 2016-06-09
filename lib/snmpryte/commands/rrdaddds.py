@@ -25,7 +25,7 @@ import re
 from snmpryte.commands import BaseCommand
 from snmpryte import constants as C
 from snmpryte.utils import *
-from snmpryte.rrd import *
+from snmpryte.db.rrd import *
 
 class RrdAddDsCommand(BaseCommand):
 
