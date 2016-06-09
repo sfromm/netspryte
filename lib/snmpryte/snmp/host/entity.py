@@ -22,7 +22,7 @@ from snmpryte.snmp.host import HostSystem
 
 class HostEntity(HostSystem):
 
-    CONF = {
+    DATA = {
         'entPhysicalDescr'       : '1.3.6.1.2.1.47.1.1.1.1.2',
         'entPhysicalVendorType'  : '1.3.6.1.2.1.47.1.1.1.1.3',
         'entPhysicalContainedIn' : '1.3.6.1.2.1.47.1.1.1.1.4',
@@ -65,11 +65,15 @@ class HostEntity(HostSystem):
     def __init__(self, snmp):
         self.snmp = snmp
         super(HostEntity, self).__init__(snmp)
-        self._entity = self._get_configuration()
+        self._data = self._get_configuration()
 
     def _get_configuration(self):
-        return snmpryte.snmp.get_snmp_data(self.snmp, HostEntity.CONF, HostEntity.CONVERSION)
+        return snmpryte.snmp.get_snmp_data(self.snmp, HostEntity.DATA, HostEntity.CONVERSION)
+
+    @property
+    def data(self):
+        return self._data
 
     @property
     def entity(self):
-        return self._entity
+        return self._data
