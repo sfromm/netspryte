@@ -19,3 +19,18 @@
 __name__ = 'snmpryte.snmp.vendor.cisco'
 __author__ = 'Stephen Fromm'
 __version__ = '1'
+
+from snmpryte.snmp.host import HostSystem
+
+class CiscoDevice(HostSystem):
+
+    DATA = { }
+    STAT = { }
+    CONVERSION = { }
+    NAME = "cisco"
+    XLATE = { }
+
+    def __init__(self, snmp):
+        self.snmp = snmp
+        super(CiscoDevice, self).__init__(snmp)
+
