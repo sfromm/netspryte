@@ -87,7 +87,7 @@ DEFAULT_LOG_LEVEL      = get_config(p, DEFAULTS, "loglevel",       "SNMPRYTE_LOG
 DEFAULT_LOG_FORMAT     = get_config(p, DEFAULTS, "logformat",      "SNMPRYTE_LOG_FORMAT",     '%(asctime)s: [%(process)s:%(levelname)s] %(message)s')
 
 DEFAULT_DATABASE       = get_config(p, DEFAULTS, "database",       "SNMPRYTE_DATABASE",       "rrd")
-DEFAULT_WORKERS        = get_config(p, DEFAULTS, "workers",        "SNMPRYTE_WORKERS",        4)
+DEFAULT_WORKERS        = get_config(p, DEFAULTS, "workers",        "SNMPRYTE_WORKERS",        4, integer=True)
 DEFAULT_DEVICES        = get_config(p, DEFAULTS, "devices",        "SNMPRYTE_DEVICES",        ["localhost"], islist=True)
 DEFAULT_DATADIR        = get_config(p, DEFAULTS, "datadir",        "SNMPRYTE_DATADIR",        "data")
 DEFAULT_WWWDIR         = get_config(p, DEFAULTS, "wwwdir",         "SNMPRYTE_DATADIR",         "www")
@@ -95,15 +95,11 @@ DEFAULT_WWWDIR         = get_config(p, DEFAULTS, "wwwdir",         "SNMPRYTE_DAT
 DEFAULT_ALLOWED_SNMP_VERSIONS = ['1', '2c', '3']
 DEFAULT_ALLOWED_SNMP_LEVELS   = ['authNoPriv', 'authPriv']
 
-DEFAULT_RRD_STEP       = get_config(p, 'rrd', 'step',      "SNMPRYTE_RRD_STEP",      300, integer=True)
-DEFAULT_RRD_HEARTBEAT  = get_config(p, 'rrd', 'heartbeat', "SNMPRYTE_RRD_HEARTBEAT", 2,   integer=True)
-DEFAULT_RRD_RRA = [ "RRA:AVERAGE:0.5:1:2016",   # 7 days of 5 mins
-                    "RRA:AVERAGE:0.5:6:2976",   # 62 days of 30 min
-                    "RRA:AVERAGE:0.5:24:1440",  # 120 days of 2 hour
-                    "RRA:AVERAGE:0.5:288:1440", # 4 years of 1 day
-                    "RRA:MIN:0.5:6:1440",
-                    "RRA:MAX:0.5:6:1440",
-                    "RRA:MIN:0.5:96:360",
-                    "RRA:MAX:0.5:96:360",
-                    "RRA:MIN:0.5:288:1440",
-                    "RRA:MAX:0.5:288:1440"]
+DEFAULT_RRD_STEP       = get_config(p, 'rrd', 'step',      "SNMPRYTE_RRD_STEP",      60, integer=True)
+DEFAULT_RRD_HEARTBEAT  = get_config(p, 'rrd', 'heartbeat', "SNMPRYTE_RRD_HEARTBEAT", 3,   integer=True)
+DEFAULT_RRD_RRA = [ "RRA:AVERAGE:0.5:1m:7d",
+                    "RRA:AVERAGE:0.5:2h:6M",
+                    "RRA:AVERAGE:0.5:1d:3y",
+                    "RRA:MAX:0.5:1m:7d",
+                    "RRA:MAX:0.5:2h:6M",
+                    "RRA:MAX:0.5:1d:3y" ]
