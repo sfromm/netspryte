@@ -16,12 +16,21 @@
 # You should have received a copy of the GNU General Public License
 # along with snmpryte.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+import json
 import logging
+import tempfile
+import ConfigParser
+import multiprocessing
+
+import snmpryte.db
+import snmpryte.db.rrd
+
 from snmpryte import constants as C
 
-def setup_logging(program='snmpryte'):
+def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL, program='snmpryte'):
     ''' set up logging '''
-    C.DEFAULT_LOG_LEVEL = int(C.DEFAULT_LOG_LEVEL)
+    C.DEFAULT_LOG_LEVEL = int(loglevel)
     if C.DEFAULT_LOG_LEVEL >= 2:
         loglevel = 'DEBUG'
     elif C.DEFAULT_LOG_LEVEL >= 1:
@@ -41,3 +50,78 @@ def setup_logging(program='snmpryte'):
     logargs['datefmt'] = '%FT%T'
     logargs['format'] = C.DEFAULT_LOG_FORMAT
     logging.basicConfig(**logargs)
+
+def merge_dicts(a, b, path=None):
+    if path is None:
+        path = []
+    for k, v in b.iteritems():
+        if k in a:
+            if isinstance(a[k], dict) and isinstance(v, dict):
+                merge_dicts(a[k], v, path + [str(k)])
+            elif a[k] == v:
+                pass
+            else:
+                raise Exception("Conflict at %s" % k)
+        else:
+            a[k] = v
+    return a
+
+def json2path(data, path):
+    ''' take dictionary data and write json to path '''
+    try:
+        dir_name = os.path.dirname(path)
+        mk_path(dir_name)
+        tmpfd, temp_path = tempfile.mkstemp(dir=dir_name)
+        tmp = os.fdopen(tmpfd, 'w')
+        json.dump(data, tmp, indent=4, sort_keys=True)
+        tmp.close()
+        os.rename(temp_path, path)
+    except TypeError as e:
+        logging.error("failed to write JSON: %s", str(e))
+
+def data2path(data, path):
+    ''' take random data and write to path '''
+    try:
+        dir_name = os.path.dirname(path)
+        mk_path(dir_name)
+        tmpfd, temp_path = tempfile.mkstemp(dir=dir_name)
+        with open(temp_path, 'w') as tmp:
+            tmp.write(data)
+        os.rename(temp_path, path)
+    except Exception as e:
+        logging.error("failed to write to file: %s", str(e))
+
+def mk_path(arg):
+    if not os.path.exists(arg):
+        os.makedirs(arg)
+
+def parse_json(data):
+    ''' convert json string to data structure '''
+    return json.loads(data)
+
+def parse_json_from_file(path):
+    ''' read json string from path and convert to data structure '''
+    try:
+        data = file(path).read()
+        return parse_json(data)
+    except IOError:
+        logging.error('file not found: %s', path)
+        return None
+    except Exception, e:
+        logging.error('failed to parse json from file %s: %s', path, str(e))
+        return None
+
+def get_db_backend():
+    backend = C.DEFAULT_DATABASE
+    if backend == "rrd":
+        return snmpryte.db.rrd.RrdDatabaseBackend()
+    else:
+        return snmpryte.db.rrd.RrdDatabaseBackend()
+
+def mk_json_filename(device, *args):
+    ''' create a json filename based on the collected object '''
+    parts = list()
+    dev_name = device.sysName
+    for arg in args:
+        parts.append( arg.replace(".", "-") )
+    return os.path.join(C.DEFAULT_DATADIR, dev_name, "{0}.json".format("-".join(parts)))
