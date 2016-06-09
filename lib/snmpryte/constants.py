@@ -22,16 +22,31 @@ import pwd
 import ConfigParser
 from snmpryte.errors import *
 
-def get_config(p, section, key, env_var, default):
+def get_config(p, section, key, env_var, default, boolean=False, integer=False, islist=False):
     if env_var is not None:
         value = os.environ.get(env_var, None)
         if value is not None:
             return value
     if p is not None:
         try:
-            return p.get(section, key)
+            value = p.get(section, key)
         except:
             return default
+        if integer:
+            return int(value)
+        elif boolean:
+            if value is None:
+                return False
+            value = str(value)
+            if value.lower() in ['true', 't', 'y', '1', 'yes']:
+                return True
+            else:
+                return False
+        elif islist:
+            return [ x.lstrip() for x in value.split('\n') ]
+        else:
+            return value
+    print value
     return default
 
 def load_config():
@@ -53,7 +68,7 @@ def load_config():
 
 p = load_config()
 
-DEFAULTS = 'default'
+DEFAULTS = 'general'
 DEFAULT_SNMP_HOST      = get_config(p, DEFAULTS, "snmp_host",      "SNMPRYTE_SNMP_HOST",      "localhost")
 DEFAULT_SNMP_PORT      = get_config(p, DEFAULTS, "snmp_port",      "SNMPRYTE_SNMP_PORT",      161)
 DEFAULT_SNMP_TIMEOUT   = get_config(p, DEFAULTS, "snmp_timeout",   "SNMPRYTE_SNMP_TIMEOUT",   5)
@@ -67,9 +82,27 @@ DEFAULT_SNMP_AUTHKEY   = get_config(p, DEFAULTS, "snmp_authkey",   "SNMPRYTE_SNM
 DEFAULT_SNMP_PRIVKEY   = get_config(p, DEFAULTS, "snmp_privkey",   "SNMPRYTE_SNMP_PRIVKEY",   "na")
 DEFAULT_SNMP_BULK      = get_config(p, DEFAULTS, "snmp_bulk",      "SNMPRYTE_SNMP_BULK",      20)
 
-DEFAULT_VERBOSE        = get_config(p, DEFAULTS, "verbose",        "SNMPRYTE_VERBOSE",        False)
+DEFAULT_VERBOSE        = get_config(p, DEFAULTS, "verbose",        "SNMPRYTE_VERBOSE",        0)
 DEFAULT_LOG_LEVEL      = get_config(p, DEFAULTS, "loglevel",       "SNMPRYTE_LOG_LEVEL",      0)
 DEFAULT_LOG_FORMAT     = get_config(p, DEFAULTS, "logformat",      "SNMPRYTE_LOG_FORMAT",     '%(asctime)s: [%(levelname)s] %(message)s')
 
+DEFAULT_DATABASE       = get_config(p, DEFAULTS, "database",       "SNMPRYTE_DATABASE",       "rrd")
+DEFAULT_WORKERS        = get_config(p, DEFAULTS, "workers",        "SNMPRYTE_WORKERS",        4)
+DEFAULT_DEVICES        = get_config(p, DEFAULTS, "devices",        "SNMPRYTE_DEVICES",        ["localhost"], islist=True)
+DEFAULT_DATADIR        = get_config(p, DEFAULTS, "datadir",        "SNMPRYTE_DATADIR",        "data")
+
 DEFAULT_ALLOWED_SNMP_VERSIONS = ['1', '2c', '3']
 DEFAULT_ALLOWED_SNMP_LEVELS   = ['authNoPriv', 'authPriv']
+
+DEFAULT_RRD_STEP       = get_config(p, 'rrd', 'step',      "SNMPRYTE_RRD_STEP",      300, integer=True)
+DEFAULT_RRD_HEARTBEAT  = get_config(p, 'rrd', 'heartbeat', "SNMPRYTE_RRD_HEARTBEAT", 2,   integer=True)
+DEFAULT_RRD_RRA = [ "RRA:AVERAGE:0.5:1:2016",   # 7 days of 5 mins
+                    "RRA:AVERAGE:0.5:6:2976",   # 62 days of 30 min
+                    "RRA:AVERAGE:0.5:24:1440",  # 120 days of 2 hour
+                    "RRA:AVERAGE:0.5:288:1440", # 4 years of 1 day
+                    "RRA:MIN:0.5:6:1440",
+                    "RRA:MAX:0.5:6:1440",
+                    "RRA:MIN:0.5:96:360",
+                    "RRA:MAX:0.5:96:360",
+                    "RRA:MIN:0.5:288:1440",
+                    "RRA:MAX:0.5:288:1440"]
