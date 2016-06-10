@@ -96,7 +96,7 @@ DEFAULT_ALLOWED_SNMP_VERSIONS = ['1', '2c', '3']
 DEFAULT_ALLOWED_SNMP_LEVELS   = ['authNoPriv', 'authPriv']
 
 DEFAULT_RRD_STEP       = get_config(p, 'rrd', 'step',      "SNMPRYTE_RRD_STEP",      60, integer=True)
-DEFAULT_RRD_HEARTBEAT  = get_config(p, 'rrd', 'heartbeat', "SNMPRYTE_RRD_HEARTBEAT", 3,   integer=True)
+DEFAULT_RRD_HEARTBEAT  = get_config(p, 'rrd', 'heartbeat', "SNMPRYTE_RRD_HEARTBEAT", 5,  integer=True)
 DEFAULT_RRD_RRA = [ "RRA:AVERAGE:0.5:1m:7d",
                     "RRA:AVERAGE:0.5:2h:6M",
                     "RRA:AVERAGE:0.5:1d:3y",
