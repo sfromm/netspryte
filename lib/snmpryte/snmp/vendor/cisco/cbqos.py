@@ -141,25 +141,30 @@ class CiscoCBQOS(CiscoDevice):
         data = snmpryte.snmp.get_snmp_data(self.snmp, CiscoCBQOS.DATA, CiscoCBQOS.CONVERSION)
         instances = [ k for k in data.keys() if '.' not in k ]
         # merge related instances into together for a coherent view
-        for obj in data.keys():
-            if obj in instances:
+        for key in data.keys():
+            if key in instances:
                 continue
-            if 'cbQosParentObjectsIndex' in data[obj]:
-                data[obj]['parent'] = obj.split('.')[0] + "." + str(data[obj]['cbQosParentObjectsIndex'])
-            cfg_index = str(data[obj]['cbQosConfigIndex'])
+            if 'cbQosParentObjectsIndex' in data[key]:
+                data[key]['parent'] = key.split('.')[0] + "." + str(data[key]['cbQosParentObjectsIndex'])
+            cfg_index = str(data[key]['cbQosConfigIndex'])
             if cfg_index in instances:
-                data[obj].update(data[cfg_index])
-            base = obj.split('.')[0]
+                data[key].update(data[cfg_index])
+            base = key.split('.')[0]
             if base in data:
-                data[obj].update(data[base])
-            if 'cbQosIfIndex' in data[obj]:
-                ifidx = str(data[obj]['cbQosIfIndex'])
-                data[obj].update( self.interfaces[ifidx] )
+                data[key].update(data[base])
+            if 'cbQosIfIndex' in data[key]:
+                ifidx = str(data[key]['cbQosIfIndex'])
+                data[key].update( self.interfaces[ifidx] )
             # The MIB erroneously marks this as a COUNTER64 to get the requisite number of bits
             # but it behaves like a GAUGE.  Unfortunately, there is no GAUGE64 object.  So ...
             # convert it to an int() so that it is treated like a GAUGE.
-            if 'cbQosPoliceCfgRate64' in data[obj]:
-                data[obj]['cbQosPoliceCfgRate64'] = int(data[obj]['cbQosPoliceCfgRate64'])
+            if 'cbQosPoliceCfgRate64' in data[key]:
+                data[key]['cbQosPoliceCfgRate64'] = int(data[key]['cbQosPoliceCfgRate64'])
+            # Set the meta information for the object
+            data[key]['_class'] = CiscoCBQOS.NAME
+            data[key]['_idx'] = key
+            data[key]['_title'] = self.get_policy_map_name(key)
+            data[key]['_description'] = "{0}:{1}".format(data[key]['_title'], data[key].get('ifAlias', 'NA'))
         return data
 
     @property

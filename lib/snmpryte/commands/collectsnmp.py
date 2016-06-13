@@ -78,9 +78,6 @@ def process_policers(cbqos, args):
             continue
         # process the policer data
         conf = get_data(CiscoCBQOS.DATA, data)
-        conf['_class'] = CiscoCBQOS.NAME
-        conf['_idx'] = key
-        conf['_title'] = cbqos.get_policy_map_name(key)
         profile_stat = CiscoCBQOS.STAT.copy()
         profile_stat.update(HostInterface.STAT)
         for k in CiscoCBQOS.DATA.keys():
@@ -95,12 +92,6 @@ def process_policers(cbqos, args):
 def process_interfaces(cbqos, args):
     for key, data in cbqos.interfaces.iteritems():
         conf = get_data(HostInterface.DATA, data)
-        conf['_class'] = HostInterface.NAME
-        conf['_idx'] = key
-        conf['_title'] = conf.get('ifAlias', '')
-        if not conf['_title']:
-            conf['_title'] = conf.get('ifDescr', 'NA')
-
         values = get_data(HostInterface.STAT, data, HostInterface.XLATE)
         process_data_instance(cbqos, args, HostInterface.NAME, key, conf, values)
 

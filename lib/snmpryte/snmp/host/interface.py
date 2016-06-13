@@ -92,6 +92,11 @@ class HostInterface(HostSystem):
 
     def _get_interface(self):
         data = snmpryte.snmp.get_snmp_data(self.snmp, HostInterface.DATA, HostInterface.CONVERSION)
+        for key in data.keys():
+            data[key]['_class'] = HostInterface.NAME
+            data[key]['_idx'] = key
+            data[key]['_title'] = "{0}:{1}".format(self.snmp.host, data[key].get('ifDescr', 'NA'))
+            data[key]['_description'] = data[key].get('ifAlias', 'NA')
         stat = snmpryte.snmp.get_snmp_data(self.snmp, HostInterface.STAT, HostInterface.CONVERSION)
         merge_dicts(data, stat)
         return data
