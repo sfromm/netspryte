@@ -35,6 +35,8 @@ class BaseCommand(object):
                                  help="Be verbose. Use more than once to increase verbosity.")
         self.parser.add_argument('--datadir', default=C.DEFAULT_DATADIR,
                                  help='Path to data directory')
+        self.parser.add_argument('--nofork', default=False,
+                                 help='Do not fork; useful for debugging')
 
     def daemonize(self):
         pass
