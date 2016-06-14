@@ -135,6 +135,7 @@ class CiscoCBQOS(CiscoDevice):
         stat = self.get_cbqos_stats()
         merge_dicts(data, stat)
         self._data = data
+        self._set_meta_info()
 
     def _get_configuration(self):
         ''' get cbqos objects '''
@@ -144,7 +145,7 @@ class CiscoCBQOS(CiscoDevice):
         for key in data.keys():
             if key in instances:
                 continue
-            if 'cbQosParentObjectsIndex' in data[key]:
+            if 'cbQosParentObjectsIndex' in data[key] and data[key]['cbQosParentObjectsIndex'] != 0:
                 data[key]['parent'] = key.split('.')[0] + "." + str(data[key]['cbQosParentObjectsIndex'])
             cfg_index = str(data[key]['cbQosConfigIndex'])
             if cfg_index in instances:
@@ -160,12 +161,20 @@ class CiscoCBQOS(CiscoDevice):
             # convert it to an int() so that it is treated like a GAUGE.
             if 'cbQosPoliceCfgRate64' in data[key]:
                 data[key]['cbQosPoliceCfgRate64'] = int(data[key]['cbQosPoliceCfgRate64'])
-            # Set the meta information for the object
-            data[key]['_class'] = CiscoCBQOS.NAME
-            data[key]['_idx'] = key
-            data[key]['_title'] = self.get_policy_map_name(key)
-            data[key]['_description'] = "{0}:{1}".format(data[key]['_title'], data[key].get('ifAlias', 'NA'))
         return data
+
+    def _set_meta_info(self):
+        # Set the meta information for the object
+        # handled in separate method because it requires all of instance 'data' to be set.
+        instances = [ k for k in self.data.keys() if '.' not in k ]
+        for key in self.data.keys():
+            if key in instances:
+                continue
+            self.data[key]['_id'] = mk_unique_id(self.sysName, CiscoCBQOS.NAME, key)
+            self.data[key]['_class'] = CiscoCBQOS.NAME
+            self.data[key]['_idx'] = key
+            self.data[key]['_title'] = self.get_policy_map_name(key)
+            self.data[key]['_description'] = "{0}:{1}".format(self.data[key]['_title'], self.data[key].get('ifAlias', 'NA'))
 
     @property
     def data(self):
