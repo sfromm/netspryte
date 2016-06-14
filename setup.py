@@ -35,5 +35,10 @@ setup(name='snmpryte',
           'Topic :: System :: Networking',
           'Topic :: Utilities',
       ],
-      scripts=[],
+      scripts=[
+          'bin/rrd-add-ds.py',
+          'bin/snmpryte-collect-snmp.py',
+          'bin/snmpryte-mk-graphs.py',
+          'bin/snmpryte-discover.py',
+      ],
       data_files=[])
