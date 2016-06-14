@@ -19,4 +19,4 @@
 __name__ = 'snmpryte'
 __author__ = 'Stephen Fromm'
 __email__  = 'stephenf@nero.net'
-__version__ = '1'
+__version__ = '0.1'
