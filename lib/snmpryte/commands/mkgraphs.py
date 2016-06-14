@@ -63,11 +63,11 @@ class MkGraphsCommand(BaseCommand):
                 glob.glob("{0}/*/*.json".format(args.datadir))
             )
         for json_path in data_globs:
-            d = self.graph_data_instance(json_path, cfg)
+            d = self.graph_data_instance(args, json_path, cfg)
             data_graphs.append(d)
         self.template_html(args.datadir, cfg, data_graphs)
 
-    def graph_data_instance(self, json_path, cfg):
+    def graph_data_instance(self, args, json_path, cfg):
         data_set = parse_json_from_file(json_path)
         rrd_path = json_path.replace('json', 'rrd')
         if self.skip_data_instance(data_set):
@@ -83,7 +83,10 @@ class MkGraphsCommand(BaseCommand):
         for graph in graphs:
             graph_defs = self.graph_data_definitions(data_set, graph, rrd_path, cfg)
             for graph_def in graph_defs:
-                pool.apply_async(rrd_graph, (graph_def[0], graph_def[1], graph_def[2]))
+                if args.nofork:
+                    pool.apply_async(rrd_graph, (graph_def[0], graph_def[1], graph_def[2]))
+                else:
+                    rrd_graph(graph_def[0], graph_def[1], graph_def[2])
                 data_set['_graphs'].append(self.get_relative_png_path(graph_def[0]))
         pool.close()
         logging.debug("closed pool of workers")
