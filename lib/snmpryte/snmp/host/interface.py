@@ -93,6 +93,7 @@ class HostInterface(HostSystem):
     def _get_interface(self):
         data = snmpryte.snmp.get_snmp_data(self.snmp, HostInterface.DATA, HostInterface.CONVERSION)
         for key in data.keys():
+            data[key]['_id'] = mk_unique_id(self.sysName, HostInterface.NAME, key)
             data[key]['_class'] = HostInterface.NAME
             data[key]['_idx'] = key
             data[key]['_title'] = "{0}:{1}".format(self.snmp.host, data[key].get('ifDescr', 'NA'))
