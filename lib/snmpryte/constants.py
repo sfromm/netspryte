@@ -86,11 +86,11 @@ DEFAULT_VERBOSE        = get_config(p, DEFAULTS, "verbose",        "SNMPRYTE_VER
 DEFAULT_LOG_LEVEL      = get_config(p, DEFAULTS, "loglevel",       "SNMPRYTE_LOG_LEVEL",      0)
 DEFAULT_LOG_FORMAT     = get_config(p, DEFAULTS, "logformat",      "SNMPRYTE_LOG_FORMAT",     '%(asctime)s: [%(process)s:%(levelname)s] %(message)s')
 
-DEFAULT_DATABASE       = get_config(p, DEFAULTS, "database",       "SNMPRYTE_DATABASE",       "rrd")
+DEFAULT_DATABASE       = get_config(p, DEFAULTS, "database",       "SNMPRYTE_DATABASE",       ["rrd"], islist=True)
 DEFAULT_WORKERS        = get_config(p, DEFAULTS, "workers",        "SNMPRYTE_WORKERS",        4, integer=True)
 DEFAULT_DEVICES        = get_config(p, DEFAULTS, "devices",        "SNMPRYTE_DEVICES",        ["localhost"], islist=True)
 DEFAULT_DATADIR        = get_config(p, DEFAULTS, "datadir",        "SNMPRYTE_DATADIR",        "data")
-DEFAULT_WWWDIR         = get_config(p, DEFAULTS, "wwwdir",         "SNMPRYTE_DATADIR",         "www")
+DEFAULT_WWWDIR         = get_config(p, DEFAULTS, "wwwdir",         "SNMPRYTE_WWWDIR",         "www")
 
 DEFAULT_ALLOWED_SNMP_VERSIONS = ['1', '2c', '3']
 DEFAULT_ALLOWED_SNMP_LEVELS   = ['authNoPriv', 'authPriv']

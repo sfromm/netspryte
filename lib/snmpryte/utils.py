@@ -112,11 +112,14 @@ def parse_json_from_file(path):
         return None
 
 def get_db_backend():
-    backend = C.DEFAULT_DATABASE
-    if backend == "rrd":
-        return snmpryte.db.rrd.RrdDatabaseBackend(backend)
-    else:
-        return snmpryte.db.rrd.RrdDatabaseBackend(backend)
+    backends = list()
+    conf_backends = C.DEFAULT_DATABASE
+    for backend in conf_backends:
+        if backend == "rrd":
+            backends.append(snmpryte.db.rrd.RrdDatabaseBackend(backend))
+    if not backends:
+        backends.append(snmpryte.db.rrd.RrdDatabaseBackend("rrd"))
+    return backends
 
 def mk_json_filename(device, *args):
     ''' create a json filename based on the collected object '''
@@ -125,3 +128,9 @@ def mk_json_filename(device, *args):
     for arg in args:
         parts.append( arg.replace(".", "-") )
     return os.path.join(C.DEFAULT_DATADIR, dev_name, "{0}.json".format("-".join(parts)))
+
+def mk_unique_id(device, cls, instance):
+    id = list()
+    for n in [ device, cls, instance ]:
+        id.append(n.replace(".", "_"))
+    return ".".join(id)
