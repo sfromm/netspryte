@@ -1,6 +1,17 @@
 NAME = 'snmpryte'
 PYTHON=python
 EPEP8 = "E501,E201,E202,E203,E221,E241,E302,E303"
+VERSION := $(shell grep __version lib/$(NAME)/__init__.py | sed -e 's|^.*= ||' -e "s|'||g" )
+
+# RPM build parameters
+RPMSPECDIR = packaging/rpm
+RPMSPEC = $(RPMSPECDIR)/$(NAME).spec
+RPMDIST = $(shell rpm --eval '%dist')
+RPMRELEASE = 1
+ifeq ($(OFFICIAL),)
+RPMRELEASE = 0.git$(DATE)
+endif
+RPMNVR = "$(NAME)-$(VERSION)-$(RPMRELEASE)$(RPMDIST)"
 
 test: clean
 	PYTHONPATH=lib \
@@ -30,3 +41,37 @@ install:
 
 sdist: clean
 	$(PYTHON) setup.py sdist
+
+rpmcommon: sdist
+	@echo "make rpmcommon"
+	@mkdir -p rpm-build
+	@cp dist/*.gz rpm-build/
+	@echo '$(VERSION)'
+	@sed -e 's/^Version:.*/Version: $(VERSION)/' \
+		-e 's/^Release:.*/Release: $(RPMRELEASE)%{?dist}/' \
+		$(RPMSPEC) > rpm-build/$(NAME).spec
+
+srpm: rpmcommon
+	@echo make srpm
+	@rpmbuild --define "_topdir %(pwd)/rpm-build" \
+		--define "_builddir %{_topdir}" \
+		--define "_rpmdir %{_topdir}" \
+		--define "_srcrpmdir %{_topdir}" \
+		--define "_specdir $(RPMSPECDIR)" \
+		--define "_sourcedir %{_topdir}" \
+		-bs rpm-build/$(NAME).spec
+	@rm -f rpm-build/$(NAME).spec
+	@echo "$(NAME) SRPM is built:"
+	@echo "    rpm-build/$(RPMNVR).src.rpm"
+
+rpm: rpmcommon
+	@rpmbuild --define "_topdir %(pwd)/rpm-build" \
+		--define "_builddir %{_topdir}" \
+		--define "_rpmdir %{_topdir}" \
+		--define "_srcrpmdir %{_topdir}" \
+		--define "_specdir $(RPMSPECDIR)" \
+		--define "_sourcedir %{_topdir}" \
+		-ba rpm-build/$(NAME).spec
+	@rm -f rpm-build/$(NAME).spec
+	@echo "$(NAME) RPM is built:"
+	@echo "    rpm-build/noarch/$(RPMNVR).noarch.rpm"
