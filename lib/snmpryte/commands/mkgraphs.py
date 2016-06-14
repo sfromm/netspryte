@@ -155,13 +155,27 @@ class MkGraphsCommand(BaseCommand):
         rrd_graph(png_path, rrd_opts, graph_opts)
 
     def template_html(self, datadir, cfg, data_graphs):
+        data_class = dict()
         env = Environment(
             loader=FileSystemLoader(datadir)
         )
-        data_graphs = sorted(data_graphs, key=lambda k: k['_title'])
-        path = os.path.join(datadir, 'index.html')
+        for k in data_graphs:
+            if k['_class'] not in data_class:
+                data_class[k['_class']] = list()
+            data_class[k['_class']].append(k)
+
+        for cls in data_class.keys():
+            self.do_template_html(
+                env,
+                C.get_config(cfg, 'general', 'html_template', None, None),
+                os.path.join(datadir, "{0}.html".format(cls)),
+                sorted(data_class[cls], key=lambda k: k['_title'])
+            )
+
+    def do_template_html(self, env, template, path, data_graphs):
         try:
-            template = env.get_template(C.get_config(cfg, 'general', 'html_template', None, None))
+            logging.info("creating html template %s", path)
+            template = env.get_template(template)
             data2path(template.render(data_sets=data_graphs), path)
             os.chmod(path, 0664)
         except jinja2.exceptions.TemplateNotFound as e:
