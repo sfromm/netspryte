@@ -36,9 +36,9 @@ setup(name='snmpryte',
           'Topic :: Utilities',
       ],
       scripts=[
-          'bin/rrd-add-ds.py',
-          'bin/snmpryte-collect-snmp.py',
-          'bin/snmpryte-mk-graphs.py',
-          'bin/snmpryte-discover.py',
+          'bin/rrd-add-ds',
+          'bin/snmpryte-collect-snmp',
+          'bin/snmpryte-mk-graphs',
+          'bin/snmpryte-discover',
       ],
       data_files=[])
