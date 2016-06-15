@@ -85,6 +85,7 @@ DEFAULT_SNMP_BULK      = get_config(p, DEFAULTS, "snmp_bulk",      "SNMPRYTE_SNM
 DEFAULT_VERBOSE        = get_config(p, DEFAULTS, "verbose",        "SNMPRYTE_VERBOSE",        0)
 DEFAULT_LOG_LEVEL      = get_config(p, DEFAULTS, "loglevel",       "SNMPRYTE_LOG_LEVEL",      0)
 DEFAULT_LOG_FORMAT     = get_config(p, DEFAULTS, "logformat",      "SNMPRYTE_LOG_FORMAT",     '%(asctime)s: [%(process)s:%(levelname)s] %(message)s')
+DEFAULT_LOG_NAME       = get_config(p, DEFAULTS, "logname",        "SNMPRYTE_LOG_NAME",       "snmpryte")
 
 DEFAULT_DATABASE       = get_config(p, DEFAULTS, "database",       "SNMPRYTE_DATABASE",       ["rrd"], islist=True)
 DEFAULT_WORKERS        = get_config(p, DEFAULTS, "workers",        "SNMPRYTE_WORKERS",        4, integer=True)
@@ -97,6 +98,7 @@ DEFAULT_ALLOWED_SNMP_LEVELS   = ['authNoPriv', 'authPriv']
 
 DEFAULT_RRD_STEP       = get_config(p, 'rrd', 'step',      "SNMPRYTE_RRD_STEP",      60, integer=True)
 DEFAULT_RRD_HEARTBEAT  = get_config(p, 'rrd', 'heartbeat', "SNMPRYTE_RRD_HEARTBEAT", 5,  integer=True)
+DEFAULT_RRD_START      = get_config(p, 'rrd', 'start',     "SNMPRYTE_RRD_START",     ["-1d", "-1w", "-1m", "-1y"], islist=True)
 DEFAULT_RRD_RRA = [ "RRA:AVERAGE:0.5:1m:7d",
                     "RRA:AVERAGE:0.5:2h:6M",
                     "RRA:AVERAGE:0.5:1d:3y",
