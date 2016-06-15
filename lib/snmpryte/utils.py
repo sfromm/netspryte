@@ -19,16 +19,17 @@
 import os
 import json
 import logging
+import logging.handlers
 import tempfile
 import ConfigParser
-import multiprocessing
+import socket
 
 import snmpryte.db
 import snmpryte.db.rrd
 
 from snmpryte import constants as C
 
-def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL, program='snmpryte'):
+def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL, use_syslog=False):
     ''' set up logging '''
     C.DEFAULT_LOG_LEVEL = int(loglevel)
     if C.DEFAULT_LOG_LEVEL >= 2:
@@ -50,6 +51,27 @@ def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL, program='snmpryte'):
     logargs['datefmt'] = '%FT%T'
     logargs['format'] = C.DEFAULT_LOG_FORMAT
     logging.basicConfig(**logargs)
+    if use_syslog:
+        # remove default logger and add syslog handler
+        logger = logging.getLogger()
+        if 'flush' in dir(logger):
+            logger.flush()
+
+        filelogger = logger.handlers[0]
+
+        syslog = None
+        try:
+            syslog = logging.handlers.SysLogHandler(address='/dev/log')
+            formatter = logging.Formatter('%(filename)s: %(message)s')
+            syslog.setFormatter(formatter)
+            logger.addHandler(syslog)
+        except socket.error:
+            if syslog is not None:
+                syslog.close()
+        else:
+            logger.removeHandler(filelogger)
+            if isinstance(filelogger, logging.FileHandler):
+                filelogger.close()
 
 def merge_dicts(a, b, path=None):
     if path is None:
