@@ -109,6 +109,7 @@ def data2path(data, path):
         tmpfd, temp_path = tempfile.mkstemp(dir=dir_name)
         with open(temp_path, 'w') as tmp:
             tmp.write(data)
+        os.close(tmpfd)
         os.rename(temp_path, path)
     except Exception as e:
         logging.error("failed to write to file: %s", str(e))
@@ -156,3 +157,8 @@ def mk_unique_id(device, cls, instance):
     for n in [ device, cls, instance ]:
         id.append(n.replace(".", "_"))
     return ".".join(id)
+
+def clean_string(arg, replace="_"):
+    for char in [' ', '.', '/', '[', ']', ':']:
+        arg.replace(char, replace)
+    return arg
