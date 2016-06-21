@@ -55,7 +55,10 @@ class CollectSnmpCommand(BaseCommand):
         logging.debug("created pool of workers")
         for device in args.devices:
             logging.info("handing off %s to worker", device)
-            res = pool.apply_async(process_device, (device, args))
+            if args.nofork:
+                process_device(device, args)
+            else:
+                res = pool.apply_async(process_device, (device, args))
         pool.close()
         logging.debug("closed pool of workers")
         pool.join()
@@ -77,7 +80,7 @@ def process_policers(cbqos, args):
         if data['cbQosObjectsType'] != 'police':
             continue
         # process the policer data
-        conf = get_data(CiscoCBQOS.DATA, data)
+        conf = get_data(CiscoCBQOS.DATA, data, keepmeta=True)
         profile_stat = CiscoCBQOS.STAT.copy()
         profile_stat.update(HostInterface.STAT)
         for k in CiscoCBQOS.DATA.keys():
@@ -86,13 +89,13 @@ def process_policers(cbqos, args):
                     profile_stat[k] = data[k]
         profile_strip = CiscoCBQOS.XLATE.copy()
         profile_strip.update(HostInterface.XLATE)
-        values = get_data(profile_stat, data, profile_strip)
+        values = get_data(profile_stat, data, xlate=profile_strip)
         process_data_instance(cbqos, args, CiscoCBQOS.NAME, key, conf, values)
 
 def process_interfaces(cbqos, args):
     for key, data in cbqos.interfaces.iteritems():
-        conf = get_data(HostInterface.DATA, data)
-        values = get_data(HostInterface.STAT, data, HostInterface.XLATE)
+        conf = get_data(HostInterface.DATA, data, keepmeta=True)
+        values = get_data(HostInterface.STAT, data, xlate=HostInterface.XLATE)
         process_data_instance(cbqos, args, HostInterface.NAME, key, conf, values)
 
 def process_data_instance(cbqos, args, name, key, conf, values):
@@ -105,32 +108,42 @@ def process_data_instance(cbqos, args, name, key, conf, values):
         else:
             pprint.pprint({key: cbqos.policers[key]})
     json_path = mk_json_filename(cbqos, name, key)
-    db = get_db_backend()
-    if db.backend == 'rrd':
-        db.path = json_path.replace('json', 'rrd')
-    record_stats(db, values)
+    dbs = get_db_backend()
+    for db in dbs:
+        if db.backend == 'rrd':
+            db.path = json_path.replace('json', 'rrd')
+        record_stats(db, values)
     record_data(json_path, conf, args)
 
 def record_data(path, data, args):
-    path = os.path.join(args.datadir, path)
     data2 = { k: snmpryte.snmp.mk_pretty_value(v) for (k, v) in data.iteritems() }
     if '_do_graph' not in data2:
         data2['_do_graph'] = True
     if os.path.exists(path):
         return
-    snmpryte.utils.json2path(data2, path)
+    json2path(data2, path)
 
 def record_stats(db, data):
     db.write(data)
 
-def get_data(template, data, xlate={}):
+def get_data(template, data, **kwargs):
     values = dict()
+    xlate = dict()
+    keepmeta = False
+    if 'xlate' in kwargs:
+        xlate = kwargs['xlate']
+    if 'keepmeta' in kwargs:
+        keepmeta = kwargs['keepmeta']
     for k in template:
         newk = clean_name(k, xlate)
         if k in data:
             values[newk] = data[k]
         else:
             values[newk] = 0
+    if keepmeta:
+        for k in data:
+            if k.startswith('_'):
+                values[k] = data[k]
     return values
 
 def clean_name(name, xlate):
