@@ -56,8 +56,9 @@ def load_config():
     if path0 is not None:
         path0 = os.path.expanduser(path0)
     path1 = os.getcwd() + "/snmpryte.cfg"
+    path2 = "/etc/snmpryte/snmpryte.cfg"
 
-    for path in [path0, path1]:
+    for path in [path0, path1, path2]:
         if path is not None and os.path.exists(path):
             try:
                 p.read(path)
