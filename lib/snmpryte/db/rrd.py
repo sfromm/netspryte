@@ -80,6 +80,8 @@ def rrd_update(path, data, ts=time.time()):
 
 def rrd_graph(path, rrd_opts, graph_opts):
     ''' create a graph for rrd '''
+    if not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
     try:
         logging.info("creating graph %s", path)
         rrdtool.graph(path, rrd_opts, graph_opts)
