@@ -106,3 +106,9 @@ DEFAULT_RRD_RRA = [ "RRA:AVERAGE:0.5:1m:7d",
                     "RRA:MAX:0.5:1m:7d",
                     "RRA:MAX:0.5:2h:6M",
                     "RRA:MAX:0.5:1d:3y" ]
+
+DEFAULT_INFLUXDB_HOST     = get_config(p, 'influxdb', 'host',     'SNMPRYTE_INFLUXDB_HOST',     'localhost')
+DEFAULT_INFLUXDB_PORT     = get_config(p, 'influxdb', 'port',     'SNMPRYTE_INFLUXDB_PORT',     8086, integer=True)
+DEFAULT_INFLUXDB_USER     = get_config(p, 'influxdb', 'user',     'SNMPRYTE_INFLUXDB_USER',     'root')
+DEFAULT_INFLUXDB_PASSWORD = get_config(p, 'influxdb', 'password', 'SNMPRYTE_INFLUXDB_PASSWORD', 'root')
+DEFAULT_INFLUXDB_DATABASE = get_config(p, 'influxdb', 'database', 'SNMPRYTE_INFLUXDB_DATABASE', 'snmpryte')
