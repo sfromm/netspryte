@@ -17,6 +17,7 @@ test: clean
 	PYTHONPATH=lib \
 		SNMPRYTE_CONFIG=tests/snmpryte.cfg \
 		SNMPRYTE_SNMP_HOST="localhost" \
+		SNMPRYTE_INFLUXDB_DATABASE="testdb" \
 		nosetests -d -v --with-coverage \
 		--cover-erase --cover-package=snmpryte -s
 
