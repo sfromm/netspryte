@@ -22,7 +22,9 @@ class BaseDatabaseBackend(object):
 
     def __init__(self, backend, **kwargs):
         ''' base backend for a database '''
-        self._backend = backend
+        self.backend = backend
+        if 'host' in kwargs:
+            self.host = kwargs['host']
 
     def write(self, data):
         pass
@@ -34,3 +36,11 @@ class BaseDatabaseBackend(object):
     @backend.setter
     def backend(self, arg):
         self._backend = arg
+
+    @property
+    def host(self):
+        return self._host
+
+    @host.setter
+    def host(self, arg):
+        self._host = arg
