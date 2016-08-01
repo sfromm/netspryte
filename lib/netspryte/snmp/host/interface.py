@@ -17,9 +17,9 @@
 # 02110-1301, USA.
 
 import logging
-import snmpryte.snmp
-from snmpryte.snmp.host import HostSystem
-from snmpryte.utils import *
+import netspryte.snmp
+from netspryte.snmp.host import HostSystem
+from netspryte.utils import *
 
 class HostInterface(HostSystem):
 
@@ -91,14 +91,14 @@ class HostInterface(HostSystem):
         self._data = self._get_interface()
 
     def _get_interface(self):
-        data = snmpryte.snmp.get_snmp_data(self.snmp, HostInterface.DATA, HostInterface.CONVERSION)
+        data = netspryte.snmp.get_snmp_data(self.snmp, HostInterface.DATA, HostInterface.CONVERSION)
         for key in data.keys():
             data[key]['_id'] = mk_unique_id(self.sysName, HostInterface.NAME, key)
             data[key]['_class'] = HostInterface.NAME
             data[key]['_idx'] = key
             data[key]['_title'] = "{0}:{1}".format(self.snmp.host, data[key].get('ifDescr', 'NA'))
             data[key]['_description'] = data[key].get('ifAlias', 'NA')
-        stat = snmpryte.snmp.get_snmp_data(self.snmp, HostInterface.STAT, HostInterface.CONVERSION)
+        stat = netspryte.snmp.get_snmp_data(self.snmp, HostInterface.STAT, HostInterface.CONVERSION)
         merge_dicts(data, stat)
         return data
 
@@ -111,4 +111,4 @@ class HostInterface(HostSystem):
         return self.data
 
     def get_interface_stats(self):
-        return snmpryte.snmp.get_snmp_data(self.snmp, HostInterface.STAT, HostInterface.CONVERSION)
+        return netspryte.snmp.get_snmp_data(self.snmp, HostInterface.STAT, HostInterface.CONVERSION)

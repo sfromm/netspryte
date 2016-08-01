@@ -1,11 +1,11 @@
-Name:       snmpryte
+Name:       netspryte
 Version:	0.1
 Release:	1%{?dist}
 Summary:	Tool for collecting network information
 
 License:	GPLv3
-URL:		https://github.com/sfromm/snmpryte
-#Source0:	https://github.com/sfromm/snmpryte/archive/release%{version}.tar.gz
+URL:		https://github.com/sfromm/netspryte
+#Source0:	https://github.com/sfromm/netspryte/archive/release%{version}.tar.gz
 Source0:	%{name}-%{version}.tar.gz
 
 BuildArch:  noarch
@@ -31,9 +31,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%{python_sitelib}/snmpryte/*
-%{python_sitelib}/snmpryte*egg-info
-%{_bindir}/snmpryte-*
+%{python_sitelib}/netspryte/*
+%{python_sitelib}/netspryte*egg-info
+%{_bindir}/netspryte-*
 %{_bindir}/rrd-*
 %doc README.md COPYING
 

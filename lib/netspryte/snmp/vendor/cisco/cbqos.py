@@ -17,10 +17,10 @@
 # 02110-1301, USA.
 
 import logging
-import snmpryte.snmp
-import snmpryte.snmp.host.interface
-from snmpryte.snmp.vendor.cisco import CiscoDevice
-from snmpryte.utils import *
+import netspryte.snmp
+import netspryte.snmp.host.interface
+from netspryte.snmp.vendor.cisco import CiscoDevice
+from netspryte.utils import *
 
 class CiscoCBQOS(CiscoDevice):
 
@@ -128,7 +128,7 @@ class CiscoCBQOS(CiscoDevice):
         self.snmp = snmp
         super(CiscoCBQOS, self).__init__(snmp)
         logging.info("inspecting %s for cbqos data", snmp.host)
-        host = snmpryte.snmp.host.interface.HostInterface(self.snmp)
+        host = netspryte.snmp.host.interface.HostInterface(self.snmp)
         self.interfaces = host.interfaces
         data = self._get_configuration()
         self._data = data
@@ -139,7 +139,7 @@ class CiscoCBQOS(CiscoDevice):
 
     def _get_configuration(self):
         ''' get cbqos objects '''
-        data = snmpryte.snmp.get_snmp_data(self.snmp, CiscoCBQOS.DATA, CiscoCBQOS.CONVERSION)
+        data = netspryte.snmp.get_snmp_data(self.snmp, CiscoCBQOS.DATA, CiscoCBQOS.CONVERSION)
         instances = [ k for k in data.keys() if '.' not in k ]
         # merge related instances into together for a coherent view
         for key in data.keys():
@@ -201,7 +201,7 @@ class CiscoCBQOS(CiscoDevice):
         results = self.snmp.walk( *[ k for k in CiscoCBQOS.STAT.values() ] )
         for obj in results:
             logging.debug("Processing OID=%s, value=%s", obj[0], obj[1])
-            oid = snmpryte.snmp.deconstruct_oid(obj[0], CiscoCBQOS.STAT)
+            oid = netspryte.snmp.deconstruct_oid(obj[0], CiscoCBQOS.STAT)
             if 'index' not in oid:
                 continue
             index = oid['index']

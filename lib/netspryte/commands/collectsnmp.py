@@ -24,14 +24,14 @@ import glob
 import pprint
 from multiprocessing import Process, Pool
 
-import snmpryte
-import snmpryte.snmp
-from snmpryte.snmp.host.interface import HostInterface
-from snmpryte.snmp.vendor.cisco.cbqos import CiscoCBQOS
+import netspryte
+import netspryte.snmp
+from netspryte.snmp.host.interface import HostInterface
+from netspryte.snmp.vendor.cisco.cbqos import CiscoCBQOS
 
-from snmpryte.commands import BaseCommand
-from snmpryte import constants as C
-from snmpryte.utils import *
+from netspryte.commands import BaseCommand
+from netspryte import constants as C
+from netspryte.utils import *
 
 class CollectSnmpCommand(BaseCommand):
 
@@ -66,7 +66,7 @@ class CollectSnmpCommand(BaseCommand):
 
 def process_device(device, args):
     try:
-        msnmp = snmpryte.snmp.SNMPSession(host=device)
+        msnmp = netspryte.snmp.SNMPSession(host=device)
         cbqos = CiscoCBQOS(msnmp)
         process_policers(cbqos, args)
         process_interfaces(cbqos, args)
@@ -84,7 +84,7 @@ def process_policers(cbqos, args):
         profile_stat = CiscoCBQOS.STAT.copy()
         profile_stat.update(HostInterface.STAT)
         for k in CiscoCBQOS.DATA.keys():
-            if k in data and snmpryte.snmp.value_is_metric(data[k]):
+            if k in data and netspryte.snmp.value_is_metric(data[k]):
                 if 'Rate' in k:
                     profile_stat[k] = data[k]
         profile_strip = CiscoCBQOS.XLATE.copy()
@@ -116,7 +116,7 @@ def process_data_instance(cbqos, args, name, key, conf, values):
     record_data(json_path, conf, args)
 
 def record_data(path, data, args):
-    data2 = { k: snmpryte.snmp.mk_pretty_value(v) for (k, v) in data.iteritems() }
+    data2 = { k: netspryte.snmp.mk_pretty_value(v) for (k, v) in data.iteritems() }
     if '_do_graph' not in data2:
         data2['_do_graph'] = True
     if os.path.exists(path):

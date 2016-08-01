@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-__name__ = 'snmpryte'
+__name__ = 'netspryte'
 __author__ = 'Stephen Fromm'
 __email__  = 'stephenf@nero.net'
 __version__ = '0.1'

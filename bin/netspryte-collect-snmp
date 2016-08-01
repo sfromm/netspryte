@@ -1,12 +1,12 @@
 #!/usr/bin/python
-__requires__ = ['snmpryte']
+__requires__ = ['netspryte']
 try:
     import pkg_resources
 except Exception:
     pass
 import sys
 
-from snmpryte.commands.collectsnmp import CollectSnmpCommand
+from netspryte.commands.collectsnmp import CollectSnmpCommand
 
 if __name__ == '__main__':
     cmd = CollectSnmpCommand()

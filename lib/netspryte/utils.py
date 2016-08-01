@@ -1,20 +1,20 @@
 # Written by Stephen Fromm <stephenf nero net>
 # (C) 2016 University of Oregon
 #
-# This file is part of snmpryte
+# This file is part of netspryte
 #
-# snmpryte is free software: you can redistribute it and/or modify
+# netspryte is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# snmpryte is distributed in the hope that it will be useful,
+# netspryte is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with snmpryte.  If not, see <http://www.gnu.org/licenses/>.
+# along with netspryte.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import json
@@ -24,10 +24,10 @@ import tempfile
 import ConfigParser
 import socket
 
-import snmpryte.db
-import snmpryte.db.rrd
+import netspryte.db
+import netspryte.db.rrd
 
-from snmpryte import constants as C
+from netspryte import constants as C
 
 def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL, use_syslog=False):
     ''' set up logging '''
@@ -139,9 +139,9 @@ def get_db_backend():
     conf_backends = C.DEFAULT_DATABASE
     for backend in conf_backends:
         if backend == "rrd":
-            backends.append(snmpryte.db.rrd.RrdDatabaseBackend(backend))
+            backends.append(netspryte.db.rrd.RrdDatabaseBackend(backend))
     if not backends:
-        backends.append(snmpryte.db.rrd.RrdDatabaseBackend("rrd"))
+        backends.append(netspryte.db.rrd.RrdDatabaseBackend("rrd"))
     return backends
 
 def mk_json_filename(device, *args):

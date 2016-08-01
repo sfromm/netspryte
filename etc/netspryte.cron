@@ -1,0 +1,5 @@
+# example cron file for netspryte
+MAILTO=root
+
+*/1 * * * * root netspryte-collect-snmp
+*/15 * * * * root netspryte-mk-graphs

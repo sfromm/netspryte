@@ -16,11 +16,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-__name__ = 'snmpryte.snmp.vendor.cisco'
+__name__ = 'netspryte.snmp.vendor.cisco'
 __author__ = 'Stephen Fromm'
 __version__ = '1'
 
-from snmpryte.snmp.host import HostSystem
+from netspryte.snmp.host import HostSystem
 
 class CiscoDevice(HostSystem):
 

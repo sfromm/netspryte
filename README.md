@@ -1,5 +1,5 @@
-snmpryte
+netspryte
 ==========
 
-*snmpryte* is a library and set of utilities to query network equipment
+*netspryte* is a library and set of utilities to query network equipment
 and get structured data back that describes the device.

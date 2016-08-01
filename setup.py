@@ -4,15 +4,15 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('lib'))
-from snmpryte import __version__, __author__, __email__
+from netspryte import __version__, __author__, __email__
 
 try:
     from setuptools import setup, find_packages
 except ImportError:
-    print("snmpryte needs setuptools to build")
+    print("netspryte needs setuptools to build")
     sys.exit(1)
 
-setup(name='snmpryte',
+setup(name='netspryte',
       version=__version__,
       author=__author__,
       author_email=__email__,
@@ -37,8 +37,8 @@ setup(name='snmpryte',
       ],
       scripts=[
           'bin/rrd-add-ds',
-          'bin/snmpryte-collect-snmp',
-          'bin/snmpryte-mk-graphs',
-          'bin/snmpryte-discover',
+          'bin/netspryte-collect-snmp',
+          'bin/netspryte-mk-graphs',
+          'bin/netspryte-discover',
       ],
       data_files=[])

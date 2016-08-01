@@ -24,12 +24,12 @@ import glob
 import pprint
 from multiprocessing import Process, Pool
 
-import snmpryte
+import netspryte
 
-from snmpryte.commands import BaseCommand
-from snmpryte import constants as C
-from snmpryte.utils import *
-from snmpryte.db.rrd import *
+from netspryte.commands import BaseCommand
+from netspryte import constants as C
+from netspryte.utils import *
+from netspryte.db.rrd import *
 
 from jinja2 import Environment, FileSystemLoader
 import jinja2.exceptions

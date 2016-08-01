@@ -1,5 +1,5 @@
 prune test
 include README.md COPYING
 include Makefile
-recursive-include lib/snmpryte
+recursive-include lib/netspryte
 recursive-include bin/

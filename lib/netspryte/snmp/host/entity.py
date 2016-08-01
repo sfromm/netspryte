@@ -17,8 +17,8 @@
 # 02110-1301, USA.
 
 import logging
-import snmpryte.snmp
-from snmpryte.snmp.host import HostSystem
+import netspryte.snmp
+from netspryte.snmp.host import HostSystem
 
 class HostEntity(HostSystem):
 
@@ -68,7 +68,7 @@ class HostEntity(HostSystem):
         self._data = self._get_configuration()
 
     def _get_configuration(self):
-        return snmpryte.snmp.get_snmp_data(self.snmp, HostEntity.DATA, HostEntity.CONVERSION)
+        return netspryte.snmp.get_snmp_data(self.snmp, HostEntity.DATA, HostEntity.CONVERSION)
 
     @property
     def data(self):

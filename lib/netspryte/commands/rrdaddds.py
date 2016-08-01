@@ -22,10 +22,10 @@ import sys
 import logging
 import re
 
-from snmpryte.commands import BaseCommand
-from snmpryte import constants as C
-from snmpryte.utils import *
-from snmpryte.db.rrd import *
+from netspryte.commands import BaseCommand
+from netspryte import constants as C
+from netspryte.utils import *
+from netspryte.db.rrd import *
 
 class RrdAddDsCommand(BaseCommand):
 

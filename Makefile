@@ -1,4 +1,4 @@
-NAME = 'snmpryte'
+NAME = 'netspryte'
 PYTHON=python
 EPEP8 = "E501,E201,E202,E203,E221,E241,E302,E303"
 VERSION := $(shell grep __version lib/$(NAME)/__init__.py | sed -e 's|^.*= ||' -e "s|'||g" )
@@ -15,11 +15,11 @@ RPMNVR = "$(NAME)-$(VERSION)-$(RPMRELEASE)$(RPMDIST)"
 
 test: clean
 	PYTHONPATH=lib \
-		SNMPRYTE_CONFIG=tests/snmpryte.cfg \
-		SNMPRYTE_SNMP_HOST="localhost" \
-		SNMPRYTE_INFLUXDB_DATABASE="testdb" \
+		NETSPRYTE_CONFIG=tests/netspryte.cfg \
+		NETSPRYTE_SNMP_HOST="localhost" \
+		NETSPRYTE_INFLUXDB_DATABASE="testdb" \
 		nosetests -d -v --with-coverage \
-		--cover-erase --cover-package=snmpryte -s
+		--cover-erase --cover-package=netspryte -s
 
 clean:
 	@echo "Cleaning distutils leftovers"

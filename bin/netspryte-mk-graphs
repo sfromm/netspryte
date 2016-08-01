@@ -1,12 +1,12 @@
 #!/usr/bin/python
-__requires__ = ['snmpryte']
+__requires__ = ['netspryte']
 try:
     import pkg_resources
 except Exception:
     pass
 import sys
 
-from snmpryte.commands.mkgraphs import MkGraphsCommand
+from netspryte.commands.mkgraphs import MkGraphsCommand
 
 if __name__ == '__main__':
     cmd = MkGraphsCommand()

@@ -16,13 +16,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-import snmpryte
+import netspryte
 import sys
 import logging
 import argparse
 
-from snmpryte import constants as C
-from snmpryte.utils import *
+from netspryte import constants as C
+from netspryte.utils import *
 
 class BaseCommand(object):
 

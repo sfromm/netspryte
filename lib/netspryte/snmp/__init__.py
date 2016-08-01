@@ -1,20 +1,20 @@
 # Written by Stephen Fromm <stephenf nero net>
 # (C) 2015-2016 University of Oregon
 #
-# This file is part of snmpryte
+# This file is part of netspryte
 #
-# snmpryte is free software: you can redistribute it and/or modify
+# netspryte is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# snmpryte is distributed in the hope that it will be useful,
+# netspryte is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with snmpryte.  If not, see <http://www.gnu.org/licenses/>.
+# along with netspryte.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
 import logging
@@ -30,8 +30,8 @@ from pysnmp.proto.rfc1902 import (
     TimeTicks,
     Unsigned32,
 )
-from snmpryte import constants as C
-from snmpryte.errors import *
+from netspryte import constants as C
+from netspryte.errors import *
 
 def value_is_metric(arg):
     if isinstance(arg, Counter32) or isinstance(arg, Counter64):
@@ -255,9 +255,9 @@ class SNMPSession(object):
             *oids
         )
         if errorIndication:
-            raise SnmpryteSNMPError(str(errorIndication))
+            raise NetspryteSNMPError(str(errorIndication))
         if errorStatus:
-            raise SnmpryteSNMPError(errorStatus.prettyPrint())
+            raise NetspryteSNMPError(errorStatus.prettyPrint())
         if cmd in [self._cmdgen.getCmd, self._cmdgen.setCmd]:
             for oid, value in varBinds:
                 if isinstance(value, OctetString):
@@ -288,7 +288,7 @@ class SNMPSession(object):
         args = [0, self.bulk] + list(oids)
         try:
             return self._cmd(self._cmdgen.bulkCmd, *args)
-        except SnmpryteSNMPError as e:
+        except NetspryteSNMPError as e:
             logging.error("caught snmp error with %s: %s", self.host, str(e))
             return results
 

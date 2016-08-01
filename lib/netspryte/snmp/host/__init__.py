@@ -17,8 +17,8 @@
 # 02110-1301, USA.
 
 import logging
-import snmpryte.snmp
-from snmpryte.errors import *
+import netspryte.snmp
+from netspryte.errors import *
 
 class HostSystem(object):
 
@@ -47,14 +47,14 @@ class HostSystem(object):
         self.snmp         = snmp
         system = self._get_system()
         if not system:
-            raise SnmpryteError("failed to gather base snmp host information")
+            raise NetspryteError("failed to gather base snmp host information")
         key = system.keys()[0]
         self._system = system[key]
         for k, v in self.system.iteritems():
             setattr(self, k, v)
 
     def _get_system(self):
-        return snmpryte.snmp.get_snmp_data(self.snmp, HostSystem.CONF, HostSystem.CONVERSION)
+        return netspryte.snmp.get_snmp_data(self.snmp, HostSystem.CONF, HostSystem.CONVERSION)
 
     @property
     def system(self):
