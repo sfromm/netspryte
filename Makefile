@@ -3,6 +3,21 @@ PYTHON=python
 EPEP8 = "E501,E201,E202,E203,E221,E241,E302,E303"
 VERSION := $(shell grep __version lib/$(NAME)/__init__.py | sed -e 's|^.*= ||' -e "s|'||g" )
 
+# Get the branch information from git
+ifneq ($(shell which git),)
+GIT_DATE := $(shell git log -n 1 --format="%ai")
+endif
+
+ifeq ($(OS), FreeBSD)
+DATE := $(shell date -j -f "%Y-%m-%d %H:%M:%s"  "$(GIT_DATE)" +%Y%m%d%H%M)
+else
+ifeq ($(OS), Darwin)
+DATE := $(shell date -j -f "%Y-%m-%d %H:%M:%S"  "$(GIT_DATE)" +%Y%m%d%H%M)
+else
+DATE := $(shell date --utc --date="$(GIT_DATE)" +%Y%m%d%H%M)
+endif
+endif
+
 # RPM build parameters
 RPMSPECDIR = packaging/rpm
 RPMSPEC = $(RPMSPECDIR)/$(NAME).spec
