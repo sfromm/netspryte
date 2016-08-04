@@ -100,12 +100,12 @@ DEFAULT_ALLOWED_SNMP_LEVELS   = ['authNoPriv', 'authPriv']
 DEFAULT_RRD_STEP       = get_config(p, 'rrd', 'step',      "NETSPRYTE_RRD_STEP",      60, integer=True)
 DEFAULT_RRD_HEARTBEAT  = get_config(p, 'rrd', 'heartbeat', "NETSPRYTE_RRD_HEARTBEAT", 5,  integer=True)
 DEFAULT_RRD_START      = get_config(p, 'rrd', 'start',     "NETSPRYTE_RRD_START",     ["-1d", "-1w", "-1m", "-1y"], islist=True)
-DEFAULT_RRD_RRA = [ "RRA:AVERAGE:0.5:1m:7d",
-                    "RRA:AVERAGE:0.5:2h:6M",
-                    "RRA:AVERAGE:0.5:1d:3y",
-                    "RRA:MAX:0.5:1m:7d",
-                    "RRA:MAX:0.5:2h:6M",
-                    "RRA:MAX:0.5:1d:3y" ]
+DEFAULT_RRD_RRA =        get_config(p, 'rrd', 'rra',       "NETSPRYTE_RRD_RRA",       [ "RRA:AVERAGE:0.5:1:10080",
+                                                                                        "RRA:AVERAGE:0.5:120:2232",
+                                                                                        "RRA:AVERAGE:0.5:1440:1098",
+                                                                                        "RRA:MAX:0.5:1:10080",
+                                                                                        "RRA:MAX:0.5:120:2232",
+                                                                                        "RRA:MAX:0.5:1440:1098" ], islist=True)
 
 DEFAULT_INFLUXDB_HOST     = get_config(p, 'influxdb', 'host',     'NETSPRYTE_INFLUXDB_HOST',     'localhost')
 DEFAULT_INFLUXDB_PORT     = get_config(p, 'influxdb', 'port',     'NETSPRYTE_INFLUXDB_PORT',     8086, integer=True)
