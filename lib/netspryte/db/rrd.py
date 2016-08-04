@@ -54,7 +54,9 @@ def rrd_create(path, step, data, rra):
         os.makedirs(os.path.dirname(path))
     try:
         data_sources = mk_rrd_ds(data)
+        logging.debug("RRD STEP: %s", step)
         logging.debug("RRD DS: %s", " ".join(data_sources))
+        logging.debug("RRD RRA: %s", " ".join(rra))
         logging.info("creating rrd %s", path)
         rrdtool.create(str(path), '--step', str(step), data_sources, *rra)
     except rrdtool.error as e:
