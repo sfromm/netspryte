@@ -67,6 +67,8 @@ class MkGraphsCommand(BaseCommand):
         logging.debug("created pool of workers")
         for json_path in sorted(data_globs):
             (data, graph_defs) = self.graph_data_instance(args, json_path, cfg)
+            if data is None:
+               continue
             data_set.append(data)
             if args.nofork:
                 do_graph_instance(graph_defs)
@@ -79,6 +81,9 @@ class MkGraphsCommand(BaseCommand):
 
     def graph_data_instance(self, args, json_path, cfg):
         data = parse_json_from_file(json_path)
+        if data is None:
+            logging.warn("failed to read from json: %s", json_path)
+            return (None, None)
         rrd_path = json_path.replace('json', 'rrd')
         if self.skip_data_instance(data):
             logging.debug("skipping graph generation of %s", rrd_path)
