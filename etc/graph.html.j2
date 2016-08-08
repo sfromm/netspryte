@@ -1,0 +1,57 @@
+<html>
+  <head>
+    <title>{{ title | default("Clever Title") }}</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/netspryte.css" rel="stylesheet">
+    <meta http-equiv="refresh" content="300"/>
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/#"><img src="/images/nero-logo.png"></a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="#graphs">Network Graphs</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-9" id="graphs">
+    {% for data in data_sets %}
+      {% if data['_do_graph'] %}
+        {% if 'ifAdminStatus' in data and data['ifAdminStatus'] == 'yes' %}
+        <div class="section">
+          <h2 class="page-header" id="{{ data['_id'] }}">{{ data['_description'] }}</h2>
+          <p>
+            {% for period in graph_periods %}
+              {% for graph in data['_graphs'] %}
+                {% if period in graph %}
+                  <a href="{{ data['_id'] }}.html"><img src="{{ graph }}"/></a><br/>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          </p>
+        </div>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+    </div>
+    <div class="col-md-3 sidebar">
+      <ul class="nav nav-sidebar">
+          {% for data in data_sets %}
+            {% if data['_do_graph'] %}
+              <li><a href="#{{ data['_id'] }}">{{ data['_title'] }}</a></li>
+            {% endif %}
+          {% endfor %}
+      </ul>
+    </div>
+  </body>
+</html>
