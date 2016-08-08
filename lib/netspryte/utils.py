@@ -134,6 +134,17 @@ def parse_json_from_file(path):
         logging.error('failed to parse json from file %s: %s', path, str(e))
         return None
 
+def load_instance_data(path):
+    ''' load cached data regarding collected instance
+    If a site local file is found, that will also be loaded and update the returned data.
+    '''
+    site_data = parse_json_from_file(path)
+    local_path = path.replace('.json', '-local.json')
+    if os.path.exists(local_path):
+        local_data = parse_json_from_file(local_path)
+        site_data.update(local_data)
+    return site_data
+
 def get_db_backend():
     backends = list()
     conf_backends = C.DEFAULT_DATABASE
