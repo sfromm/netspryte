@@ -153,10 +153,11 @@ class MkGraphsCommand(BaseCommand):
         data_class = dict()
         start_periods = C.get_config(cfg, 'rrd', 'start', None, None, islist=True)
         graph_periods.append(start_periods[0])
-        detail_graph_periods = [ x for x in start_periods if x not in graph_periods ]
+        detail_graph_periods = [ x for x in start_periods ]
         env = Environment(
             loader=FileSystemLoader(wwwdir)
         )
+        env.add_extension('jinja2.ext.loopcontrols')
         for k in data_set:
             if k['_class'] not in data_class:
                 data_class[k['_class']] = list()
