@@ -1,15 +1,36 @@
 <html>
   <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <title>{{ title | default("Network Graphs") }}</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/netspryte.css" rel="stylesheet">
     <meta http-equiv="refresh" content="300"/>
+    <style type="text/css">
+      img {
+          max-width: 100%;
+          max-height: 100%;
+      }
+      body {
+        padding-top: 50px;
+      }
+      .section {
+        padding-top: 50px;
+      }
+      .scrollable-menu {
+        height: auto;
+        max-height: 600px;
+        overflow-x: hidden;
+      }
+    </style>
   </head>
   <body>
-    <div class="navbar navbar-inverse navbar-static-top" role="navigation">
-      <div class="container">
+    <nav class="navbar navbar-inverse navbar-fixed-top" >
+      <div class="container-fluid">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
@@ -21,40 +42,53 @@
           <ul class="nav navbar-nav">
             <li><a href="#graphs">Network Graphs</a></li>
           </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li id=fat-menu class=dropdown>
+              <a href=# class="dropdown-toggle" id="graphs_drop" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Graphs <span class=caret></span> </a>
+              <ul class="dropdown-menu scrollable-menu" aria-labelledby="graphs_drop">
+                {% for data in data_sets %}
+                  {% if data['_do_graph'] %}
+                    <li><a href="#{{ data['_id'] }}">{{ data['_title'] }}</a></li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12" id="graphs">
+        {% for data in data_sets %}
+            {% if not data['_do_graph'] %}
+            {%   continue %}
+            {% elif 'ifAdminStatus' in data and data['ifAdminStatus'] == 'yes' %}
+            {%   continue %}
+            {% elif 'cbQosPolicyDirection' in data and data['cbQosPolicyDirection'] == 'input' %}
+            {%   continue %}
+            {% endif %}
+            <div class="section" id="{{ data['_id'] }}">
+              <h3 class="page-header">{{ data['_description'] }}</h3>
+              <p>
+                {% for period in graph_periods %}
+                  {% for graph in data['_graphs'] %}
+                    {% if period in graph %}
+                      <a href="{{ data['_id'] }}.html"><img src="{{ graph }}"/></a><br/>
+                    {% endif %}
+                  {% endfor %}
+                {% endfor %}
+              </p>
+            </div>
+        {% endfor %}
         </div>
       </div>
     </div>
-    <div class="col-md-9" id="graphs">
-    {% for data in data_sets %}
-        {% if not data['_do_graph'] %}
-        {%   continue %}
-        {% elif 'ifAdminStatus' in data and data['ifAdminStatus'] == 'yes' %}
-        {%   continue %}
-        {% elif 'cbQosPolicyDirection' in data and data['cbQosPolicyDirection'] == 'input' %}
-        {%   continue %}
-        {% endif %}
-        <div class="section">
-          <h2 class="page-header" id="{{ data['_id'] }}">{{ data['_description'] }}</h2>
-          <p>
-            {% for period in graph_periods %}
-              {% for graph in data['_graphs'] %}
-                {% if period in graph %}
-                  <a href="{{ data['_id'] }}.html"><img src="{{ graph }}"/></a><br/>
-                {% endif %}
-              {% endfor %}
-            {% endfor %}
-          </p>
-        </div>
-    {% endfor %}
-    </div>
-    <div class="col-md-3 sidebar">
-      <ul class="nav nav-sidebar">
-          {% for data in data_sets %}
-            {% if data['_do_graph'] %}
-              <li><a href="#{{ data['_id'] }}">{{ data['_title'] }}</a></li>
-            {% endif %}
-          {% endfor %}
-      </ul>
-    </div>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
   </body>
 </html>
