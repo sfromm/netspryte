@@ -21,6 +21,7 @@ import logging
 import rrdtool
 import time
 import subprocess
+import re
 
 from netspryte.db import *
 import netspryte.snmp
@@ -116,6 +117,28 @@ def rrd_info(path):
     except rrdtool.error as e:
         logging.error("failed to get info for %s: %s", path, str(e))
 
+def rrd_get_ds_list(path):
+    ''' return list of DS in rrd '''
+    ds_list = list()
+    for arg in rrd_info(path):
+        if 'max' in arg:
+            m = re.match(r'^ds\[(\w+)\]\.', arg)
+            if m:
+                ds_list.append(m.group(1))
+    return ds_list
+
+def rrd_tune_ds_max(path, ds_max):
+    ''' tune max for all DS in rrd '''
+    try:
+        logging.debug("tuning maximum value for all DS in rrd %s", path)
+        tune_ds = list()
+        for tune in rrd_get_ds_list(path):
+            tune_ds.append("--maximum")
+            tune_ds.append(str("%s:%s" % (tune, ds_max)))
+        rrdtool.tune(path, tune_ds)
+    except rrdtool.error as e:
+        logging.error("failed to tune max for %s: %s", path, str(e))
+
 def mk_rrd_ds(data):
     ''' take in dictionary of collected values and return a list of DS '''
     ds = list()
@@ -132,3 +155,17 @@ def mk_rrd_filename(device, *args):
     for arg in args:
         parts.append( arg.replace(".", "-") )
     return os.path.join(dev_name, "{0}.rrd".format("-".join(parts)))
+
+def rrd_preserve(rrd_path):
+    ''' rename existing RRD for preservation
+    performs a rename operation on the RRD
+    '''
+    mtime = int(os.path.getmtime(rrd_path))
+    dirname = os.path.dirname(rrd_path)
+    basename = os.path.basename(rrd_path)
+    os.rename(rrd_path,
+              os.path.join(dirname,
+                           "backup-{0}-{1}".format(str(mtime), basename)
+              )
+    )
+

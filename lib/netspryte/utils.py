@@ -23,6 +23,7 @@ import logging.handlers
 import tempfile
 import ConfigParser
 import socket
+from hashlib import sha1
 
 import netspryte.db
 import netspryte.db.rrd
@@ -102,7 +103,7 @@ def json2path(data, path):
         logging.error("failed to write JSON: %s", str(e))
 
 def data2path(data, path):
-    ''' take random data and write to path '''
+    ''' take arbitrary string and write to path '''
     try:
         dir_name = os.path.dirname(path)
         mk_path(dir_name)
@@ -168,6 +169,18 @@ def mk_unique_id(device, cls, instance):
     for n in [ device, cls, instance ]:
         id.append(n.replace(".", "_"))
     return ".".join(id)
+
+def mk_secure_hash(arg, hash_func=sha1):
+    ''' takes string as argument and procudes a checksum
+    This comes from ansible/lib/ansible/utils/hashing.py '''
+    digest = hash_func()
+    try:
+        if not isinstance(arg, basestring):
+            arg = "%s" % arg
+        digest.update(arg)
+    except UnicodeEncodeError:
+        digest.update(arg.encode('utf-8'))
+    return digest.hexdigest()
 
 def clean_string(arg, replace="_"):
     for char in [' ', '.', '/', '[', ']', ':']:

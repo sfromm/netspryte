@@ -1,0 +1,13 @@
+#!/usr/bin/python
+__requires__ = ['netspryte']
+try:
+    import pkg_resources
+except Exception:
+    pass
+import sys
+
+from netspryte.commands.rrdrmspikes import RrdRemoveSpikesCommand
+
+if __name__ == '__main__':
+    cmd = RrdRemoveSpikesCommand()
+    sys.exit(cmd.execute())
