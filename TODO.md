@@ -15,3 +15,4 @@ Goals for 0.1
   application.
 * ability to define RRD DEFs in json
 * influxdb database backend write support
+* CGI to produce PNG graphs
