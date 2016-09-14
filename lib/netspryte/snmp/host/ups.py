@@ -21,6 +21,8 @@ import netspryte.snmp
 
 class HostUPS():
 
+    NAME = 'ups'
+
     DATA = {
         'upsIdentManufacturer'         : '1.3.6.1.2.1.33.1.1.1',
         'upsIdentModel'                : '1.3.6.1.2.1.33.1.1.2',
@@ -75,13 +77,14 @@ class HostUPS():
         self.snmp = snmp
         self._ups = self._get_ups_data()
         self._ups = self._get_ups_stats()
-        print self._ups
 
     def _get_ups_data(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, HostUPS.DATA, HostUPS.CONVERSION)
+        return netspryte.snmp.get_snmp_data(self.snmp, HostUPS.NAME,
+                                            HostUPS.DATA, HostUPS.CONVERSION)
 
     def _get_ups_stats(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, HostUPS.STAT, HostUPS.CONVERSION)
+        return netspryte.snmp.get_snmp_data(self.snmp,  HostUPS.NAME,
+                                            HostUPS.STAT, HostUPS.CONVERSION)
 
     @property
     def ups(self):

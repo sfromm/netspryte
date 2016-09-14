@@ -22,6 +22,8 @@ from netspryte.snmp.host import HostSystem
 
 class HostEntity(HostSystem):
 
+    NAME = 'entity'
+
     DATA = {
         'entPhysicalDescr'       : '1.3.6.1.2.1.47.1.1.1.1.2',
         'entPhysicalVendorType'  : '1.3.6.1.2.1.47.1.1.1.1.3',
@@ -68,7 +70,8 @@ class HostEntity(HostSystem):
         self._data = self._get_configuration()
 
     def _get_configuration(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, HostEntity.DATA, HostEntity.CONVERSION)
+        return netspryte.snmp.get_snmp_data(self.snmp, HostEntity.NAME,
+                                            HostEntity.DATA, HostEntity.CONVERSION)
 
     @property
     def data(self):

@@ -23,6 +23,8 @@ from netspryte.utils import *
 
 class HostInterface(HostSystem):
 
+    NAME = 'interface'
+
     DATA = {
         'ifIndex'       : '1.3.6.1.2.1.2.2.1.1',
         'ifDescr'       : '1.3.6.1.2.1.2.2.1.2',
@@ -60,8 +62,6 @@ class HostInterface(HostSystem):
         'ifHCOutBroadcastPkts' : '1.3.6.1.2.1.31.1.1.1.13',
     }
 
-    NAME = 'interface'
-
     XLATE = {
         'ifHC' : '',
         'if'   : '',
@@ -91,14 +91,13 @@ class HostInterface(HostSystem):
         self._data = self._get_interface()
 
     def _get_interface(self):
-        data = netspryte.snmp.get_snmp_data(self.snmp, HostInterface.DATA, HostInterface.CONVERSION)
+        data = netspryte.snmp.get_snmp_data(self.snmp, HostInterface.NAME,
+                                            HostInterface.DATA, HostInterface.CONVERSION)
         for key in data.keys():
-            data[key]['_id'] = mk_unique_id(self.sysName, HostInterface.NAME, key)
-            data[key]['_class'] = HostInterface.NAME
-            data[key]['_idx'] = key
             data[key]['_title'] = "{0}:{1}".format(self.snmp.host, data[key].get('ifDescr', 'NA'))
             data[key]['_description'] = data[key].get('ifAlias', 'NA')
-        stat = netspryte.snmp.get_snmp_data(self.snmp, HostInterface.STAT, HostInterface.CONVERSION)
+        stat = netspryte.snmp.get_snmp_data(self.snmp, HostInterface.NAME,
+                                            HostInterface.STAT, HostInterface.CONVERSION)
         merge_dicts(data, stat)
         return data
 
@@ -111,4 +110,5 @@ class HostInterface(HostSystem):
         return self.data
 
     def get_interface_stats(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, HostInterface.STAT, HostInterface.CONVERSION)
+        return netspryte.snmp.get_snmp_data(self.snmp, HostInterface.NAME,
+                                            HostInterface.STAT, HostInterface.CONVERSION)

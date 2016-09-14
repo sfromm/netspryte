@@ -30,6 +30,11 @@ from pysnmp.proto.rfc1902 import (
     TimeTicks,
     Unsigned32,
 )
+from pysnmp.proto.rfc1905 import (
+    EndOfMibView,
+)
+
+import netspryte.utils
 from netspryte import constants as C
 from netspryte.errors import *
 
@@ -65,7 +70,19 @@ def mk_pretty_value(arg):
         return arg.prettyPrint()
     if isinstance(arg, Counter32) or isinstance(arg, Counter64):
         return arg.prettyPrint()
+    if isinstance(arg, EndOfMibView):
+        return arg.prettyPrint()
     return arg
+
+def value_is_integer(arg):
+    if isinstance(arg, Counter32) or \
+       isinstance(arg, Counter64) or \
+       isinstance(arg, Gauge32) or \
+       isinstance(arg, Integer) or \
+       isinstance(arg, Integer32):
+        return True
+    else:
+        return False
 
 def clean_octet_string(arg):
     try:
@@ -98,21 +115,28 @@ def deconstruct_oid(arg, oid_set):
             break
     return oid
 
-def get_snmp_data(snmp, snmp_oids, snmp_conversion):
+def get_snmp_data(snmp, cls_name, snmp_oids, snmp_conversion):
     ''' take a dictionary of snmp oids and return object with data '''
     data = dict()
     results = snmp.walk( *[ oid for oid in snmp_oids.values() ] )
     for obj in results:
-        logging.debug("Processing OID=%s, value=%s", obj[0], obj[1])
+        logging.debug("Processing %s OID=%s, value=%s", snmp.host, obj[0], obj[1])
         oid = deconstruct_oid(obj[0], snmp_oids)
         if 'index' not in oid:
             logging.debug("No match for OID=%s", obj[0])
             continue
         index = oid['index']
 
+
         if index not in data:
-            data[index] = {}
-        if oid['name'] in snmp_conversion and int(obj[1]) in snmp_conversion[oid['name']]:
+            data[index] = dict()
+            data[index]['_id'] = netspryte.utils.mk_data_instance_id(snmp.host, cls_name, index)
+            data[index]['_checksum'] = netspryte.utils.mk_secure_hash(data[index]['_id'])
+            data[index]['_checksum_type'] = C.DEFAULT_CHECKSUM
+            data[index]['_class'] = cls_name
+            data[index]['_idx'] = index
+        if oid['name'] in snmp_conversion and value_is_integer(obj[1]) and \
+           int(obj[1]) in snmp_conversion[oid['name']]:
             data[index][oid['name']] = snmp_conversion[oid['name']][int(obj[1])]
         else:
             data[index][oid['name']] = obj[1]
@@ -249,7 +273,7 @@ class SNMPSession(object):
     def _cmd(self, cmd, *oids):
         ''' apply a generic snmp operation '''
         results = []
-        errorIndication, errorStatus, errorIndex, varBinds = cmd(
+        errorIndication, errorStatus, errorIndex, varBindTable = cmd(
             self._auth,
             self._transport,
             *oids
@@ -259,17 +283,20 @@ class SNMPSession(object):
         if errorStatus:
             raise NetspryteSNMPError(errorStatus.prettyPrint())
         if cmd in [self._cmdgen.getCmd, self._cmdgen.setCmd]:
-            for oid, value in varBinds:
+            for oid, value in varBindTable:
                 if isinstance(value, OctetString):
                     value = clean_octet_string(value)
                 results.append(value)
         else:
-            for row in varBinds:
+            for row in varBindTable:
                 for oid, value in row:
                     if isinstance(value, OctetString):
                         value = clean_octet_string(value)
-                    results.append((oid.prettyPrint(), value))
-                    logging.debug("snmp get %s: %s=%s", self.host, oid.prettyPrint(), mk_pretty_value(value))
+                    num_oid = oid.prettyPrint()
+                    if hasattr(oid, 'getOid'):
+                        num_oid = str(oid.getOid())
+                    results.append((num_oid, value))
+                    logging.debug("snmp get %s: %s=%s", self.host, num_oid, mk_pretty_value(value))
         return results
 
     def get(self, *oids):

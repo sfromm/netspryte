@@ -22,7 +22,9 @@ from netspryte.errors import *
 
 class HostSystem(object):
 
-    CONF = {
+    NAME = 'system'
+
+    DATA = {
         'sysDescr'    : '1.3.6.1.2.1.1.1',
         'sysObjectID' : '1.3.6.1.2.1.1.2',
         'sysUpTime'   : '1.3.6.1.2.1.1.3',
@@ -54,7 +56,8 @@ class HostSystem(object):
             setattr(self, k, v)
 
     def _get_system(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, HostSystem.CONF, HostSystem.CONVERSION)
+        return netspryte.snmp.get_snmp_data(self.snmp, HostSystem.NAME,
+                                            HostSystem.DATA, HostSystem.CONVERSION)
 
     @property
     def system(self):

@@ -24,6 +24,8 @@ from netspryte.utils import *
 
 class CiscoCBQOS(CiscoDevice):
 
+    NAME = 'cbqos'
+
     DATA = {
         'cbQosIfType'                 : '1.3.6.1.4.1.9.9.166.1.1.1.1.2',
         'cbQosPolicyDirection'        : '1.3.6.1.4.1.9.9.166.1.1.1.1.3',
@@ -116,8 +118,6 @@ class CiscoCBQOS(CiscoDevice):
         },
     }
 
-    NAME = 'cbqos'
-
     XLATE = {
         'cbQos' : '',
         '64'    : '',
@@ -139,7 +139,8 @@ class CiscoCBQOS(CiscoDevice):
 
     def _get_configuration(self):
         ''' get cbqos objects '''
-        data = netspryte.snmp.get_snmp_data(self.snmp, CiscoCBQOS.DATA, CiscoCBQOS.CONVERSION)
+        data = netspryte.snmp.get_snmp_data(self.snmp, CiscoCBQOS.NAME,
+                                            CiscoCBQOS.DATA, CiscoCBQOS.CONVERSION)
         instances = [ k for k in data.keys() if '.' not in k ]
         # merge related instances into together for a coherent view
         for key in data.keys():
@@ -170,9 +171,6 @@ class CiscoCBQOS(CiscoDevice):
         for key in self.data.keys():
             if key in instances:
                 continue
-            self.data[key]['_id'] = mk_unique_id(self.sysName, CiscoCBQOS.NAME, key)
-            self.data[key]['_class'] = CiscoCBQOS.NAME
-            self.data[key]['_idx'] = key
             self.data[key]['_title'] = self.get_policy_map_name(key)
             self.data[key]['_description'] = "{0}:{1}".format(self.data[key]['_title'], self.data[key].get('ifAlias', 'NA'))
 
@@ -193,7 +191,11 @@ class CiscoCBQOS(CiscoDevice):
     @property
     def policers(self):
         ''' get policer information '''
-        return self._data
+        policers = dict()
+        for key, data in self.data.iteritems():
+            if 'cbQosObjectsType' in data and data['cbQosObjectsType'] == 'police':
+                policers[key] = data
+        return policers
 
     def get_cbqos_stats(self):
         ''' get policer stats '''
