@@ -74,11 +74,7 @@ def process_device(device, args):
         logging.error("encountered error with %s; skipping to next device: %s", device, str(e))
 
 def process_policers(cbqos, args):
-    for key, data in cbqos.data.iteritems():
-        if 'cbQosObjectsType' not in data:
-            continue
-        if data['cbQosObjectsType'] != 'police':
-            continue
+    for key, data in cbqos.policers.iteritems():
         # process the policer data
         conf = get_data(CiscoCBQOS.DATA, data, keepmeta=True)
         profile_stat = CiscoCBQOS.STAT.copy()
