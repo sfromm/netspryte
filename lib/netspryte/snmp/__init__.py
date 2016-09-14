@@ -295,6 +295,9 @@ class SNMPSession(object):
                     num_oid = oid.prettyPrint()
                     if hasattr(oid, 'getOid'):
                         num_oid = str(oid.getOid())
+                    if isinstance(value, EndOfMibView):
+                        logging.debug("reached end of mib view with %s", num_oid)
+                        continue
                     results.append((num_oid, value))
                     logging.debug("snmp get %s: %s=%s", self.host, num_oid, mk_pretty_value(value))
         return results
