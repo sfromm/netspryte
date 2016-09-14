@@ -24,6 +24,8 @@ import pprint
 
 class CiscoCerent(HostSystem):
 
+    NAME = 'cerent'
+
     DATA = {
         'cMsDwdmIfConfigProtocol' : '1.3.6.1.4.1.3607.2.40.1.1.1.1',
         'cMsDwdmIfConfigDataRate' : '1.3.6.1.4.1.3607.2.40.1.1.1.2',
