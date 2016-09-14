@@ -24,10 +24,10 @@ from netspryte.snmp.host import HostSystem
 
 class CiscoDevice(HostSystem):
 
+    NAME = "cisco"
     DATA = { }
     STAT = { }
     CONVERSION = { }
-    NAME = "cisco"
     XLATE = { }
 
     def __init__(self, snmp):
