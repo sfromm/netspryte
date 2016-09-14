@@ -88,5 +88,6 @@ class RrdRemoveSpikesCommand(BaseCommand):
             logging.info("performing dryrun; not making changes")
             return 0
         rrd_preserve(rrd_path)
+        logging.info("restoring xml to %s", rrd_path)
         rrd_restore(xml_path, rrd_path)
 
