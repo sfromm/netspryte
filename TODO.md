@@ -11,8 +11,13 @@ Goals for 0.1
   * DONE sidebar with links to relevant anchors
   * DONE create detail pages: present historical data
 * DONE create rpm
-* ability to read a site local json that updates the json cached by this
+* DONE ability to read a site local json that updates the json cached by this
   application.
-* ability to define RRD DEFs in json
 * influxdb database backend write support
-* CGI to produce PNG graphs
+* DONE CGI to produce PNG graphs
+
+Goals for 0.2
+----------------
+
+* add date/time stamp to graph
+* ability to define RRD DEFs in json
