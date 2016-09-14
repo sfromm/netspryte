@@ -23,8 +23,9 @@ import time
 import subprocess
 import re
 
-from netspryte.db import *
 import netspryte.snmp
+from netspryte.db import *
+from netspryte.utils import *
 from netspryte import constants as C
 
 class RrdDatabaseBackend(BaseDatabaseBackend):
@@ -82,14 +83,30 @@ def rrd_update(path, data, ts=time.time()):
         logging.error("failed to update rrd %s: %s", path, str(e))
 
 def rrd_graph(path, rrd_opts, graph_opts):
-    ''' create a graph for rrd '''
-    if not os.path.exists(os.path.dirname(path)):
+    ''' create a graph for rrd
+    if path is "-", image is returned as part of dictionary.
+    Keys in dictionary:
+    graph_end
+    graph_height
+    graph_left
+    graph_start
+    graph_top
+    graph_width
+    image
+    image_height
+    image_width
+    value_max
+    value_min
+    '''
+    data = dict()
+    if path != "-" and not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     try:
         logging.info("creating graph %s", path)
-        rrdtool.graph(path, rrd_opts, graph_opts)
+        data = rrdtool.graphv(path, rrd_opts, graph_opts)
     except rrdtool.error as e:
         logging.error("failed to create graph %s: %s", path, str(e))
+    return data
 
 def rrd_dump(path):
     ''' dump rrd to xml string '''
@@ -169,3 +186,56 @@ def rrd_preserve(rrd_path):
               )
     )
 
+def rrd_graph_data_instance(data, cfg, start, graph_def):
+    '''
+    a more friendly way of generating a graph from rrdtool
+    Arguments:
+    data - data from json file of data instance
+    cfg - netspryte configuration via C.load_config()
+    start - start time for graph
+    graph_def - thing to graph, defined in configuration
+    Returns a variable with image as string.
+    '''
+    image = None
+    json_path = data['_path']
+    if data is None:
+        return image
+    rrd_path = json_path.replace('json', 'rrd')
+    if skip_data_instance(data):
+        return image
+    section = "rrd_{0}".format(data['_class'])
+    graphs = C.get_config(cfg, section, 'graph', None, None, islist=True)
+    if graph_def in graphs:
+        (rrd_opts, graph_opts) = _rrd_graph_data_definitions(data, graph_def, rrd_path, cfg)
+        g = rrd_graph("-", rrd_opts + ['--start', start], graph_opts)
+        if 'image' in g:
+            image = g['image']
+    return image
+
+def _rrd_graph_command_opts(cfg):
+    base_rrd_opts = list()
+    for name, val in cfg.items('rrd'):
+        if name in ['start', 'step', 'heartbeat']:
+            continue
+        base_rrd_opts.append('--{0}'.format(name))
+        if val:
+            base_rrd_opts.append(val)
+    return base_rrd_opts
+
+def _rrd_graph_data_definitions(data_set, graph, rrd_path, cfg):
+    graph_opts = list()
+    rrd_opts = _rrd_graph_command_opts(cfg)
+    for name, val in cfg.items(graph):
+        if name in ['def', 'cdef', 'vdef', 'graph']:
+            for opt in C.get_config(cfg, graph, name, None, None, islist=True):
+                if '%s' in opt and name == 'def':
+                    opt = opt % rrd_path
+                graph_opts.append( opt )
+        else:
+            rrd_opts.append('--{0}'.format(name))
+            if val:
+                rrd_opts.append(val)
+    if '--title' not in rrd_opts:
+        rrd_opts.append('--title')
+        rrd_opts.append( str(data_set['_title']) )
+    return (rrd_opts, graph_opts)
