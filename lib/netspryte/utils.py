@@ -17,6 +17,7 @@
 # along with netspryte.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import glob
 import json
 import logging
 import logging.handlers
@@ -128,12 +129,33 @@ def parse_json_from_file(path):
     try:
         data = file(path).read()
         return parse_json(data)
-    except IOError:
-        logging.error('file not found: %s', path)
+    except IOError as e:
+        logging.error('failed to read file %s: %s', path, str(e))
         return None
-    except Exception, e:
+    except Exception as e:
         logging.error('failed to parse json from file %s: %s', path, str(e))
         return None
+
+def get_data_instances():
+    ''' load all cached data on all collected instances
+    returns a list of dicts
+    '''
+    data_sets = list()
+    for path in glob.glob("{0}/*/*.json".format(C.DEFAULT_DATADIR)):
+        data = load_instance_data(path)
+        if data is not None:
+            # a bit of a hack to make sure path information is still available
+            if '_path' not in data:
+                data['_path'] = path
+            data_sets.append(data)
+    return data
+
+def get_data_instances_by_id():
+    ''' return all instances as a dictionary indexed by id '''
+    data_set = dict()
+    for data in get_data_instances():
+        data_set[ data['_id'] ] = data
+    return data_set
 
 def load_instance_data(path):
     ''' load cached data regarding collected instance
@@ -164,7 +186,7 @@ def mk_json_filename(device, *args):
         parts.append( arg.replace(".", "-") )
     return os.path.join(C.DEFAULT_DATADIR, dev_name, "{0}.json".format("-".join(parts)))
 
-def mk_unique_id(device, cls, instance):
+def mk_data_instance_id(device, cls, instance):
     id = list()
     for n in [ device, cls, instance ]:
         id.append(n.replace(".", "_"))
@@ -186,3 +208,14 @@ def clean_string(arg, replace="_"):
     for char in [' ', '.', '/', '[', ']', ':']:
         arg.replace(char, replace)
     return arg
+
+def skip_data_instance(data):
+    ''' simple helper to determine whether to graph a data instance '''
+    if '_do_graph' not in data:
+        return True
+    elif not data['_do_graph']:
+        return True
+    elif '_class' not in data:
+        return True
+    else:
+        return False
