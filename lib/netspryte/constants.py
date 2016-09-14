@@ -46,7 +46,6 @@ def get_config(p, section, key, env_var, default, boolean=False, integer=False, 
             return [ x.lstrip() for x in value.split('\n') ]
         else:
             return value
-    print value
     return default
 
 def load_config():
