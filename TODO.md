@@ -13,7 +13,7 @@ Goals for 0.1
 * DONE create rpm
 * DONE ability to read a site local json that updates the json cached by this
   application.
-* influxdb database backend write support
+* DONE influxdb database backend write support
 * DONE CGI to produce PNG graphs
 
 Goals for 0.2
@@ -21,3 +21,4 @@ Goals for 0.2
 
 * add date/time stamp to graph
 * ability to define RRD DEFs in json
+* build out support for influxdb write support
