@@ -139,7 +139,7 @@ class CiscoCBQOS(CiscoDevice):
 
     def _get_configuration(self):
         ''' get cbqos objects '''
-        data = netspryte.snmp.get_snmp_data(self.snmp, CiscoCBQOS.NAME,
+        data = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
                                             CiscoCBQOS.DATA, CiscoCBQOS.CONVERSION)
         instances = [ k for k in data.keys() if '.' not in k ]
         # merge related instances into together for a coherent view
@@ -150,13 +150,13 @@ class CiscoCBQOS(CiscoDevice):
                 data[key]['parent'] = key.split('.')[0] + "." + str(data[key]['cbQosParentObjectsIndex'])
             cfg_index = str(data[key]['cbQosConfigIndex'])
             if cfg_index in instances:
-                data[key].update(data[cfg_index])
+                data[key] = safe_update(data[key], data[cfg_index])
             base = key.split('.')[0]
             if base in data:
-                data[key].update(data[base])
+                data[key] = safe_update(data[key], data[base])
             if 'cbQosIfIndex' in data[key]:
                 ifidx = str(data[key]['cbQosIfIndex'])
-                data[key].update( self.interfaces[ifidx] )
+                data[key] = safe_update(data[key], self.interfaces[ifidx])
             # The MIB erroneously marks this as a COUNTER64 to get the requisite number of bits
             # but it behaves like a GAUGE.  Unfortunately, there is no GAUGE64 object.  So ...
             # convert it to an int() so that it is treated like a GAUGE.

@@ -56,7 +56,7 @@ class HostSystem(object):
             setattr(self, k, v)
 
     def _get_system(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, HostSystem.NAME,
+        return netspryte.snmp.get_snmp_data(self.snmp, self, HostSystem.NAME,
                                             HostSystem.DATA, HostSystem.CONVERSION)
 
     @property

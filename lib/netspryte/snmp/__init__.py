@@ -115,7 +115,7 @@ def deconstruct_oid(arg, oid_set):
             break
     return oid
 
-def get_snmp_data(snmp, cls_name, snmp_oids, snmp_conversion):
+def get_snmp_data(snmp, host, cls_name, snmp_oids, snmp_conversion):
     ''' take a dictionary of snmp oids and return object with data '''
     data = dict()
     results = snmp.walk( *[ oid for oid in snmp_oids.values() ] )
@@ -130,7 +130,8 @@ def get_snmp_data(snmp, cls_name, snmp_oids, snmp_conversion):
 
         if index not in data:
             data[index] = dict()
-            data[index]['_id'] = netspryte.utils.mk_data_instance_id(snmp.host, cls_name, index)
+            hostname = host.sysName or snmp.host
+            data[index]['_id'] = netspryte.utils.mk_data_instance_id(hostname, cls_name, index)
             data[index]['_checksum'] = netspryte.utils.mk_secure_hash(data[index]['_id'])
             data[index]['_checksum_type'] = C.DEFAULT_CHECKSUM
             data[index]['_class'] = cls_name

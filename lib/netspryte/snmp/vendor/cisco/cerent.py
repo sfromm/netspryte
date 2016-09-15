@@ -273,7 +273,7 @@ class CiscoCerent(HostSystem):
         self._data = self._get_configuration()
 
     def _get_configuration(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, CiscoCerent.NAME,
+        return netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCerent.NAME,
                                             CiscoCerent.DATA, CiscoCerent.CONVERSION)
 
     @property

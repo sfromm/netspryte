@@ -79,11 +79,11 @@ class HostUPS():
         self._ups = self._get_ups_stats()
 
     def _get_ups_data(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, HostUPS.NAME,
+        return netspryte.snmp.get_snmp_data(self.snmp, self, HostUPS.NAME,
                                             HostUPS.DATA, HostUPS.CONVERSION)
 
     def _get_ups_stats(self):
-        return netspryte.snmp.get_snmp_data(self.snmp,  HostUPS.NAME,
+        return netspryte.snmp.get_snmp_data(self.snmp,  self, HostUPS.NAME,
                                             HostUPS.STAT, HostUPS.CONVERSION)
 
     @property
