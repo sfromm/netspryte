@@ -6,8 +6,8 @@ except Exception:
     pass
 import sys
 
-from netspryte.commands.mkgraphs import MkGraphsCommand
+from netspryte.commands.mkhtml import MkHtmlCommand
 
 if __name__ == '__main__':
-    cmd = MkGraphsCommand()
+    cmd = MkHtmlCommand()
     sys.exit(cmd.execute())
