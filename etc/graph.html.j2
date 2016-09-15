@@ -73,11 +73,9 @@
               <h3 class="page-header">{{ data['_description'] }}</h3>
               <p>
                 {% for period in graph_periods %}
-                  {% for graph in data['_graphs'] %}
-                    {% if period in graph %}
-                      <a href="{{ data['_id'] }}.html"><img src="{{ graph }}"/></a><br/>
-                    {% endif %}
-                  {% endfor %}
+                    {% for graph in graph_defs %}
+                <a href="{{ data['_id'] }}.html"><img src="{{ www_cgi_url }}?id={{ data['_id'] }};start={{ period }};gdef={{ graph }}"/></a><br/>
+                    {% endfor %}
                 {% endfor %}
               </p>
             </div>
