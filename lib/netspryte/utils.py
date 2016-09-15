@@ -148,7 +148,7 @@ def get_data_instances():
             if '_path' not in data:
                 data['_path'] = path
             data_sets.append(data)
-    return data
+    return data_sets
 
 def get_data_instances_by_id():
     ''' return all instances as a dictionary indexed by id '''
@@ -177,6 +177,14 @@ def get_db_backend():
     if not backends:
         backends.append(netspryte.db.rrd.RrdDatabaseBackend("rrd"))
     return backends
+
+def safe_update(dict1, dict2):
+    ''' a safe update of a dictionary so that values are not overridden '''
+    newdict = dict1.copy()
+    for k, v in dict2.iteritems():
+        if k not in newdict:
+            newdict[k] = v
+    return newdict
 
 def mk_json_filename(device, *args):
     ''' create a json filename based on the collected object '''
