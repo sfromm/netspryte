@@ -15,10 +15,10 @@ Goals for 0.1
   application.
 * DONE influxdb database backend write support
 * DONE CGI to produce PNG graphs
+* DONE add date/time stamp to graph
 
 Goals for 0.2
 ----------------
 
-* add date/time stamp to graph
 * ability to define RRD DEFs in json
 * build out support for influxdb write support

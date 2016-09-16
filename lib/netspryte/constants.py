@@ -94,12 +94,14 @@ DEFAULT_DATADIR        = get_config(p, DEFAULTS, "datadir",        "NETSPRYTE_DA
 DEFAULT_WWWDIR         = get_config(p, DEFAULTS, "wwwdir",         "NETSPRYTE_WWWDIR",         "www")
 DEFAULT_WWW_CGI_URL    = get_config(p, DEFAULTS, "www_cgi_url",    "NETSPRYTE_WWW_CGI_URL",    "/graph.cgi")
 DEFAULT_CHECKSUM       = get_config(p, DEFAULTS, "checksum",       "NETSPRYTE_CHECKSUM",       "sha1")
+DEFAULT_STRFTIME       = get_config(p, DEFAULTS, 'strftime',       "NETSPRYTE_STRFTIME",       "%c")
 
 DEFAULT_ALLOWED_SNMP_VERSIONS = ['1', '2c', '3']
 DEFAULT_ALLOWED_SNMP_LEVELS   = ['authNoPriv', 'authPriv']
 
 DEFAULT_RRD_STEP       = get_config(p, 'rrd', 'step',      "NETSPRYTE_RRD_STEP",      60, integer=True)
 DEFAULT_RRD_HEARTBEAT  = get_config(p, 'rrd', 'heartbeat', "NETSPRYTE_RRD_HEARTBEAT", 5,  integer=True)
+DEFAULT_RRD_WATERMARK  = get_config(p, 'rrd', 'watermark', "NETSPRYTE_RRD_WATERMARK", "TIMESTAMP")
 DEFAULT_RRD_START      = get_config(p, 'rrd', 'start',     "NETSPRYTE_RRD_START",     ["-1d", "-1w", "-1m", "-1y"], islist=True)
 DEFAULT_RRD_RRA =        get_config(p, 'rrd', 'rra',       "NETSPRYTE_RRD_RRA",       [ "RRA:AVERAGE:0.5:1:10080",
                                                                                         "RRA:AVERAGE:0.5:120:2232",

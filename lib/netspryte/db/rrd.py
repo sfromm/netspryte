@@ -217,6 +217,8 @@ def _rrd_graph_command_opts(cfg):
     for name, val in cfg.items('rrd'):
         if name in ['start', 'step', 'heartbeat']:
             continue
+        if name == 'watermark' and val == C.DEFAULT_RRD_WATERMARK:
+            val = time.strftime(C.DEFAULT_STRFTIME, time.localtime(time.time()))
         base_rrd_opts.append('--{0}'.format(name))
         if val:
             base_rrd_opts.append(val)
