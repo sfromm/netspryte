@@ -186,14 +186,14 @@ def rrd_preserve(rrd_path):
               )
     )
 
-def rrd_graph_data_instance(data, cfg, start, graph_def):
+def rrd_graph_data_instance(data, cfg, graph_def, start, end='now'):
     '''
     a more friendly way of generating a graph from rrdtool
     Arguments:
     data - data from json file of data instance
     cfg - netspryte configuration via C.load_config()
-    start - start time for graph
     graph_def - thing to graph, defined in configuration
+    start - start time for graph
     Returns a variable with image as string.
     '''
     image = None
@@ -207,7 +207,7 @@ def rrd_graph_data_instance(data, cfg, start, graph_def):
     graphs = C.get_config(cfg, section, 'graph', None, None, islist=True)
     if graph_def in graphs:
         (rrd_opts, graph_opts) = _rrd_graph_data_definitions(data, graph_def, rrd_path, cfg)
-        g = rrd_graph("-", rrd_opts + ['--start', start], graph_opts)
+        g = rrd_graph("-", rrd_opts + ['--start', start, '--end', end], graph_opts)
         if 'image' in g:
             image = g['image']
     return image
