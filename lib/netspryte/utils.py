@@ -90,6 +90,14 @@ def merge_dicts(a, b, path=None):
             a[k] = v
     return a
 
+def cp_path_perms(src, dest):
+    ''' copy ownership and permissions from dest to src '''
+    dest_stat = None
+    if os.path.exists(dest):
+        dest_stat = os.stat(dest)
+        os.chmod(src, dest_stat.st_mode & int('07777', 8))
+        os.chown(src, dest_stat.st_uid, dest_stat.st_gid)
+
 def json2path(data, path):
     ''' take dictionary data and write json to path '''
     try:
@@ -99,6 +107,7 @@ def json2path(data, path):
         tmp = os.fdopen(tmpfd, 'w')
         json.dump(data, tmp, indent=4, sort_keys=True)
         tmp.close()
+        cp_path_perms(temp_path, path)
         os.rename(temp_path, path)
     except TypeError as e:
         logging.error("failed to write JSON: %s", str(e))
@@ -112,6 +121,7 @@ def data2path(data, path):
         with open(temp_path, 'w') as tmp:
             tmp.write(data)
         os.close(tmpfd)
+        cp_path_perms(temp_path, path)
         os.rename(temp_path, path)
     except Exception as e:
         logging.error("failed to write to file: %s", str(e))
@@ -136,10 +146,18 @@ def parse_json_from_file(path):
         logging.error('failed to parse json from file %s: %s', path, str(e))
         return None
 
-def get_data_instances():
-    ''' load all cached data on all collected instances
-    returns a list of dicts
-    '''
+def get_data_instances_from_joined():
+    ''' load all cached data on all collected instances from the single joined json file
+    returns a list of dicts '''
+    data_sets = list()
+    path = os.path.join(C.DEFAULT_DATADIR, C.DEFAULT_DATA_STATE)
+    if os.path.exists(path):
+        data_sets = parse_json_from_file(path)
+    return data_sets
+
+def get_data_instances_from_disjoined():
+    ''' load all cached data on all collected instances from disjoined json files
+    returns a list of dicts '''
     data_sets = list()
     for path in glob.glob("{0}/*/*.json".format(C.DEFAULT_DATADIR)):
         data = load_instance_data(path)
@@ -150,6 +168,18 @@ def get_data_instances():
             data_sets.append(data)
     return data_sets
 
+def get_data_instances():
+    ''' load all cached data on all collected instances
+    returns a list of dicts
+    If the joined state file exists, this will read from that first.
+    If not, the disjoined json files are read.n
+    '''
+    path = os.path.join(C.DEFAULT_DATADIR, C.DEFAULT_DATA_STATE)
+    if os.path.exists(path):
+        return get_data_instances_from_joined()
+    else:
+        return get_data_instances_from_disjoined()
+
 def get_data_instances_by_id():
     ''' return all instances as a dictionary indexed by id '''
     data_set = dict()
@@ -158,7 +188,7 @@ def get_data_instances_by_id():
     return data_set
 
 def load_instance_data(path):
-    ''' load cached data regarding collected instance
+    ''' load cached data regarding single collected instance
     If a site local file is found, that will also be loaded and update the returned data.
     '''
     site_data = parse_json_from_file(path)
