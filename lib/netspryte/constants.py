@@ -91,6 +91,7 @@ DEFAULT_DATABASE       = get_config(p, DEFAULTS, "database",       "NETSPRYTE_DA
 DEFAULT_WORKERS        = get_config(p, DEFAULTS, "workers",        "NETSPRYTE_WORKERS",        4, integer=True)
 DEFAULT_DEVICES        = get_config(p, DEFAULTS, "devices",        "NETSPRYTE_DEVICES",        ["localhost"], islist=True)
 DEFAULT_DATADIR        = get_config(p, DEFAULTS, "datadir",        "NETSPRYTE_DATADIR",        "data")
+DEFAULT_DATA_STATE     = get_config(p, DEFAULTS, "data_state",     "NETSPRYTE_DATA_STATE",      "netspryte.json")
 DEFAULT_WWWDIR         = get_config(p, DEFAULTS, "wwwdir",         "NETSPRYTE_WWWDIR",         "www")
 DEFAULT_WWW_CGI_URL    = get_config(p, DEFAULTS, "www_cgi_url",    "NETSPRYTE_WWW_CGI_URL",    "/graph.cgi")
 DEFAULT_CHECKSUM       = get_config(p, DEFAULTS, "checksum",       "NETSPRYTE_CHECKSUM",       "sha1")
