@@ -150,7 +150,7 @@ def get_data_instances_from_joined():
     ''' load all cached data on all collected instances from the single joined json file
     returns a list of dicts '''
     data_sets = list()
-    path = os.path.join(C.DEFAULT_DATADIR, C.DEFAULT_DATA_STATE)
+    path = os.path.join(C.DEFAULT_DATADIR, C.DEFAULT_DATA_JOINED)
     if os.path.exists(path):
         data_sets = parse_json_from_file(path)
     return data_sets
@@ -174,7 +174,7 @@ def get_data_instances():
     If the joined state file exists, this will read from that first.
     If not, the disjoined json files are read.n
     '''
-    path = os.path.join(C.DEFAULT_DATADIR, C.DEFAULT_DATA_STATE)
+    path = os.path.join(C.DEFAULT_DATADIR, C.DEFAULT_DATA_JOINED)
     if os.path.exists(path):
         return get_data_instances_from_joined()
     else:
