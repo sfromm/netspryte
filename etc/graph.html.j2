@@ -64,7 +64,7 @@
         {% for data in data_sets %}
             {% if not data['_do_graph'] %}
             {%   continue %}
-            {% elif 'ifAdminStatus' in data and data['ifAdminStatus'] == 'yes' %}
+            {% elif 'ifAdminStatus' in data and data['ifAdminStatus'] == 'down' %}
             {%   continue %}
             {% elif 'cbQosPolicyDirection' in data and data['cbQosPolicyDirection'] == 'input' %}
             {%   continue %}
@@ -73,9 +73,13 @@
               <h3 class="page-header">{{ data['_description'] }}</h3>
               <p>
                 {% for period in graph_periods %}
-                    {% for graph in graph_defs %}
-                <a href="{{ data['_id'] }}.html"><img src="{{ www_cgi_url }}?id={{ data['_id'] }};start={{ period }};gdef={{ graph }}"/></a><br/>
-                    {% endfor %}
+                {% for graph in graph_defs %}
+                {% if data['_class'] in graph %}
+                <a href="{{ data['_id'] }}.html">
+                  <img src="{{www_cgi_url }}?id={{ data['_id'] }};start={{ period }};gdef={{ graph }}"/>
+                </a><br/>
+                {% endif %}
+                {% endfor %}
                 {% endfor %}
               </p>
             </div>
