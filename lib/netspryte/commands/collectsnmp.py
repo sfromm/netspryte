@@ -115,8 +115,6 @@ def record_data(path, data, args):
     data2 = { k: netspryte.snmp.mk_pretty_value(v) for (k, v) in data.iteritems() }
     if '_do_graph' not in data2:
         data2['_do_graph'] = True
-    if os.path.exists(path):
-        return
     json2path(data2, path)
 
 def record_stats(db, data):
