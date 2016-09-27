@@ -104,7 +104,7 @@ class MkHtmlCommand(BaseCommand):
                 env,
                 C.get_config(cfg, 'general', 'html_template', None, None),
                 os.path.join(wwwdir, "{0}.html".format(title)),
-                self.sort_device_data_instances(data_device[device]),
+                self.sort_device_data_instances(data_device[device], '_idx'),
                 graph_periods,
                 graph_defs,
             )
@@ -134,7 +134,7 @@ class MkHtmlCommand(BaseCommand):
         except jinja2.exceptions.TemplateNotFound as e:
             logging.error("failed to find template: %s", str(e))
 
-    def sort_device_data_instances(self, devlist):
+    def sort_device_data_instances(self, devlist, key='_idx'):
         data_class = dict()
         instances = list()
         for inst in devlist:
@@ -142,5 +142,5 @@ class MkHtmlCommand(BaseCommand):
                 data_class[inst['_class']] = list()
             data_class[inst['_class']].append(inst)
         for dclass in sorted(data_class.keys()):
-            instances.extend( sorted(data_class[dclass], key=lambda k: float(k['_idx']) ) )
+            instances.extend( sorted(data_class[dclass], key=lambda k: float(k[key]) ) )
         return instances
