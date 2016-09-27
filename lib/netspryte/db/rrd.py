@@ -24,8 +24,8 @@ import subprocess
 import re
 
 import netspryte.snmp
+import netspryte.utils
 from netspryte.db import *
-from netspryte.utils import *
 from netspryte import constants as C
 
 class RrdDatabaseBackend(BaseDatabaseBackend):
@@ -201,7 +201,7 @@ def rrd_graph_data_instance(data, cfg, graph_def, start, end='now'):
     if data is None:
         return image
     rrd_path = json_path.replace('json', 'rrd')
-    if skip_data_instance(data):
+    if netspryte.utils.skip_data_instance(data):
         return image
     section = "rrd_{0}".format(data['_class'])
     graphs = C.get_config(cfg, section, 'graph', None, None, islist=True)
@@ -215,7 +215,7 @@ def rrd_graph_data_instance(data, cfg, graph_def, start, end='now'):
 def _rrd_graph_command_opts(cfg):
     base_rrd_opts = list()
     for name, val in cfg.items('rrd'):
-        if name in ['start', 'step', 'heartbeat']:
+        if name in ['start', 'step', 'heartbeat', 'end']:
             continue
         if name == 'watermark' and val == C.DEFAULT_RRD_WATERMARK:
             val = time.strftime(C.DEFAULT_STRFTIME, time.localtime(time.time()))
@@ -232,7 +232,7 @@ def _rrd_graph_data_definitions(data_set, graph, rrd_path, cfg):
             for opt in C.get_config(cfg, graph, name, None, None, islist=True):
                 if '%s' in opt and name == 'def':
                     opt = opt % rrd_path
-                graph_opts.append( opt )
+                graph_opts.append( str(opt ) )
         else:
             rrd_opts.append('--{0}'.format(name))
             if val:
