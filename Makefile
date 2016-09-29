@@ -33,8 +33,8 @@ test: clean
 		NETSPRYTE_CONFIG=tests/netspryte.cfg \
 		NETSPRYTE_SNMP_HOST="localhost" \
 		NETSPRYTE_INFLUXDB_DATABASE="testdb" \
-		nosetests -d -v --with-coverage \
-		--cover-erase --cover-package=netspryte -s
+		nosetests -s -d -v --with-coverage \
+		--cover-erase --cover-package=netspryte
 
 clean:
 	@echo "Cleaning distutils leftovers"
