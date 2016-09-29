@@ -99,7 +99,6 @@ class MkHtmlCommand(BaseCommand):
             graph_defs.extend(C.get_config(cfg, "rrd_{0}".format(cls), 'graph', None, None, islist=True))
         for device in data_device.keys():
             title = device
-
             self.do_template_html(
                 env,
                 C.get_config(cfg, 'general', 'html_template', None, None),
@@ -111,7 +110,7 @@ class MkHtmlCommand(BaseCommand):
         # for each data instance
         for data in data_set:
             title = clean_string(data['_id'])
-            graph_defs = C.get_config(cfg, "rrd_{0}".format(cls), 'graph', None, None, islist=True)
+            graph_defs = C.get_config(cfg, "rrd_{0}".format(data['_class']), 'graph', None, None, islist=True)
             self.do_template_html(
                 env,
                 C.get_config(cfg, 'general', 'html_template', None, None),
