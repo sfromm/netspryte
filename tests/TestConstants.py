@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Written by Stephen Fromm <stephenf nero net>
 # (C) 2015 University of Oregon
 
@@ -35,14 +33,17 @@ class TestConstants(unittest.TestCase):
         self.msnmp = netspryte.snmp.SNMPSession()
 
     def test_constants_missing_config(self):
-        os.environ['NETSPRYTE_CONFIG'] = 'tests/missing-netspryte.cfg'
+        os.environ['NETSPRYTE_CONFIG'] = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                      'missing-netspryte.cfg')
         C.load_config()
 
     def test_constants_bad_config(self):
-        os.environ['NETSPRYTE_CONFIG'] = 'tests/bad-netspryte.cfg'
+        os.environ['NETSPRYTE_CONFIG'] = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                      'bad-netspryte.cfg')
         with self.assertRaises(NetspryteError):
             C.load_config()
 
     def test_constants_good_config(self):
-        os.environ['NETSPRYTE_CONFIG'] = 'tests/netspryte.cfg'
+        os.environ['NETSPRYTE_CONFIG'] = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                      'netspryte.cfg')
         C.load_config()
