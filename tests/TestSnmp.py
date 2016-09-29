@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Written by Stephen Fromm <stephenf nero net>
 # (C) 2015 University of Oregon
 
@@ -27,6 +25,8 @@ import netspryte
 import netspryte.snmp
 from netspryte import constants as C
 from netspryte.errors import *
+from netspryte.snmp.host.interface import HostInterface
+from netspryte.snmp.vendor.cisco.cbqos import CiscoCBQOS
 
 class TestSnmp(unittest.TestCase):
 
@@ -72,3 +72,8 @@ class TestSnmp(unittest.TestCase):
         self.assertEqual(isinstance(
             msnmp.walk('1.3.6.1.2.1.31.1.1.1.1'), list
         ), True)
+
+    def test_get_interfaces(self):
+        msnmp = netspryte.snmp.SNMPSession()
+        hintf = HostInterface(msnmp)
+
