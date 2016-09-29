@@ -75,5 +75,10 @@ class TestSnmp(unittest.TestCase):
 
     def test_get_interfaces(self):
         msnmp = netspryte.snmp.SNMPSession()
-        hintf = HostInterface(msnmp)
+        htest = HostInterface(msnmp)
 
+    def test_get_cbqos(self):
+        msnmp = netspryte.snmp.SNMPSession()
+        hcbqos = CiscoCBQOS(msnmp)
+        hcbqos.get_cbqos_stats()
+        hcbqos.policers
