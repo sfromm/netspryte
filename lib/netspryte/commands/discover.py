@@ -52,6 +52,8 @@ def process_device(device, args):
     try:
         msnmp = netspryte.snmp.SNMPSession(host=device)
         cbqos = CiscoCBQOS(msnmp)
+        for key, data in cbqos.interfaces.iteritems():
+            pprint.pprint({key: data})
         for key, data in cbqos.data.iteritems():
             pprint.pprint({key: data})
     except TypeError as e:
