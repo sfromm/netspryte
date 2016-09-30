@@ -2,4 +2,4 @@
 MAILTO=root
 
 */1 * * * * root netspryte-collect-snmp
-*/15 * * * * root netspryte-mk-graphs
+*/15 * * * * root netspryte-mk-html
