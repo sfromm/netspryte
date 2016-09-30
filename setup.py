@@ -38,7 +38,7 @@ setup(name='netspryte',
       scripts=[
           'bin/rrd-add-ds',
           'bin/netspryte-collect-snmp',
-          'bin/netspryte-mk-graphs',
+          'bin/netspryte-mk-html',
           'bin/netspryte-discover',
       ],
       data_files=[])
