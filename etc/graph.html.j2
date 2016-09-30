@@ -7,7 +7,6 @@
     <title>{{ title | default("Network Graphs") }}</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/netspryte.css" rel="stylesheet">
-    <meta http-equiv="refresh" content="300"/>
     <style type="text/css">
       img {
           max-width: 100%;
@@ -43,8 +42,8 @@
             <li><a href="#graphs">Network Graphs</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li id=fat-menu class=dropdown>
-              <a href=# class="dropdown-toggle" id="graphs_drop" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Graphs <span class=caret></span> </a>
+            <li id="fat-menu" class="dropdown">
+              <a href=# class="dropdown-toggle" id="graphs_drop" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Graphs <span class="caret"></span> </a>
               <ul class="dropdown-menu scrollable-menu" aria-labelledby="graphs_drop">
                 {% for data in data_sets %}
                   {% if data['_do_graph'] %}
