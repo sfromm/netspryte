@@ -23,6 +23,7 @@ import logging
 import glob
 import pprint
 from multiprocessing import Process, Pool
+import re
 
 import netspryte
 
@@ -38,8 +39,18 @@ class MkHtmlCommand(BaseCommand):
 
     def __init__(self, daemonize=False):
         super(MkHtmlCommand, self).__init__(daemonize)
-        self.parser.add_argument('globs', type=str, nargs='*',
-                                 help='list of directory globs to graph')
+        self.parser.add_argument('--devices', default=False, action='store_true',
+                                 help='Create device-specific pages')
+        self.parser.add_argument('--classes', default=False, action='store_true',
+                                 help='Create data class specific pages')
+        self.parser.add_argument('--instances', default=False, action='store_true',
+                                 help='Create data instance specific pages')
+        self.parser.add_argument('--description',
+                                 help='Create pages on descriptions that match regex.'
+                                 'NAME:REGEX is the format used to create the page (NAME.html) '
+                                 'and the string to use for comparison')
+        self.parser.add_argument('--name',
+                                 help='Filename for page built on descriptions')
 
     def run(self):
         args = self.parser.parse_args()
@@ -55,81 +66,137 @@ class MkHtmlCommand(BaseCommand):
         data_globs = list()
         data_set = get_data_instances_from_disjoined()
         json2path(data_set, os.path.join(C.DEFAULT_DATADIR, C.DEFAULT_DATA_JOINED))
-        self.template_html(C.DEFAULT_WWWDIR, cfg, data_set)
+        if args.devices:
+            self.template_html_devices(cfg, data_set)
+        if args.classes:
+            self.template_html_classes(cfg, data_set)
+        if args.instances:
+            self.template_html_instances(cfg, data_set)
+        if args.description:
+            self.template_html_descriptions(args.description, cfg, data_set)
 
-    def template_html(self, wwwdir, cfg, data_set):
-        graph_periods = list()
+    def get_graph_defs(self, cfg, data_set):
+        data_class = list()
+        graph_defs = list()
+        for k in data_set:
+            if k['_class'] not in data_class:
+                data_class.append(k['_class'])
+        for cls in data_class:
+            graph_defs.extend(C.get_config(cfg,
+                                           "rrd_{0}".format(cls),
+                                           'graph',
+                                           None,
+                                           None,
+                                           islist=True))
+        return graph_defs
+
+    def template_html_classes(self, cfg, data_set):
         data_class = dict()
-        data_device = dict()
-
+        graph_periods = list()
         start_periods = C.get_config(cfg, 'rrd', 'start', None, None, islist=True)
         graph_periods.append(start_periods[0])
-        detail_graph_periods = [ x for x in start_periods ]
 
-        env = Environment(
-            loader=FileSystemLoader(wwwdir)
-        )
-        env.add_extension('jinja2.ext.loopcontrols')
         for k in data_set:
             if k['_class'] not in data_class:
                 data_class[k['_class']] = list()
             data_class[k['_class']].append(k)
             logging.debug("adding %s to data class %s", k['_id'], k['_class'])
-            device = k['_id'].split('.', 1)[0]
-            device = device.replace('_', '.')
-            if device not in data_device:
-                data_device[device] = list()
-            data_device[device].append(k)
-            logging.debug("adding %s to device %s", k['_id'], device)
 
         # for each class of data
         for cls in data_class.keys():
             graph_defs = C.get_config(cfg, "rrd_{0}".format(cls), 'graph', None, None, islist=True)
             self.do_template_html(
-                env,
-                C.get_config(cfg, 'general', 'html_template', None, None),
-                os.path.join(wwwdir, "{0}.html".format(cls)),
-                sorted(data_class[cls], key=lambda k: k['_title']),
-                graph_periods,
-                [ graph_defs[0] ],
+                cfg,
+                "{0}.html".format(cls),
+                title=cls,
+                data_sets=sorted(data_class[cls], key=lambda k: k['_title']),
+                graph_periods=graph_periods,
+                graph_defs=graph_defs
             )
+
+    def template_html_devices(self, cfg, data_set):
+        data_device = dict()
+        graph_periods = list()
+        start_periods = C.get_config(cfg, 'rrd', 'start', None, None, islist=True)
+        graph_periods.append(start_periods[0])
+
+        for k in data_set:
+            # now build up device and instance association
+            device = k['_id'].split('.', 1)[0]
+            device = device.replace('_', '.')
+            if device not in data_device:
+                data_device[device] = list()
+            data_device[device].append(k)
+
+            logging.debug("adding %s to device %s", k['_id'], device)
+
         # for each device
-        graph_defs = list()
-        for cls in data_class.keys():
-            graph_defs.extend(C.get_config(cfg, "rrd_{0}".format(cls), 'graph', None, None, islist=True))
+        graph_defs = self.get_graph_defs(cfg, data_set)
         for device in data_device.keys():
             title = device
             self.do_template_html(
-                env,
-                C.get_config(cfg, 'general', 'html_template', None, None),
-                os.path.join(wwwdir, "{0}.html".format(title)),
-                self.sort_device_data_instances(data_device[device], '_idx'),
-                graph_periods,
-                graph_defs,
+                cfg,
+                "{0}.html".format(device),
+                title=device,
+                data_sets=self.sort_device_data_instances(data_device[device], '_idx'),
+                graph_periods=graph_periods,
+                graph_defs=graph_defs,
             )
+            pass
+
+    def template_html_instances(self, cfg, data_set):
+        start_periods = C.get_config(cfg, 'rrd', 'start', None, None, islist=True)
+        detail_graph_periods = [ x for x in start_periods ]
         # for each data instance
         for data in data_set:
             title = clean_string(data['_id'])
             graph_defs = C.get_config(cfg, "rrd_{0}".format(data['_class']), 'graph', None, None, islist=True)
             self.do_template_html(
-                env,
-                C.get_config(cfg, 'general', 'html_template', None, None),
-                os.path.join(wwwdir, "{0}.html".format(title)),
-                [data],
-                detail_graph_periods,
-                graph_defs,
+                cfg,
+                "{0}.html".format(clean_string(data['_id'])),
+                title=data['_title'],
+                data_sets=[data],
+                graph_periods=detail_graph_periods,
+                graph_defs=graph_defs,
             )
 
-    def do_template_html(self, env, template, path, data_set, graph_periods, graph_defs):
+    def template_html_descriptions(self, descr, cfg, data_set):
+        match = list()
+        graph_periods = list()
+        start_periods = C.get_config(cfg, 'rrd', 'start', None, None, islist=True)
+        graph_periods.append(start_periods[0])
+        (name, pattern) = descr.split(':', 1)
+
+        for k in data_set:
+            prog = re.compile(pattern)
+            if prog.match(k['_description']):
+                match.append(k)
+
+        graph_defs = self.get_graph_defs(cfg, data_set)
+        self.do_template_html(
+            cfg,
+            "{0}.html".format(name),
+            title=name,
+            data_sets=self.sort_device_data_instances(match, '_idx'),
+            graph_periods=graph_periods,
+            graph_defs=graph_defs,
+        )
+
+    def do_template_html(self, cfg, html_name, **kwargs):
         try:
-            logging.info("creating html template %s", path)
-            template = env.get_template(template)
-            data2path(template.render(data_sets=data_set,
-                                      graph_periods=graph_periods,
-                                      graph_defs=graph_defs,
-                                      www_cgi_url=C.DEFAULT_WWW_CGI_URL),
-                      path)
-            os.chmod(path, 0664)
+            wwwdir = C.DEFAULT_WWWDIR
+            www_html_path = os.path.join(wwwdir, html_name)
+            www_template_path = C.get_config(cfg, 'general', 'html_template', None, None)
+            env = Environment(
+                loader=FileSystemLoader(wwwdir)
+            )
+            if 'www_cgi_url' not in kwargs:
+                kwargs['www_cgi_url'] = C.DEFAULT_WWW_CGI_URL
+            env.add_extension('jinja2.ext.loopcontrols')
+            logging.info("creating html template %s", www_html_path)
+            template = env.get_template(www_template_path)
+            data2path(template.render(**kwargs), www_html_path)
+            os.chmod(www_html_path, 0664)
         except jinja2.exceptions.TemplateNotFound as e:
             logging.error("failed to find template: %s", str(e))
 
