@@ -22,3 +22,4 @@ Goals for 0.2
 
 * ability to define RRD DEFs in json
 * build out support for influxdb write support
+* move away from data models using a dict to using a list
