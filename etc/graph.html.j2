@@ -8,21 +8,21 @@
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/netspryte.css" rel="stylesheet">
     <style type="text/css">
-      img {
-          max-width: 100%;
-          max-height: 100%;
-      }
-      body {
-        padding-top: 50px;
-      }
-      .section {
-        padding-top: 50px;
-      }
-      .scrollable-menu {
-        height: auto;
-        max-height: 600px;
-        overflow-x: hidden;
-      }
+     img {
+       max-width: 100%;
+       max-height: 100%;
+     }
+     body {
+       padding-top: 50px;
+     }
+     .section {
+       padding-top: 50px;
+     }
+     .scrollable-menu {
+       height: auto;
+       max-height: 600px;
+       overflow-x: hidden;
+     }
     </style>
   </head>
   <body>
@@ -35,7 +35,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a href="/#"><img src="/images/nero-logo.png"></a>
+          <a href="/#"><img src="/images/nero-logo.png" width="60"></a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -45,10 +45,27 @@
             <li id="fat-menu" class="dropdown">
               <a href=# class="dropdown-toggle" id="graphs_drop" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Graphs <span class="caret"></span> </a>
               <ul class="dropdown-menu scrollable-menu" aria-labelledby="graphs_drop">
-                {% for data in data_sets %}
-                  {% if data['_do_graph'] %}
+                {% for data in data_sets | selectattr("_do_graph") %}
+                {% if data['_description'] == "" %}
+                  {%   continue %}
+                  {#
+                  Ignore the following ifTypes:
+                  32 - framerelay
+                  49 - aal5
+                  63 - isdn
+                  77 - lapd
+                  81 - ds0
+                  134 - atmSubInterface
+                  166 - mpls
+                  #}
+                {% elif 'ifType' in data and data['ifType'] in ["32", "49", "63", "77", "81", "134", "166"] %}
+                  {%   continue %}
+                {% elif 'ifAdminStatus' in data and data['ifAdminStatus'] == 'down' %}
+                  {%   continue %}
+                {% elif 'cbQosPolicyDirection' in data and data['cbQosPolicyDirection'] == 'input' %}
+                  {%   continue %}
+                {% endif %}
                     <li><a href="#{{ data['_id'] }}">{{ data['_title'] }}</a></li>
-                  {% endif %}
                 {% endfor %}
               </ul>
             </li>
@@ -60,29 +77,41 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-12" id="graphs">
-        {% for data in data_sets %}
-            {% if not data['_do_graph'] %}
-            {%   continue %}
+          {% for data in data_sets | selectattr("_do_graph") %}
+            {% if data['_description'] == "" %}
+              {%   continue %}
+              {#
+              Ignore the following ifTypes:
+              32 - framerelay
+              49 - aal5
+              63 - isdn
+              77 - lapd
+              81 - ds0
+              134 - atmSubInterface
+              166 - mpls
+              #}
+            {% elif 'ifType' in data and data['ifType'] in ["32", "49", "63", "77", "81", "134", "166"] %}
+              {%   continue %}
             {% elif 'ifAdminStatus' in data and data['ifAdminStatus'] == 'down' %}
-            {%   continue %}
+              {%   continue %}
             {% elif 'cbQosPolicyDirection' in data and data['cbQosPolicyDirection'] == 'input' %}
-            {%   continue %}
+              {%   continue %}
             {% endif %}
             <div class="section" id="{{ data['_id'] }}">
               <h3 class="page-header">{{ data['_description'] }}</h3>
               <p>
                 {% for period in graph_periods %}
-                {% for graph in graph_defs %}
-                {% if data['_class'] in graph %}
-                <a href="{{ data['_id'] }}.html">
-                  <img src="{{www_cgi_url }}?id={{ data['_id'] }};start={{ period }};gdef={{ graph }}"/>
-                </a><br/>
-                {% endif %}
-                {% endfor %}
+                  {% for graph in graph_defs %}
+                    {% if data['_class'] in graph %}
+                      <a href="{{ data['_id'] }}.html">
+                        <img src="{{www_cgi_url }}?id={{ data['_id'] }};start={{ period }};gdef={{ graph }}"/>
+                      </a><br/>
+                    {% endif %}
+                  {% endfor %}
                 {% endfor %}
               </p>
             </div>
-        {% endfor %}
+          {% endfor %}
         </div>
       </div>
     </div>
