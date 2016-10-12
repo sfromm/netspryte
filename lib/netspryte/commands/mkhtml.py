@@ -46,7 +46,7 @@ class MkHtmlCommand(BaseCommand):
         self.parser.add_argument('--instances', default=False, action='store_true',
                                  help='Create data instance specific pages')
         self.parser.add_argument('--description',
-                                 help='Create pages on descriptions that match regex.'
+                                 help='Create pages on descriptions that match regex. '
                                  'NAME:REGEX is the format used to create the page (NAME.html) '
                                  'and the string to use for comparison')
         self.parser.add_argument('--name',
