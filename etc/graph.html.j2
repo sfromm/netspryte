@@ -104,7 +104,7 @@
                   {% for graph in graph_defs %}
                     {% if data['_class'] in graph %}
                       <a href="{{ data['_id'] }}.html">
-                        <img src="{{www_cgi_url }}?id={{ data['_id'] }};start={{ period }};gdef={{ graph }}"/>
+                        <img id="img" src="{{www_cgi_url }}?id={{ data['_id'] }};start={{ period }};gdef={{ graph }}"/>
                       </a><br/>
                     {% endif %}
                   {% endfor %}
@@ -120,5 +120,19 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      window.onload = function() {
+        var images = document.getElementById("img");
+        var sleep = Math.floor(Math.random() * 300) + 300;
+        var magic = ";sleep=" + sleep + "-" + new Date().getTime();
+        function updateImage() {
+           if (images.src.indexOf(";sleep") < 0)
+             images.src = images.src + magic
+           else
+             images.src = images.src.substring(0, images.src.lastIndexOf(";sleep=")) + magic;
+        }
+        setInterval(updateImage, sleep * 1000);
+      }
+    </script>
   </body>
 </html>
