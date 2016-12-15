@@ -88,7 +88,7 @@ class HostInterface(HostSystem):
         self.snmp = snmp
         super(HostInterface, self).__init__(snmp)
         logging.info("inspecting %s for interface data", snmp.host)
-        self._data = self._get_interface()
+        self.data = self._get_interface()
 
     def _get_interface(self):
         data = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME,
@@ -101,13 +101,14 @@ class HostInterface(HostSystem):
         merge_dicts(data, stat)
         return data
 
-    @property
-    def data(self):
-        return self._data
 
     @property
     def interfaces(self):
         return self.data
+
+    @property
+    def stat(self):
+        return self._data
 
     def get_interface_stats(self):
         return netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME,
