@@ -18,6 +18,7 @@
 
 import logging
 import netspryte.snmp
+from netspryte.utils import *
 
 class HostUPS():
 
@@ -75,18 +76,12 @@ class HostUPS():
 
     def __init__(self, snmp):
         self.snmp = snmp
-        self._ups = self._get_ups_data()
-        self._ups = self._get_ups_stats()
+        self.data = self._get_ups_data()
 
     def _get_ups_data(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, self, HostUPS.NAME,
+        data = netspryte.snmp.get_snmp_data(self.snmp, self, HostUPS.NAME,
                                             HostUPS.DATA, HostUPS.CONVERSION)
-
-    def _get_ups_stats(self):
-        return netspryte.snmp.get_snmp_data(self.snmp,  self, HostUPS.NAME,
+        stat = netspryte.snmp.get_snmp_data(self.snmp, self, HostUPS.NAME,
                                             HostUPS.STAT, HostUPS.CONVERSION)
-
-    @property
-    def ups(self):
-        return self._ups
-
+        merge_dicts(data, stat)
+        return data
