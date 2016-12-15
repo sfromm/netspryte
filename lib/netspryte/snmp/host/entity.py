@@ -67,16 +67,8 @@ class HostEntity(HostSystem):
     def __init__(self, snmp):
         self.snmp = snmp
         super(HostEntity, self).__init__(snmp)
-        self._data = self._get_configuration()
+        self.data = self._get_configuration()
 
     def _get_configuration(self):
         return netspryte.snmp.get_snmp_data(self.snmp, self, HostEntity.NAME,
                                             HostEntity.DATA, HostEntity.CONVERSION)
-
-    @property
-    def data(self):
-        return self._data
-
-    @property
-    def entity(self):
-        return self._data
