@@ -127,107 +127,85 @@ class CiscoCBQOS(CiscoDevice):
     def __init__(self, snmp):
         self.snmp = snmp
         super(CiscoCBQOS, self).__init__(snmp)
+        if CiscoDevice.BASE_OID not in str(self.sysObjectID):
+            logging.debug("skipping cbqos check on non-cisco device %s", self.sysName)
+            return None
         logging.info("inspecting %s for cbqos data", snmp.host)
         host = netspryte.snmp.host.interface.HostInterface(self.snmp)
         self.interfaces = host.interfaces
-        data = self._get_configuration()
-        self._data = data
-        stat = self.get_cbqos_stats()
-        merge_dicts(data, stat)
-        self._data = data
-        self._set_meta_info()
+        self.data = self._get_configuration()
 
     def _get_configuration(self):
         ''' get cbqos objects '''
         data = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
                                             CiscoCBQOS.DATA, CiscoCBQOS.CONVERSION)
-        instances = [ k for k in data.keys() if '.' not in k ]
+        stat = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
+                                            CiscoCBQOS.STAT, CiscoCBQOS.CONVERSION)
+        interfaces = { k['_idx']: k for k in self.interfaces }
+        skip_instances = [ k for k in data.keys() if '.' not in k ]
+
         # merge related instances into together for a coherent view
         for key in data.keys():
-            if key in instances:
+            if key in skip_instances:
                 continue
             if 'cbQosParentObjectsIndex' in data[key] and data[key]['cbQosParentObjectsIndex'] != 0:
                 data[key]['parent'] = key.split('.')[0] + "." + str(data[key]['cbQosParentObjectsIndex'])
             cfg_index = str(data[key]['cbQosConfigIndex'])
-            if cfg_index in instances:
+            if cfg_index in skip_instances:
                 data[key] = safe_update(data[key], data[cfg_index])
             base = key.split('.')[0]
             if base in data:
                 data[key] = safe_update(data[key], data[base])
             if 'cbQosIfIndex' in data[key]:
                 ifidx = str(data[key]['cbQosIfIndex'])
-                data[key] = safe_update(data[key], self.interfaces[ifidx])
+                data[key] = safe_update(data[key], interfaces[ifidx])
             # The MIB erroneously marks this as a COUNTER64 to get the requisite number of bits
             # but it behaves like a GAUGE.  Unfortunately, there is no GAUGE64 object.  So ...
             # convert it to an int() so that it is treated like a GAUGE.
             if 'cbQosPoliceCfgRate64' in data[key]:
                 data[key]['cbQosPoliceCfgRate64'] = int(data[key]['cbQosPoliceCfgRate64'])
-        return data
 
-    def _set_meta_info(self):
+        # merge stat and data
+        merge_dicts(stat, data)
+
         # Set the meta information for the object
-        # handled in separate method because it requires all of instance 'data' to be set.
-        instances = [ k for k in self.data.keys() if '.' not in k ]
-        for key in self.data.keys():
-            if key in instances:
+        # handled separately because it requires all of instance 'data' to be set.
+        for key in data.keys():
+            if key in skip_instances:
                 continue
-            self.data[key]['_title'] = self.get_policy_map_name(key)
-            self.data[key]['_description'] = "{0}:{1}".format(self.data[key]['_title'], self.data[key].get('ifAlias', 'NA'))
-
-    @property
-    def data(self):
-        return self._data
+            data[key]['_title'] = self.get_policy_map_name(key, data)
+            data[key]['_description'] = "{0}:{1}".format(data[key]['_title'], data[key].get('ifAlias', 'NA'))
+        return data
 
     @property
     def policy_maps(self):
         ''' get policy maps '''
-        return self._data
+        return self.data
 
     @property
     def class_maps(self):
         ''' get class maps '''
-        return self._data
+        return self.data
 
     @property
     def policers(self):
         ''' get policer information '''
-        policers = dict()
-        for key, data in self.data.iteritems():
+        policers = list()
+        for data in self.data:
             if 'cbQosObjectsType' in data and data['cbQosObjectsType'] == 'police':
-                policers[key] = data
+                policers.append(data)
         return policers
 
-    def get_cbqos_stats(self):
-        ''' get policer stats '''
-        stats = dict()
-        results = self.snmp.walk( *[ k for k in CiscoCBQOS.STAT.values() ] )
-        for obj in results:
-            logging.debug("Processing OID=%s, value=%s", obj[0], obj[1])
-            oid = netspryte.snmp.deconstruct_oid(obj[0], CiscoCBQOS.STAT)
-            if 'index' not in oid:
-                continue
-            index = oid['index']
-
-            if index not in stats:
-                stats[index] = {}
-                if index in self.data:
-                    stats[index].update(self.data[index])
-                    parent = self.data[index]['parent']
-                    if parent not in stats:
-                        stats[parent] = self.data[parent]
-            stats[index][oid['name']] = obj[1]
-        return stats
-
-    def get_policy_map_name(self, idx):
+    def get_policy_map_name(self, idx, data_dict):
         key = 'cbQosPolicyMapName'
-        if key not in self.data[idx]:
-            return self.get_policy_map_name(self.data[idx]['parent'])
+        if key not in data_dict[idx]:
+            return self.get_policy_map_name(data_dict[idx]['parent'], data_dict)
         else:
-            return self.data[idx][key]
+            return data_dict[idx][key]
 
-    def get_class_map_name(self, key):
+    def get_class_map_name(self, idx, data_dict):
         key = 'cbQosCMName'
-        if key not in self.data[idx]:
-            return self.get_policy_map_name(self.data[idx]['parent'])
+        if key not in data[idx]:
+            return self.get_policy_map_name(data[idx]['parent'], data_dict)
         else:
-            return self.data[idx][key]
+            return data_dict[idx][key]
