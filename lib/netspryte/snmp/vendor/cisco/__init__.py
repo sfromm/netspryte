@@ -16,10 +16,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-__name__ = 'netspryte.snmp.vendor.cisco'
-__author__ = 'Stephen Fromm'
-__version__ = '1'
-
 from netspryte.snmp.host import HostSystem
 
 class CiscoDevice(HostSystem):
@@ -29,8 +25,9 @@ class CiscoDevice(HostSystem):
     STAT = { }
     CONVERSION = { }
     XLATE = { }
+    BASE_OID = "1.3.6.1.4.1.9"
 
     def __init__(self, snmp):
         self.snmp = snmp
         super(CiscoDevice, self).__init__(snmp)
-
+        self.data = dict()
