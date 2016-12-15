@@ -25,8 +25,7 @@ import pprint
 
 import netspryte
 import netspryte.snmp
-from netspryte.snmp.host.interface import HostInterface
-from netspryte.snmp.vendor.cisco.cbqos import CiscoCBQOS
+from netspryte.plugins import snmp_module_loader
 
 from netspryte.commands import BaseCommand
 from netspryte import constants as C
@@ -47,15 +46,16 @@ class DiscoverCommand(BaseCommand):
         for device in args.devices:
             process_device(device, args)
 
-
 def process_device(device, args):
     try:
         msnmp = netspryte.snmp.SNMPSession(host=device)
-        cbqos = CiscoCBQOS(msnmp)
-        for key, data in cbqos.interfaces.iteritems():
-            pprint.pprint({key: data})
-        for key, data in cbqos.data.iteritems():
-            pprint.pprint({key: data})
-    except TypeError as e:
+        data = list()
+        snmp_modules = snmp_module_loader.all()
+        for cls, module in snmp_modules.iteritems():
+            mod = cls(msnmp)
+            if mod.data:
+                data.extend(mod.data)
+        pprint.pprint(data)
+    except Exception as e:
         logging.error("encountered error with %s; skipping to next device: %s", device, str(e))
 
