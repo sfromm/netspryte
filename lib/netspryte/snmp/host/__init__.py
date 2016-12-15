@@ -36,6 +36,8 @@ class HostSystem(object):
 
     STAT = { }
 
+    XLATE = { }
+
     CONVERSION = { }
 
     def __init__(self, snmp):
@@ -47,12 +49,11 @@ class HostSystem(object):
         self._sysLocation = None
         self._sysServices = None
         self.snmp         = snmp
-        system = self._get_system()
-        if not system:
+        logging.info("inspecting %s for sys data", snmp.host)
+        self.data = self._get_system()
+        if not self.data:
             raise NetspryteError("failed to gather base snmp host information")
-        key = system.keys()[0]
-        self._system = system[key]
-        for k, v in self.system.iteritems():
+        for k, v in self.data[0].iteritems():
             setattr(self, k, v)
 
     def _get_system(self):
@@ -60,12 +61,15 @@ class HostSystem(object):
                                             HostSystem.DATA, HostSystem.CONVERSION)
 
     @property
-    def system(self):
-        return self._system
+    def data(self):
+        return self._data
 
-    @system.setter
-    def system(self, arg):
-        self._system = arg
+    @data.setter
+    def data(self, arg):
+        if isinstance(arg, dict):
+            self._data = arg.values()
+        else:
+            self._data = arg
 
     @property
     def sysDescr(self):
