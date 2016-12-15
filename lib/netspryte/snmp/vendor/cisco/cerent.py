@@ -20,8 +20,6 @@ import logging
 import netspryte.snmp
 from netspryte.snmp.host import HostSystem
 
-import pprint
-
 class CiscoCerent(HostSystem):
 
     NAME = 'cerent'
@@ -270,12 +268,8 @@ class CiscoCerent(HostSystem):
 
     def __init__(self, snmp):
         self.snmp = snmp
-        self._data = self._get_configuration()
+        self.data = dict()
 
     def _get_configuration(self):
         return netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCerent.NAME,
                                             CiscoCerent.DATA, CiscoCerent.CONVERSION)
-
-    @property
-    def data(self):
-        return self._data
