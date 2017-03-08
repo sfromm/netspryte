@@ -5,6 +5,7 @@
 *~
 build
 alembic.ini
+venv
 # rpm
 MANIFEST
 dist
