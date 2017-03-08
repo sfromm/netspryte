@@ -78,6 +78,7 @@ def rrd_update(path, data, ts=time.time()):
     flat_values = ":".join(values)
     try:
         logging.info("updating rrd %s", path)
+        logging.debug("updating rrd %s with template: %s %s:%s", path, flat_template, ts, flat_values)
         rrdtool.update(str(path), '--template', flat_template, "%s:%s" % (ts, flat_values))
     except rrdtool.error as e:
         logging.error("failed to update rrd %s: %s", path, str(e))
@@ -102,6 +103,8 @@ def rrd_graph(path, rrd_opts, graph_opts):
     if path != "-" and not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     try:
+        print rrd_opts
+        print graph_opts
         logging.info("creating graph %s", path)
         data = rrdtool.graphv(path, rrd_opts, graph_opts)
     except rrdtool.error as e:
@@ -147,7 +150,7 @@ def rrd_get_ds_list(path):
 def rrd_tune_ds_max(path, ds_max):
     ''' tune max for all DS in rrd '''
     try:
-        logging.debug("tuning maximum value for all DS in rrd %s", path)
+        logging.info("tuning maximum value for all DS in rrd %s", path)
         tune_ds = list()
         for tune in rrd_get_ds_list(path):
             tune_ds.append("--maximum")
@@ -168,10 +171,13 @@ def mk_rrd_ds(data):
 def mk_rrd_filename(device, *args):
     ''' create a rrd filename based on the collected object '''
     parts = list()
-    dev_name = device.sysName
+    if hasattr(device, 'sysName'):
+        dev_name = device.sysName
+    else:
+        dev_name = device
     for arg in args:
         parts.append( arg.replace(".", "-") )
-    return os.path.join(dev_name, "{0}.rrd".format("-".join(parts)))
+    return os.path.join(C.DEFAULT_DATADIR, dev_name, "{0}.rrd".format("-".join(parts)))
 
 def rrd_preserve(rrd_path):
     ''' rename existing RRD for preservation
@@ -197,13 +203,14 @@ def rrd_graph_data_instance(data, cfg, graph_def, start, end='now'):
     Returns a variable with image as string.
     '''
     image = None
-    json_path = data['_path']
     if data is None:
         return image
-    rrd_path = json_path.replace('json', 'rrd')
-    if netspryte.utils.skip_data_instance(data):
-        return image
-    section = "rrd_{0}".format(data['_class'])
+    rrd_path = netspryte.utils.mk_measurement_instance_filename(data['host']['name'],
+                                                                data['measurement_class']['name'],
+                                                                data['index'])
+    start = str(start)
+    rrd_path += ".rrd"
+    section = "rrd_{0}".format(data['measurement_class']['name'])
     graphs = C.get_config(cfg, section, 'graph', None, None, islist=True)
     if graph_def in graphs:
         (rrd_opts, graph_opts) = _rrd_graph_data_definitions(data, graph_def, rrd_path, cfg)
@@ -239,5 +246,5 @@ def _rrd_graph_data_definitions(data_set, graph, rrd_path, cfg):
                 rrd_opts.append(val)
     if '--title' not in rrd_opts:
         rrd_opts.append('--title')
-        rrd_opts.append( str(data_set['_title']) )
+        rrd_opts.append( str(data_set['presentation']['title']) )
     return (rrd_opts, graph_opts)
