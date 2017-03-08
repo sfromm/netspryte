@@ -77,6 +77,10 @@ class Manager(object):
         r = modquery.execute()
         return r
 
+    def close(self):
+        ''' close connection to database '''
+        self.database.close()
+
     def save(self, modinst, nocommit=False):
         ''' save an object '''
         modinst.save()
@@ -123,3 +127,34 @@ class Manager(object):
 
     def to_dict(self, modinst):
         return model_to_dict(modinst)
+
+    def get_instances(self, key, val):
+        ''' return measurement instances where key equals value '''
+        result = list()
+        for q in MeasurementInstance.select().where(getattr(MeasurementInstance, key) == val):
+            result.append(q)
+        return result
+
+    def get_instances_by_host(self, arg):
+        ''' blah '''
+        result = list()
+        host = self.get(Host, name=arg)
+        for q in MeasurementInstance.select().join(Host).where(MeasurementInstance.host == host):
+            result.append(q)
+        return result
+
+    def get_instances_by_attribute(self, key, val):
+        ''' blah '''
+        result = list()
+        for q in MeasurementInstance.select().where(
+                MeasurementInstance.attrs[key].startswith(val)):
+            result.append(q)
+        return result
+
+    def get_instances_by_presentation(self, key, val):
+        ''' blah '''
+        result = list()
+        for q in MeasurementInstance.select().where(
+                MeasurementInstance.presentation[key].startswith(val)):
+            result.append(q)
+        return result
