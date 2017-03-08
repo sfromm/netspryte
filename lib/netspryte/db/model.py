@@ -42,6 +42,7 @@ class Host(BaseModel):
 class MeasurementClass(BaseModel):
     name = CharField()
     transport = CharField()
+    metric_type = BinaryJSONField(index=True, null=True)
 
     class Meta:
         db_table = "measurement_class"
@@ -56,8 +57,10 @@ class MeasurementInstance(BaseModel):
     metrics = BinaryJSONField(null=True)
     presentation = BinaryJSONField(null=True)
     lastseen = DateTimeField(default=datetime.datetime.now, index=True)
-    host  = ForeignKeyField(Host, related_name='hosts', null=False, on_delete='CASCADE')
-    mclass = ForeignKeyField(MeasurementClass, related_name='measurement_classes', null=False, on_delete='CASCADE')
+    host   = ForeignKeyField(Host,
+                             related_name='measurement_instances', null=False, on_delete='CASCADE')
+    measurement_class = ForeignKeyField(MeasurementClass,
+                                        related_name='measurement_instances', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "measurement_instance"
