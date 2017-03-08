@@ -1,5 +1,5 @@
 # Written by Stephen Fromm <stephenf nero net>
-# (C) 2015-2016 University of Oregon
+# Copyright (C) 2015-2017 University of Oregon
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,23 +22,27 @@ import sys
 import logging
 import glob
 import pprint
+import datetime
+import time
+import traceback
 from multiprocessing import Process, Pool
 
 import netspryte
 import netspryte.snmp
-from netspryte.snmp.host.interface import HostInterface
-from netspryte.snmp.vendor.cisco.cbqos import CiscoCBQOS
+from netspryte.plugins import snmp_module_loader
 
 from netspryte.commands import BaseCommand
 from netspryte import constants as C
 from netspryte.utils import *
+from netspryte.db.manager import *
+from netspryte.db.rrd import *
 
 class CollectSnmpCommand(BaseCommand):
 
+    SNMP_MODULES = list()
+
     def __init__(self, daemonize=False):
         super(CollectSnmpCommand, self).__init__(daemonize)
-        self.parser.add_argument('--data', action='store_true',
-                                 help='Show configuration CBQOS data for device(s)')
         self.parser.add_argument('devices', type=str, nargs='*',
                                  default=C.DEFAULT_DEVICES,
                                  help='list of devices to query')
@@ -49,95 +53,93 @@ class CollectSnmpCommand(BaseCommand):
             logging.error("Path to data directory does not exist: %s", args.datadir)
             return 1
         setup_logging(args.verbose)
-        logging.debug("beginning data collection")
+        logging.info("beginning data collection")
         cfg = C.load_config()
-        pool = Pool(processes=C.DEFAULT_WORKERS)
+        num_workers = C.DEFAULT_WORKERS
+        if len(args.devices) < num_workers:
+            num_workers = len(args.devices)
+        CollectSnmpCommand.SNMP_MODULES = snmp_module_loader.all()
+        pool = Pool(processes=num_workers)
         logging.debug("created pool of workers")
-        for device in args.devices:
-            logging.info("handing off %s to worker", device)
-            if args.nofork:
-                process_device(device, args)
-            else:
-                res = pool.apply_async(process_device, (device, args))
+        if args.nofork:
+            map(process_device, args.devices)
+        else:
+            pool.map(process_device, args.devices)
         pool.close()
         logging.debug("closed pool of workers")
         pool.join()
 
 
-def process_device(device, args):
+def process_device(device):
+    stat = dict()
+    stime = time.time()
+    logging.warn("processing %s", device)
     try:
         msnmp = netspryte.snmp.SNMPSession(host=device)
-        cbqos = CiscoCBQOS(msnmp)
-        process_policers(cbqos, args)
-        process_interfaces(cbqos, args)
-    except TypeError as e:
-        logging.error("encountered error with %s; skipping to next device: %s", device, str(e))
+        stat['host'] = msnmp.host
+        for cls, module in CollectSnmpCommand.SNMP_MODULES.iteritems():
+            try:
+                snmp_mod = cls(msnmp)
+                name = snmp_mod.sysName or msnmp.host
+                if snmp_mod and hasattr(snmp_mod, 'data'):
+                    process_module_data(snmp_mod)
+            except Exception as e:
+                logging.error("module %s failed against device %s: %s", cls.__name__, device, traceback.format_exc())
+                continue
+    except Exception as e:
+        logging.error("encountered error with %s; skipping to next device: %s", device, traceback.format_exc())
+    finally:
+        etime = time.time()
+        stat['elapsed'] = etime - stime
+        logging.warn("%s elapsed time: %.2f", device, stat['elapsed'])
 
-def process_policers(cbqos, args):
-    for key, data in cbqos.policers.iteritems():
-        # process the policer data
-        conf = get_data(CiscoCBQOS.DATA, data, keepmeta=True)
-        profile_stat = CiscoCBQOS.STAT.copy()
-        profile_stat.update(HostInterface.STAT)
-        for k in CiscoCBQOS.DATA.keys():
-            if k in data and netspryte.snmp.value_is_metric(data[k]):
-                if 'Rate' in k:
-                    profile_stat[k] = data[k]
-        profile_strip = CiscoCBQOS.XLATE.copy()
-        profile_strip.update(HostInterface.XLATE)
-        values = get_data(profile_stat, data, xlate=profile_strip)
-        process_data_instance(cbqos, args, CiscoCBQOS.NAME, key, conf, values)
+def process_module_data(snmp_mod):
+    MGR = Manager()
+    for data in snmp_mod.data:
+        now = datetime.datetime.now()
+        this_host = MGR.get_or_create(Host, name=data['host'])
+        this_class = MGR.get_or_create(MeasurementClass, name=data['class'], transport=data['transport'])
+        this_inst = MGR.get_or_create(MeasurementInstance,
+                                      name=data['name'], index=data['index'],
+                                      host=this_host, measurement_class=this_class)
+        this_host.lastseen = now
+        this_inst.lastseen = now
+        this_inst.attrs = json_ready(data['attrs'])
+        if 'presentation' in data and not this_inst.presentation:
+            this_inst.presentation = json_ready(data['presentation'])
+        if 'metrics' in data:
+            this_inst.metrics = json_ready(data['metrics'])
+        MGR.save(this_host)
+        MGR.save(this_inst)
+        attrs = data['attrs']
+        if 'metrics' in data:
+            metric_type = dict()
+            for k, v in data['metrics'].iteritems():
+                metric_type[k] = netspryte.snmp.get_value_type(v)
+            this_class.metric_type = metric_type
+            MGR.save(this_class)
+            metrics = xlate_data(data['metrics'], snmp_mod.XLATE)
+            process_data_instance(snmp_mod, snmp_mod.NAME, data, metrics)
 
-def process_interfaces(cbqos, args):
-    for key, data in cbqos.interfaces.iteritems():
-        conf = get_data(HostInterface.DATA, data, keepmeta=True)
-        values = get_data(HostInterface.STAT, data, xlate=HostInterface.XLATE)
-        process_data_instance(cbqos, args, HostInterface.NAME, key, conf, values)
-
-def process_data_instance(cbqos, args, name, key, conf, values):
+def process_data_instance(mod, name, data, values):
     ''' '''
     if not values:
         return
-    if args.data:
-        if name == 'interface':
-            pprint.pprint({key: cbqos.interfaces[key]})
-        else:
-            pprint.pprint({key: cbqos.policers[key]})
-    json_path = mk_json_filename(cbqos, name, key)
+    rrd_path = mk_rrd_filename(mod, name, data['index'])
     dbs = get_db_backend()
     for db in dbs:
         if db.backend == 'rrd':
-            db.path = json_path.replace('json', 'rrd')
+            db.path = rrd_path
         record_stats(db, values)
-    record_data(json_path, conf, args)
-
-def record_data(path, data, args):
-    data2 = { k: netspryte.snmp.mk_pretty_value(v) for (k, v) in data.iteritems() }
-    if '_do_graph' not in data2:
-        data2['_do_graph'] = True
-    json2path(data2, path)
 
 def record_stats(db, data):
     db.write(data)
 
-def get_data(template, data, **kwargs):
+def xlate_data(data, xlate):
     values = dict()
-    xlate = dict()
-    keepmeta = False
-    if 'xlate' in kwargs:
-        xlate = kwargs['xlate']
-    if 'keepmeta' in kwargs:
-        keepmeta = kwargs['keepmeta']
-    for k in template:
+    for k in data:
         newk = clean_name(k, xlate)
-        if k in data:
-            values[newk] = data[k]
-        else:
-            values[newk] = 0
-    if keepmeta:
-        for k in data:
-            if k.startswith('_'):
-                values[k] = data[k]
+        values[newk] = data[k]
     return values
 
 def clean_name(name, xlate):
