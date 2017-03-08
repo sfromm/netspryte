@@ -23,8 +23,9 @@ from netspryte.snmp.host import HostSystem
 class CiscoCerent(HostSystem):
 
     NAME = 'cerent'
+    BASE_OID = "1.3.6.1.4.1.3607"
 
-    DATA = {
+    ATTRS = {
         'cMsDwdmIfConfigProtocol' : '1.3.6.1.4.1.3607.2.40.1.1.1.1',
         'cMsDwdmIfConfigDataRate' : '1.3.6.1.4.1.3607.2.40.1.1.1.2',
         'cMsDwdmIfConfigLoopback' : '1.3.6.1.4.1.3607.2.40.1.1.1.3',
@@ -269,7 +270,16 @@ class CiscoCerent(HostSystem):
     def __init__(self, snmp):
         self.snmp = snmp
         self.data = dict()
+        super(CiscoCerent, self).__init__(snmp)
+        if CiscoCerent.BASE_OID in str(self.sysObjectID):
+            logging.info("inspecting %s for cerent data", snmp.host)
+            self.data = self._get_configuration()
+            logging.info("done inspecting %s for cerent data", snmp.host)
 
     def _get_configuration(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCerent.NAME,
-                                            CiscoCerent.DATA, CiscoCerent.CONVERSION)
+        data = dict()
+        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCerent.NAME, CiscoCerent.ATTRS, CiscoCerent.CONVERSION)
+        for k, v in attrs.iteritems():
+            data[k] = self.initialize_instance(CiscoCerent.NAME, k)
+            data[k]['attrs'] = v
+        return data

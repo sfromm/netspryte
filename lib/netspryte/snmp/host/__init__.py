@@ -18,13 +18,14 @@
 
 import logging
 import netspryte.snmp
+import netspryte.utils
 from netspryte.errors import *
 
 class HostSystem(object):
 
     NAME = 'system'
 
-    DATA = {
+    ATTRS = {
         'sysDescr'    : '1.3.6.1.2.1.1.1',
         'sysObjectID' : '1.3.6.1.2.1.1.2',
         'sysUpTime'   : '1.3.6.1.2.1.1.3',
@@ -53,12 +54,32 @@ class HostSystem(object):
         self.data = self._get_system()
         if not self.data:
             raise NetspryteError("failed to gather base snmp host information")
-        for k, v in self.data[0].iteritems():
+        for k, v in self.data[0]['attrs'].iteritems():
             setattr(self, k, v)
+        logging.info("done inspecting %s for sys data", snmp.host)
 
     def _get_system(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, self, HostSystem.NAME,
-                                            HostSystem.DATA, HostSystem.CONVERSION)
+        data = dict()
+        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostSystem.NAME, HostSystem.ATTRS, HostSystem.CONVERSION)
+        for k, v in attrs.iteritems():
+            host = None
+            if 'sysName' in v:
+                host = v['sysName']
+            data[k] = self.initialize_instance(HostSystem.NAME, k, host)
+            data[k]['attrs'] = v
+        return data
+
+    def initialize_instance(self, measurement_class, index, host=None):
+        ''' return a dictionary with the basics of a measurement instance '''
+        data = dict()
+        data['host'] = self.sysName or self.snmp.host
+        if host:
+            data['host'] = host
+        data['class'] = measurement_class
+        data['index'] = index
+        data['transport'] = 'snmp'
+        data['name'] = netspryte.utils.mk_data_instance_id(data['host'], measurement_class, index)
+        return data
 
     @property
     def data(self):

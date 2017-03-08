@@ -18,13 +18,14 @@
 
 import logging
 import netspryte.snmp
+import binascii
 from netspryte.snmp.host import HostSystem
 
 class HostEntity(HostSystem):
 
     NAME = 'entity'
 
-    DATA = {
+    ATTRS = {
         'entPhysicalDescr'       : '1.3.6.1.2.1.47.1.1.1.1.2',
         'entPhysicalVendorType'  : '1.3.6.1.2.1.47.1.1.1.1.3',
         'entPhysicalContainedIn' : '1.3.6.1.2.1.47.1.1.1.1.4',
@@ -70,5 +71,11 @@ class HostEntity(HostSystem):
         self.data = self._get_configuration()
 
     def _get_configuration(self):
-        return netspryte.snmp.get_snmp_data(self.snmp, self, HostEntity.NAME,
-                                            HostEntity.DATA, HostEntity.CONVERSION)
+        data = dict()
+        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostEntity.NAME, HostEntity.ATTRS, HostEntity.CONVERSION)
+        for k, v in attrs.iteritems():
+            data[k] = self.initialize_instance(HostEntity.NAME, k)
+            data[k]['attrs'] = v
+            if 'entPhysicalMfgDate' in v and v['entPhysicalMfgDate']:
+                data[k]['attrs']['entPhysicalMfgDate'] = binascii.b2a_hex(v['entPhysicalMfgDate'])
+        return data

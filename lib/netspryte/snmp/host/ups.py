@@ -18,13 +18,14 @@
 
 import logging
 import netspryte.snmp
+from netspryte.snmp.host import HostSystem
 from netspryte.utils import *
 
-class HostUPS():
+class HostUPS(HostSystem):
 
     NAME = 'ups'
 
-    DATA = {
+    ATTRS = {
         'upsIdentManufacturer'         : '1.3.6.1.2.1.33.1.1.1',
         'upsIdentModel'                : '1.3.6.1.2.1.33.1.1.2',
         'upsIdentUPSSoftwareVersion'   : '1.3.6.1.2.1.33.1.1.3',
@@ -76,12 +77,15 @@ class HostUPS():
 
     def __init__(self, snmp):
         self.snmp = snmp
+        super(HostUPS, self).__init__(snmp)
         self.data = self._get_ups_data()
 
     def _get_ups_data(self):
-        data = netspryte.snmp.get_snmp_data(self.snmp, self, HostUPS.NAME,
-                                            HostUPS.DATA, HostUPS.CONVERSION)
-        stat = netspryte.snmp.get_snmp_data(self.snmp, self, HostUPS.NAME,
-                                            HostUPS.STAT, HostUPS.CONVERSION)
-        merge_dicts(data, stat)
+        data = dict()
+        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostUPS.NAME, HostUPS.ATTRS, HostUPS.CONVERSION)
+        metrics = netspryte.snmp.get_snmp_data(self.snmp, self, HostUPS.NAME, HostUPS.STAT, HostUPS.CONVERSION)
+        for k, v in attrs.iteritems():
+            data[k] = self.initialize_instance(HostUPS.NAME, k)
+            data[k]['attrs'] = v
+            data[k]['metrics'] = metrics[k]
         return data

@@ -21,7 +21,7 @@ from netspryte.snmp.host import HostSystem
 class CiscoDevice(HostSystem):
 
     NAME = "cisco"
-    DATA = { }
+    ATTRS = { }
     STAT = { }
     CONVERSION = { }
     XLATE = { }
