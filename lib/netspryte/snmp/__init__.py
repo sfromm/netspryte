@@ -27,6 +27,7 @@ from pysnmp.proto.rfc1902 import (
     Integer32,
     IpAddress,
     OctetString,
+    ObjectIdentifier,
     TimeTicks,
     Unsigned32,
 )
@@ -64,6 +65,8 @@ def mk_pretty_value(arg):
     ''' Inspect SNMP value type and return it '''
     if isinstance(arg, OctetString):
         return clean_octet_string(arg)
+    if isinstance(arg, ObjectIdentifier):
+        return arg.prettyPrint()
     if isinstance(arg, Integer):
         return arg.prettyPrint()
     if isinstance(arg, Gauge32):
@@ -127,15 +130,8 @@ def get_snmp_data(snmp, host, cls_name, snmp_oids, snmp_conversion):
             continue
         index = oid['index']
 
-
         if index not in data:
             data[index] = dict()
-            hostname = host.sysName or snmp.host
-            data[index]['_id'] = netspryte.utils.mk_data_instance_id(hostname, cls_name, index)
-            data[index]['_checksum'] = netspryte.utils.mk_secure_hash(data[index]['_id'])
-            data[index]['_checksum_type'] = C.DEFAULT_CHECKSUM
-            data[index]['_class'] = cls_name
-            data[index]['_idx'] = index
         if oid['name'] in snmp_conversion and value_is_integer(obj[1]) and \
            int(obj[1]) in snmp_conversion[oid['name']]:
             data[index][oid['name']] = snmp_conversion[oid['name']][int(obj[1])]
@@ -312,7 +308,7 @@ class SNMPSession(object):
 
     def walk(self, *oids):
         ''' perform snmp getnext or getbulk queries for list of snmp oids '''
-        results = []
+        results = list()
         cmd_gen = cmdgen.CommandGenerator()
         if self.version == '1' or not self.bulk:
             return self._cmd(self._cmdgen.nextCmd, *oids)
