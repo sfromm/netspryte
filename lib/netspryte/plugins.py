@@ -46,7 +46,7 @@ class PluginLoader:
             warnings.simplefilter("ignore", RuntimeWarning)
             with open(path, 'r') as module_file:
                 module = imp.load_source(name, path, module_file)
-                logging.warn("loaded module %s", name)
+                logging.debug("loaded module %s", name)
         for name, obj in inspect.getmembers(module, inspect.isclass):
             if obj.__module__ == os.path.splitext(module.__file__)[0]:
                 cls = obj
