@@ -32,7 +32,7 @@ test: clean
 	PYTHONPATH=lib \
 		NETSPRYTE_CONFIG=tests/netspryte.cfg \
 		NETSPRYTE_SNMP_HOST="localhost" \
-		NETSPRYTE_INFLUXDB_DATABASE="testdb" \
+		NETSPRYTE_INFLUXDB_DATABASE="netspryte-test" \
 		nosetests -s -d -v --with-coverage \
 		--cover-erase --cover-package=netspryte
 
