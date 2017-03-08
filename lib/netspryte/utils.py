@@ -34,12 +34,14 @@ from netspryte import constants as C
 def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL, use_syslog=False):
     ''' set up logging '''
     C.DEFAULT_LOG_LEVEL = int(loglevel)
-    if C.DEFAULT_LOG_LEVEL >= 2:
+    if C.DEFAULT_LOG_LEVEL >= 3:
         loglevel = 'DEBUG'
-    elif C.DEFAULT_LOG_LEVEL >= 1:
+    elif C.DEFAULT_LOG_LEVEL >= 2:
         loglevel = 'INFO'
-    else:
+    elif C.DEFAULT_LOG_LEVEL >= 1:
         loglevel = 'WARN'
+    else:
+        loglevel = 'ERROR'
 
     if C.DEFAULT_VERBOSE and loglevel == 'WARN':
         loglevel = 'INFO'
@@ -130,6 +132,16 @@ def mk_path(arg):
     if not os.path.exists(arg):
         os.makedirs(arg)
 
+def json_ready(data):
+    ''' take a dictionary and make it json friendly '''
+    newdata = dict()
+    for k, v in data.iteritems():
+        if hasattr(v, 'prettyPrint'):
+            newdata[k] = v.prettyPrint()
+        else:
+            newdata[k] = str(v)
+    return newdata
+
 def parse_json(data):
     ''' convert json string to data structure '''
     return json.loads(data)
@@ -216,13 +228,19 @@ def safe_update(dict1, dict2):
             newdict[k] = v
     return newdict
 
-def mk_json_filename(device, *args):
-    ''' create a json filename based on the collected object '''
+def mk_measurement_instance_filename(device, *args):
+    ''' create a filename based on the collected object '''
     parts = list()
-    dev_name = device.sysName
+    if hasattr(device, 'sysName'):
+        dev_name = device.sysName
+    else:
+        dev_name = device
     for arg in args:
         parts.append( arg.replace(".", "-") )
-    return os.path.join(C.DEFAULT_DATADIR, dev_name, "{0}.json".format("-".join(parts)))
+    return os.path.join(C.DEFAULT_DATADIR, dev_name, "{0}".format("-".join(parts)))
+
+def mk_json_filename(device, *args):
+    return "{0}.json".format(mk_measurement_instance_filename(device, *args))
 
 def mk_data_instance_id(device, cls, instance):
     id = list()
