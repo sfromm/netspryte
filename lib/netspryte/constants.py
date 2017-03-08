@@ -116,3 +116,9 @@ DEFAULT_INFLUXDB_PORT     = get_config(p, 'influxdb', 'port',     'NETSPRYTE_INF
 DEFAULT_INFLUXDB_USER     = get_config(p, 'influxdb', 'user',     'NETSPRYTE_INFLUXDB_USER',     'root')
 DEFAULT_INFLUXDB_PASSWORD = get_config(p, 'influxdb', 'password', 'NETSPRYTE_INFLUXDB_PASSWORD', 'root')
 DEFAULT_INFLUXDB_DATABASE = get_config(p, 'influxdb', 'database', 'NETSPRYTE_INFLUXDB_DATABASE', 'netspryte')
+
+DEFAULT_DB_ENGINE        = get_config(p, DEFAULTS, 'dbengine', 'NETSPRYTE_DB_ENGINE', 'postgres')
+DEFAULT_DB_NAME          = get_config(p, DEFAULTS, 'dbname',   'NETSPRYTE_DB_NAME', 'netspryte')
+DEFAULT_DB_HOST          = get_config(p, DEFAULTS, 'dbhost',   'NETSPRYTE_DB_HOST', 'localhost')
+DEFAULT_DB_USER          = get_config(p, DEFAULTS, 'dbuser',   'NETSPRYTE_DB_USER', 'netspryte')
+DEFAULT_DB_PASS          = get_config(p, DEFAULTS, 'dbpass',   'NETSPRYTE_DB_PASS', 'netspryte')
