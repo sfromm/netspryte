@@ -20,12 +20,13 @@ import logging
 import netspryte.snmp
 from netspryte.snmp.host import HostSystem
 from netspryte.utils import *
+from pysnmp.proto.rfc1902 import Counter32
 
 class HostInterface(HostSystem):
 
     NAME = 'interface'
 
-    DATA = {
+    ATTRS = {
         'ifIndex'       : '1.3.6.1.2.1.2.2.1.1',
         'ifDescr'       : '1.3.6.1.2.1.2.2.1.2',
         'ifType'        : '1.3.6.1.2.1.2.2.1.3',
@@ -89,18 +90,32 @@ class HostInterface(HostSystem):
         super(HostInterface, self).__init__(snmp)
         logging.info("inspecting %s for interface data", snmp.host)
         self.data = self._get_interface()
+        logging.info("done inspecting %s for interface data", snmp.host)
 
     def _get_interface(self):
-        data = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME,
-                                            HostInterface.DATA, HostInterface.CONVERSION)
-        for key in data.keys():
-            data[key]['_title'] = "{0}:{1}".format(self.sysName, data[key].get('ifDescr', 'NA'))
-            data[key]['_description'] = data[key].get('ifAlias', 'NA')
-        stat = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME,
-                                            HostInterface.STAT, HostInterface.CONVERSION)
-        merge_dicts(data, stat)
+        '''
+        Pull together attributes and metrics for all interfaces into a dictionary
+        associated with with a SNMP object for a device.
+        '''
+        data = dict()
+        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME, HostInterface.ATTRS, HostInterface.CONVERSION)
+        metrics = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME, HostInterface.STAT, HostInterface.CONVERSION)
+        for k, v in attrs.iteritems():
+            title = "{0}:{1}".format(self.sysName, attrs[k].get('ifDescr', 'NA'))
+            descr = attrs[k].get('ifAlias', 'NA')
+            data[k] = self.initialize_instance(HostInterface.NAME, k)
+            data[k]['attrs'] = v
+            data[k]['presentation'] = {'title': title, 'description': descr}
+            if k in metrics:
+                data[k]['metrics'] = metrics[k]
+                # In the event that not all STATs are returned
+                # (eg not available or supported for a particular ifType),
+                # go back and put them in the recorded metrics for this measurement
+                # instance.  Fake a COUNTER value of 0.
+                for stat in HostInterface.STAT.keys():
+                    if stat not in data[k]['metrics']:
+                        data[k]['metrics'][stat] = Counter32(0)
         return data
-
 
     @property
     def interfaces(self):

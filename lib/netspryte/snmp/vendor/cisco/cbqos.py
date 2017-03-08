@@ -21,12 +21,13 @@ import netspryte.snmp
 import netspryte.snmp.host.interface
 from netspryte.snmp.vendor.cisco import CiscoDevice
 from netspryte.utils import *
+from pysnmp.proto.rfc1902 import Counter32
 
 class CiscoCBQOS(CiscoDevice):
 
     NAME = 'cbqos'
 
-    DATA = {
+    ATTRS = {
         'cbQosIfType'                 : '1.3.6.1.4.1.9.9.166.1.1.1.1.2',
         'cbQosPolicyDirection'        : '1.3.6.1.4.1.9.9.166.1.1.1.1.3',
         'cbQosIfIndex'                : '1.3.6.1.4.1.9.9.166.1.1.1.1.4',
@@ -126,6 +127,7 @@ class CiscoCBQOS(CiscoDevice):
 
     def __init__(self, snmp):
         self.snmp = snmp
+        self.data = dict()
         super(CiscoCBQOS, self).__init__(snmp)
         if CiscoDevice.BASE_OID not in str(self.sysObjectID):
             logging.debug("skipping cbqos check on non-cisco device %s", self.sysName)
@@ -134,47 +136,54 @@ class CiscoCBQOS(CiscoDevice):
         host = netspryte.snmp.host.interface.HostInterface(self.snmp)
         self.interfaces = host.interfaces
         self.data = self._get_configuration()
+        logging.info("done inspecting %s for cbqos data", snmp.host)
 
     def _get_configuration(self):
         ''' get cbqos objects '''
-        data = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
-                                            CiscoCBQOS.DATA, CiscoCBQOS.CONVERSION)
-        stat = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
+        data = dict()
+        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
+                                            CiscoCBQOS.ATTRS, CiscoCBQOS.CONVERSION)
+        metrics = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
                                             CiscoCBQOS.STAT, CiscoCBQOS.CONVERSION)
-        interfaces = { k['_idx']: k for k in self.interfaces }
-        skip_instances = [ k for k in data.keys() if '.' not in k ]
+        interfaces = { k['index']: k for k in self.interfaces }
+        skip_instances = [ k for k in attrs.keys() if '.' not in k ]
 
         # merge related instances into together for a coherent view
-        for key in data.keys():
-            if key in skip_instances:
+        for k, v in attrs.iteritems():
+            if k in skip_instances:
                 continue
-            if 'cbQosParentObjectsIndex' in data[key] and data[key]['cbQosParentObjectsIndex'] != 0:
-                data[key]['parent'] = key.split('.')[0] + "." + str(data[key]['cbQosParentObjectsIndex'])
-            cfg_index = str(data[key]['cbQosConfigIndex'])
+            data[k] = self.initialize_instance(CiscoCBQOS.NAME, k)
+            local_attrs = v.copy()
+            if 'cbQosParentObjectsIndex' in v and v['cbQosParentObjectsIndex'] != 0:
+                local_attrs['parent'] = k.split('.')[0] + "." + str(v['cbQosParentObjectsIndex'])
+            cfg_index = str(v['cbQosConfigIndex'])
+
             if cfg_index in skip_instances:
-                data[key] = safe_update(data[key], data[cfg_index])
-            base = key.split('.')[0]
+                local_attrs = safe_update(local_attrs, attrs[cfg_index])
+            base = k.split('.')[0]
             if base in data:
-                data[key] = safe_update(data[key], data[base])
-            if 'cbQosIfIndex' in data[key]:
-                ifidx = str(data[key]['cbQosIfIndex'])
-                data[key] = safe_update(data[key], interfaces[ifidx])
+                local_attrs = safe_update(local_attrs, attrs[base])
+            if 'cbQosIfIndex' in local_attrs:
+                ifidx = str(local_attrs['cbQosIfIndex'])
+                local_attrs = safe_update(local_attrs, interfaces[ifidx])
             # The MIB erroneously marks this as a COUNTER64 to get the requisite number of bits
             # but it behaves like a GAUGE.  Unfortunately, there is no GAUGE64 object.  So ...
             # convert it to an int() so that it is treated like a GAUGE.
-            if 'cbQosPoliceCfgRate64' in data[key]:
-                data[key]['cbQosPoliceCfgRate64'] = int(data[key]['cbQosPoliceCfgRate64'])
+            if 'cbQosPoliceCfgRate64' in local_attrs:
+                local_attrs['cbQosPoliceCfgRate64'] = int(local_attrs['cbQosPoliceCfgRate64'])
+            data[k]['attrs'] = local_attrs.copy()
+            data[k]['presentation'] = dict()
+            if k in metrics:
+                data[k]['metrics'] = metrics[k]
+                for stat in CiscoCBQOS.STAT.keys():
+                    if stat not in data[k]['metrics']:
+                        data[k]['metrics'][stat] = Counter32(0)
 
-        # merge stat and data
-        merge_dicts(stat, data)
-
-        # Set the meta information for the object
-        # handled separately because it requires all of instance 'data' to be set.
         for key in data.keys():
             if key in skip_instances:
                 continue
-            data[key]['_title'] = self.get_policy_map_name(key, data)
-            data[key]['_description'] = "{0}:{1}".format(data[key]['_title'], data[key].get('ifAlias', 'NA'))
+            data[key]['presentation']['title'] = self.get_policy_map_name(key, data)
+            data[key]['presentation']['description'] = "{0}:{1}".format(data[key]['presentation']['title'], data[key].get('ifAlias', 'NA'))
         return data
 
     @property
@@ -192,20 +201,20 @@ class CiscoCBQOS(CiscoDevice):
         ''' get policer information '''
         policers = list()
         for data in self.data:
-            if 'cbQosObjectsType' in data and data['cbQosObjectsType'] == 'police':
+            if 'cbQosObjectsType' in data['attrs'] and data['attrs']['cbQosObjectsType'] == 'police':
                 policers.append(data)
         return policers
 
     def get_policy_map_name(self, idx, data_dict):
         key = 'cbQosPolicyMapName'
-        if key not in data_dict[idx]:
-            return self.get_policy_map_name(data_dict[idx]['parent'], data_dict)
+        if key not in data_dict[idx]['attrs']:
+            return self.get_policy_map_name(data_dict[idx]['attrs']['parent'], data_dict)
         else:
-            return data_dict[idx][key]
+            return data_dict[idx]['attrs'][key]
 
     def get_class_map_name(self, idx, data_dict):
         key = 'cbQosCMName'
-        if key not in data[idx]:
-            return self.get_policy_map_name(data[idx]['parent'], data_dict)
+        if key not in data[idx]['attrs']:
+            return self.get_policy_map_name(data[idx]['attrs']['parent'], data_dict)
         else:
-            return data_dict[idx][key]
+            return data_dict[idx]['attrs'][key]
