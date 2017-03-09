@@ -17,7 +17,12 @@ setup(name='netspryte',
       author=__author__,
       author_email=__email__,
       license='GPLv3',
-      install_requires=['pysnmp'],
+      install_requires=[
+          'flask',
+          'peewee',
+          'psycopg2',
+          'pysnmp',
+          ],
       package_dir={'' : 'lib'},
       packages=find_packages('lib'),
       classifiers=[
