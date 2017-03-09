@@ -41,64 +41,67 @@ class InfluxDatabaseBackend(BaseDatabaseBackend):
         if not HAVE_INFLUXDB:
             logging.error("do not have influxdb bindings for python")
             return None
-        self.influxdb_host = kwargs.get('influxdb_host', C.DEFAULT_INFLUXDB_HOST)
-        self.influxdb_port = kwargs.get('influxdb_port', C.DEFAULT_INFLUXDB_PORT)
-        self.influxdb_database = kwargs.get('influxdb_database', C.DEFAULT_INFLUXDB_DATABASE)
-        self.influxdb_user = kwargs.get('influxdb_user', C.DEFAULT_INFLUXDB_USER)
-        self.influxdb_password = kwargs.get('influxdb_password', C.DEFAULT_INFLUXDB_PASSWORD)
-        self.client = influxdb.InfluxDBClient(self.influxdb_host, self.influxdb_port,
-                                              self.influxdb_user, self.influxdb_password, self.influxdb_database)
-        logging.warn("influx host is %s", self.influxdb_host)
+        self.host = kwargs.get('host', C.DEFAULT_INFLUXDB_HOST)
+        self.port = kwargs.get('port', C.DEFAULT_INFLUXDB_PORT)
+        self.database = kwargs.get('database', C.DEFAULT_INFLUXDB_DATABASE)
+        self.user = kwargs.get('user', C.DEFAULT_INFLUXDB_USER)
+        self.password = kwargs.get('password', C.DEFAULT_INFLUXDB_PASSWORD)
+        self.client = influxdb.InfluxDBClient(self.host, self.port,
+                                              self.user, self.password, self.database)
+        logging.warn("influx host is %s", self.host)
         databases = influxdb_list_databases(self.client)
-        if self.influxdb_database not in databases:
-            influxdb_create_database(self.client, self.influxdb_database)
+        if self.database not in databases:
+            influxdb_create_database(self.client, self.database)
 
     def write(self, data):
         ''' write data to rrd database '''
         if not self.client:
             return None
-        influxdb_switch_database(self.client, self.influxdb_database)
-        return influxdb_write(self.client, data, self.host)
+        influxdb_switch_database(self.client, self.database)
+        return influxdb_write(self.client, data)
 
     @property
-    def influxdb_host(self):
-        return self._influxdb_host
+    def host(self):
+        return self._host
 
-    @influxdb_host.setter
-    def influxdb_host(self, arg):
-        self._influxdb_host = arg
-
-    @property
-    def influxdb_port(self):
-        return self._influxdb_port
-
-    @influxdb_port.setter
-    def influxdb_port(self, arg):
-        self._influxdb_port = arg
+    @host.setter
+    def host(self, arg):
+        self._host = arg
 
     @property
-    def influxdb_database(self):
-        return self._influxdb_database
+    def port(self):
+        return self._port
 
-    @influxdb_database.setter
-    def influxdb_database(self, arg):
-        self._influxdb_database = arg
-
-    @property
-    def influxdb_user(self):
-        return self._influxdb_user
-
-    @influxdb_user.setter
-    def influxdb_user(self, arg):
-        self._influxdb_user = arg
+    @port.setter
+    def port(self, arg):
+        try:
+            self._port = int(arg)
+        except ValueError:
+            raise ValueError("InflubDB port must be an integer")
 
     @property
-    def influxdb_password(self):
-        return self._influxdb_password
+    def database(self):
+        return self._database
 
-    @influxdb_password.setter
-    def influxdb_password(self, arg):
-        self._influxdb_password = arg
+    @database.setter
+    def database(self, arg):
+        self._database = arg
+
+    @property
+    def user(self):
+        return self._user
+
+    @user.setter
+    def user(self, arg):
+        self._user = arg
+
+    @property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, arg):
+        self._password = arg
 
 def influxdb_create_database(client, dbname):
     try:
@@ -116,11 +119,12 @@ def influxdb_list_databases(client):
     dbs = client.get_list_database()
     return [ x['name'] for x in dbs ]
 
-def influxdb_write(client, data, host="localhost", ts=time.time()):
+def influxdb_write(client, data, ts=time.time()):
     points = list()
-    data_class = data.get('_class', 'NA')
-    data_title = data.get('_title', 'NA')
-    data_id = data.get('_id', 'NA')
+    data_class = data.measurement_class.name
+    data_title = data.presentation.title
+    data_id = data.name
+    data_host = data.host.name
     for k, v in data.iteritems():
         if k.startswith('_'):
             continue
@@ -130,7 +134,7 @@ def influxdb_write(client, data, host="localhost", ts=time.time()):
             "measurement": data_class,
             "time": int(ts),
             "tags": {
-                "host"  : host,
+                "host"  : data_host,
                 "title" : data_title,
                 "instance" : data_id,
                 "type": k.lower()
