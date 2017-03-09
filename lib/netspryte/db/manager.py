@@ -136,15 +136,24 @@ class Manager(object):
         return result
 
     def get_instances_by_host(self, arg):
-        ''' blah '''
+        ''' Return list of measurement instances based on the associated host '''
         result = list()
         host = self.get(Host, name=arg)
         for q in MeasurementInstance.select().join(Host).where(MeasurementInstance.host == host):
             result.append(q)
         return result
 
+    def get_instances_by_class(self, arg):
+        ''' Return list of measurement instances based on the measurement class '''
+        result = list()
+        cls = self.get(MeasurementClass, name=arg)
+        print cls.name
+        for q in MeasurementInstance.select().join(Host).where(MeasurementInstance.measurement_class == cls):
+            result.append(q)
+        return result
+
     def get_instances_by_attribute(self, key, val):
-        ''' blah '''
+        ''' Return list of measurement instances based on a matching attribute value '''
         result = list()
         for q in MeasurementInstance.select().where(
                 MeasurementInstance.attrs[key].startswith(val)):
@@ -152,7 +161,7 @@ class Manager(object):
         return result
 
     def get_instances_by_presentation(self, key, val):
-        ''' blah '''
+        ''' Return list of measurement instances based on a matching presentation value '''
         result = list()
         for q in MeasurementInstance.select().where(
                 MeasurementInstance.presentation[key].startswith(val)):
