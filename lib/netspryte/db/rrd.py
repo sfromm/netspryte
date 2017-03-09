@@ -103,8 +103,6 @@ def rrd_graph(path, rrd_opts, graph_opts):
     if path != "-" and not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     try:
-        print rrd_opts
-        print graph_opts
         logging.info("creating graph %s", path)
         data = rrdtool.graphv(path, rrd_opts, graph_opts)
     except rrdtool.error as e:
