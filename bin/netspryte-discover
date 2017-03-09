@@ -1,0 +1,14 @@
+#!/usr/bin/python
+__requires__ = ['netspryte']
+try:
+    import pkg_resources
+except Exception:
+    pass
+import sys
+
+from netspryte.commands.discover import DiscoverCommand
+
+if __name__ == '__main__':
+    cmd = DiscoverCommand()
+    sys.exit(cmd.execute())
+
