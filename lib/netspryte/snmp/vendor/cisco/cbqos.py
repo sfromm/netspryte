@@ -123,6 +123,8 @@ class CiscoCBQOS(CiscoDevice):
         'cbQos' : '',
         '64'    : '',
         'Bit'   : '',
+        'ifHC' : '',
+        'if'   : '',
     }
 
     def __init__(self, snmp):
@@ -142,9 +144,9 @@ class CiscoCBQOS(CiscoDevice):
         ''' get cbqos objects '''
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
-                                            CiscoCBQOS.ATTRS, CiscoCBQOS.CONVERSION)
+                                             CiscoCBQOS.ATTRS, CiscoCBQOS.CONVERSION)
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
-                                            CiscoCBQOS.STAT, CiscoCBQOS.CONVERSION)
+                                               CiscoCBQOS.STAT, CiscoCBQOS.CONVERSION)
         interfaces = { k['index']: k for k in self.interfaces }
         skip_instances = [ k for k in attrs.keys() if '.' not in k ]
 
@@ -156,25 +158,47 @@ class CiscoCBQOS(CiscoDevice):
             local_attrs = v.copy()
             if 'cbQosParentObjectsIndex' in v and v['cbQosParentObjectsIndex'] != 0:
                 local_attrs['parent'] = k.split('.')[0] + "." + str(v['cbQosParentObjectsIndex'])
-            cfg_index = str(v['cbQosConfigIndex'])
 
+            # Pull in attributes from the cbqos config index.
+            # The cbQosConfigIndex is used to identify the configuration,
+            # which does not change regardless of number of times and where it is used.
+            cfg_index = str(v['cbQosConfigIndex'])
             if cfg_index in skip_instances:
                 local_attrs = safe_update(local_attrs, attrs[cfg_index])
+
+            # Pull in attributes from the base/parent for this particular cbqos object type.
+            # This is loosely related to the cbQosParentsObjectIndex, but just cuts to the
+            # top of the hierarchy.
             base = k.split('.')[0]
-            if base in data:
+            if base in attrs:
                 local_attrs = safe_update(local_attrs, attrs[base])
+
+            # If the cbQosIfIndex is present, pull in the related attributes for the
+            # interface in question.
             if 'cbQosIfIndex' in local_attrs:
                 ifidx = str(local_attrs['cbQosIfIndex'])
-                local_attrs = safe_update(local_attrs, interfaces[ifidx])
+                local_attrs = safe_update(local_attrs, interfaces[ifidx]['attrs'])
+
             # The MIB erroneously marks this as a COUNTER64 to get the requisite number of bits
             # but it behaves like a GAUGE.  Unfortunately, there is no GAUGE64 object.  So ...
             # convert it to an int() so that it is treated like a GAUGE.
             if 'cbQosPoliceCfgRate64' in local_attrs:
                 local_attrs['cbQosPoliceCfgRate64'] = int(local_attrs['cbQosPoliceCfgRate64'])
-            data[k]['attrs'] = local_attrs.copy()
+            data[k]['attrs'] = local_attrs
             data[k]['presentation'] = dict()
             if k in metrics:
-                data[k]['metrics'] = metrics[k]
+                local_metrics = metrics[k].copy()
+                local_metrics = safe_update(local_metrics, interfaces[ifidx]['metrics'])
+                # Push the policer configured rate into the metrics dict
+                if 'cbQosPoliceCfgRate64' in local_attrs:
+                    local_metrics['cbQosPoliceCfgRate64'] = local_attrs['cbQosPoliceCfgRate64']
+
+                # Finally, attach metrics to this measurement instance
+                data[k]['metrics'] = local_metrics
+                # In the event that not all STATs are returned
+                # (eg not available or supported),
+                # go back and put them in the recorded metrics for this measurement
+                # instance.  Fake a COUNTER value of 0.
                 for stat in CiscoCBQOS.STAT.keys():
                     if stat not in data[k]['metrics']:
                         data[k]['metrics'][stat] = Counter32(0)
