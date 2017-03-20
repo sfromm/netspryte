@@ -53,6 +53,8 @@ class RrdTuneCommand(BaseCommand):
                 ds_max = int(data['ifSpeed'])
                 if ds_max == ( 2**32 - 1):
                     ds_max = int(data['ifHighSpeed']) * 10**6
+                if ds_max == 0:
+                    ds_max = 40 * 10**9
                 rrd_tune_ds_max(rrd_path, ds_max)
         except KeyError as e:
             logging.error("failed to look up key: %s", e)
