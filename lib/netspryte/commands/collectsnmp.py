@@ -99,6 +99,8 @@ def process_module_data(snmp_mod):
         now = datetime.datetime.now()
         this_host = MGR.get_or_create(Host, name=data['host'])
         this_class = MGR.get_or_create(MeasurementClass, name=data['class'], transport=data['transport'])
+        if hasattr(snmp_mod, 'DESCRIPTION') and not this_class.description:
+            this_class.description = snmp_mod.DESCRIPTION
         this_inst = MGR.get_or_create(MeasurementInstance,
                                       name=data['name'], index=data['index'],
                                       host=this_host, measurement_class=this_class)
@@ -110,6 +112,7 @@ def process_module_data(snmp_mod):
         if 'metrics' in data:
             this_inst.metrics = json_ready(data['metrics'])
         MGR.save(this_host)
+        MGR.save(this_class)
         MGR.save(this_inst)
         attrs = data['attrs']
         if 'metrics' in data:
