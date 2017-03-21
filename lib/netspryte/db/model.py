@@ -35,17 +35,21 @@ class BaseModel(Model):
 class Host(BaseModel):
     name = CharField(index=True)
     lastseen = DateTimeField(default=datetime.datetime.now, index=True)
+    interval = IntegerField(default=C.DEFAULT_INTERVAL)
 
     class Meta:
         db_table = 'host'
+        order_by = ("name",)
 
 class MeasurementClass(BaseModel):
     name = CharField()
+    description = CharField(null=True)
     transport = CharField()
     metric_type = BinaryJSONField(index=True, null=True)
 
     class Meta:
         db_table = "measurement_class"
+        order_by = ("name", "transport",)
         indexes = (
             (('name', 'transport'), True),
         )
@@ -64,3 +68,4 @@ class MeasurementInstance(BaseModel):
 
     class Meta:
         db_table = "measurement_instance"
+        order_by = ("name",)

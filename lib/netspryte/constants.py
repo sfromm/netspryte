@@ -96,6 +96,7 @@ DEFAULT_WWWDIR         = get_config(p, DEFAULTS, "wwwdir",         "NETSPRYTE_WW
 DEFAULT_WWW_CGI_URL    = get_config(p, DEFAULTS, "www_cgi_url",    "NETSPRYTE_WWW_CGI_URL",    "/graph.cgi")
 DEFAULT_CHECKSUM       = get_config(p, DEFAULTS, "checksum",       "NETSPRYTE_CHECKSUM",       "sha1")
 DEFAULT_STRFTIME       = get_config(p, DEFAULTS, 'strftime',       "NETSPRYTE_STRFTIME",       "%c")
+DEFAULT_INTERVAL       = get_config(p, DEFAULTS, "interval",       "NETSPRYTE_INTERVAL",       1, integer=True)
 
 DEFAULT_ALLOWED_SNMP_VERSIONS = ['1', '2c', '3']
 DEFAULT_ALLOWED_SNMP_LEVELS   = ['authNoPriv', 'authPriv']
@@ -104,10 +105,12 @@ DEFAULT_RRD_STEP       = get_config(p, 'rrd', 'step',      "NETSPRYTE_RRD_STEP",
 DEFAULT_RRD_HEARTBEAT  = get_config(p, 'rrd', 'heartbeat', "NETSPRYTE_RRD_HEARTBEAT", 5,  integer=True)
 DEFAULT_RRD_WATERMARK  = get_config(p, 'rrd', 'watermark', "NETSPRYTE_RRD_WATERMARK", "TIMESTAMP")
 DEFAULT_RRD_START      = get_config(p, 'rrd', 'start',     "NETSPRYTE_RRD_START",     ["-1d", "-1w", "-1m", "-1y"], islist=True)
-DEFAULT_RRD_RRA =        get_config(p, 'rrd', 'rra',       "NETSPRYTE_RRD_RRA",       [ "RRA:AVERAGE:0.5:1:10080",
-                                                                                        "RRA:AVERAGE:0.5:120:2232",
-                                                                                        "RRA:AVERAGE:0.5:1440:1098",
+DEFAULT_RRD_RRA =        get_config(p, 'rrd', 'rra',       "NETSPRYTE_RRD_RRA",       [ "RRA:AVERAGE:0.5:1:10080",   # 7 days   of 1 minute
+                                                                                        "RRA:AVERAGE:0.5:30:4320",   # 90 days  of 30 minute
+                                                                                        "RRA:AVERAGE:0.5:120:2232",  # 186 days of 2 hours
+                                                                                        "RRA:AVERAGE:0.5:1440:1098", # 3 years  of 1 day
                                                                                         "RRA:MAX:0.5:1:10080",
+                                                                                        "RRA:MAX:0.5:30:4320",
                                                                                         "RRA:MAX:0.5:120:2232",
                                                                                         "RRA:MAX:0.5:1440:1098" ], islist=True)
 
