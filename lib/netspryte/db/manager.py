@@ -128,42 +128,58 @@ class Manager(object):
     def to_dict(self, modinst):
         return model_to_dict(modinst)
 
-    def get_instances(self, key, val):
+    def get_instances(self, key, val, paginated=False):
         ''' return measurement instances where key equals value '''
-        result = list()
-        for q in MeasurementInstance.select().where(getattr(MeasurementInstance, key) == val):
-            result.append(q)
-        return result
+        qry = MeasurementInstance.select().where(getattr(MeasurementInstance, key) == val)
+        if paginated:
+            return qry
+        else:
+            return [ q for q in qry ]
 
-    def get_instances_by_host(self, arg):
-        ''' Return list of measurement instances based on the associated host '''
-        result = list()
+    def get_instances_by_host(self, arg, paginated=False):
+        '''
+        Return list of measurement instances based on the associated host.
+        If paginated is True, return a peewee Query object.
+        '''
         host = self.get(Host, name=arg)
-        for q in MeasurementInstance.select().join(Host).where(MeasurementInstance.host == host):
-            result.append(q)
-        return result
+        qry = MeasurementInstance.select().join(Host).where(MeasurementInstance.host == host)
+        if paginated:
+            return qry
+        else:
+            return [ q for q in qry ]
 
-    def get_instances_by_class(self, arg):
-        ''' Return list of measurement instances based on the measurement class '''
-        result = list()
+    def get_instances_by_class(self, arg, paginated=False):
+        '''
+        Return list of measurement instances based on the measurement class.
+        If paginated is True, return a peewee Query object.
+        '''
         cls = self.get(MeasurementClass, name=arg)
-        print cls.name
-        for q in MeasurementInstance.select().join(Host).where(MeasurementInstance.measurement_class == cls):
-            result.append(q)
-        return result
+        qry = MeasurementInstance.select().join(Host).where(MeasurementInstance.measurement_class == cls)
+        if paginated:
+            return qry
+        else:
+            return [ q for q in qry ]
 
-    def get_instances_by_attribute(self, key, val):
-        ''' Return list of measurement instances based on a matching attribute value '''
-        result = list()
-        for q in MeasurementInstance.select().where(
-                MeasurementInstance.attrs[key].startswith(val)):
-            result.append(q)
-        return result
+    def get_instances_by_attribute(self, key, val, paginated=False):
+        '''
+        Return list of measurement instances based on a matching attribute value.
+        If paginated is True, return a peewee Query object.
+        '''
+        qry = MeasurementInstance.select().where(MeasurementInstance.attrs[key].startswith(val))
+        if paginated:
+            return qry
+        else:
+            return [ q for q in qry ]
 
-    def get_instances_by_presentation(self, key, val):
-        ''' Return list of measurement instances based on a matching presentation value '''
-        result = list()
-        for q in MeasurementInstance.select().where(
-                MeasurementInstance.presentation[key].startswith(val)):
-            result.append(q)
-        return result
+    def get_instances_by_presentation(self, key, val, paginated=False):
+        '''
+        Return list of measurement instances based on a matching presentation value.
+        If paginated is True, return a peewee Query object.
+        '''
+        if isinstance(val, list):
+            pass
+        qry = MeasurementInstance.select().where(MeasurementInstance.presentation[key].startswith(val))
+        if paginated:
+            return qry
+        else:
+            return [ q for q in qry ]
