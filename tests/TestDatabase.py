@@ -1,5 +1,5 @@
 # Written by Stephen Fromm <stephenf nero net>
-# (C) 2015 University of Oregon
+# Copyright (C) 2015-2017 University of Oregon
 
 # This file is part of netspryte
 #
@@ -37,21 +37,38 @@ class TestDatabase(unittest.TestCase):
 
     def test_db_influxdb_port_is_integer(self):
         db = netspryte.db.influx.InfluxDatabaseBackend('influxdb')
-        self.assertEqual(db.influxdb_port, C.DEFAULT_INFLUXDB_PORT)
+        self.assertEqual(db.port, C.DEFAULT_INFLUXDB_PORT)
 
     def test_db_influxdb_create(self):
-        db = netspryte.db.influx.InfluxDatabaseBackend('influxdb', host=self.msnmp.host,
-                                                      influxdb_host=C.DEFAULT_INFLUXDB_HOST,
-                                                      influxdb_user=C.DEFAULT_INFLUXDB_USER,
-                                                      influxdb_password=C.DEFAULT_INFLUXDB_PASSWORD,
-                                                      influxdb_database=C.DEFAULT_INFLUXDB_DATABASE)
+        db = netspryte.db.influx.InfluxDatabaseBackend('influxdb',
+                                                       host=C.DEFAULT_INFLUXDB_HOST,
+                                                       user=C.DEFAULT_INFLUXDB_USER,
+                                                       password=C.DEFAULT_INFLUXDB_PASSWORD,
+                                                       database=C.DEFAULT_INFLUXDB_DATABASE)
         self.assertTrue(hasattr(db, 'client'))
 
     def test_db_influxdb_write(self):
-        db = netspryte.db.influx.InfluxDatabaseBackend('influxdb', host=self.msnmp.host,
-                                                      influxdb_host=C.DEFAULT_INFLUXDB_HOST,
-                                                      influxdb_user=C.DEFAULT_INFLUXDB_USER,
-                                                      influxdb_password=C.DEFAULT_INFLUXDB_PASSWORD,
-                                                      influxdb_database=C.DEFAULT_INFLUXDB_DATABASE)
-        for key, data in self.hostintf.data.iteritems():
+        db = netspryte.db.influx.InfluxDatabaseBackend('influxdb',
+                                                       host=C.DEFAULT_INFLUXDB_HOST,
+                                                       user=C.DEFAULT_INFLUXDB_USER,
+                                                       password=C.DEFAULT_INFLUXDB_PASSWORD,
+                                                       database=C.DEFAULT_INFLUXDB_DATABASE)
+        for data in self.hostintf.data:
+            db.write(data)
+
+    def test_db_mongodb_port_is_integer(self):
+        db = netspryte.db.mongo.MongoDatabaseBackend('mongodb')
+        self.assertEqual(db.port, C.DEFAULT_MONGODB_PORT)
+
+    def test_db_mongodb_create(self):
+        db = netspryte.db.mongo.MongoDatabaseBackend('mongodb',
+                                                     host=C.DEFAULT_MONGODB_HOST,
+                                                     database=C.DEFAULT_MONGODB_DATABASE)
+        self.assertTrue(hasattr(db, 'db'))
+
+    def test_db_mongodb_write(self):
+        db = netspryte.db.mongo.MongoDatabaseBackend('mongodb',
+                                                     host=C.DEFAULT_MONGODB_HOST,
+                                                     database=C.DEFAULT_MONGODB_DATABASE)
+        for data in self.hostintf.data:
             db.write(data)

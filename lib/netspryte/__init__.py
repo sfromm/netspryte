@@ -1,9 +1,9 @@
 # Written by Stephen Fromm <stephenf nero net>
-# (C) 2015-2016 University of Oregon
+# Copyright (C) 2015-2017 University of Oregon
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful, but
@@ -19,4 +19,4 @@
 __name__ = 'netspryte'
 __author__ = 'Stephen Fromm'
 __email__  = 'stephenf@nero.net'
-__version__ = '0.1'
+__version__ = '17.03'

@@ -1,5 +1,5 @@
 # Written by Stephen Fromm <stephenf nero net>
-# (C) 2016 University of Oregon
+# Copyright (C) 2016- 2017 University of Oregon
 #
 # This file is part of netspryte
 #

@@ -1,5 +1,5 @@
 # Written by Stephen Fromm <stephenf nero net>
-# (C) 2015 University of Oregon
+# Copyright (C) 2015-2017 University of Oregon
 
 # This file is part of netspryte
 #
@@ -27,6 +27,8 @@ from netspryte import constants as C
 from netspryte.errors import *
 from netspryte.snmp.host.interface import HostInterface
 from netspryte.snmp.vendor.cisco.cbqos import CiscoCBQOS
+from netspryte.plugins import snmp_module_loader
+
 
 class TestSnmp(unittest.TestCase):
 
@@ -73,12 +75,18 @@ class TestSnmp(unittest.TestCase):
             msnmp.walk('1.3.6.1.2.1.31.1.1.1.1'), list
         ), True)
 
-    def test_get_interfaces(self):
+    def test_snmp_get_interfaces(self):
         msnmp = netspryte.snmp.SNMPSession()
         htest = HostInterface(msnmp)
 
-    def test_get_cbqos(self):
+    def test_snmp_get_cbqos(self):
         msnmp = netspryte.snmp.SNMPSession()
         hcbqos = CiscoCBQOS(msnmp)
-        hcbqos.get_cbqos_stats()
         hcbqos.policers
+
+    def test_snmp_load_all_modules(self):
+        msnmp = netspryte.snmp.SNMPSession()
+        snmp_modules = snmp_module_loader.all()
+        for cls, module in snmp_modules.iteritems():
+            mod = cls(msnmp)
+
