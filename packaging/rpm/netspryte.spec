@@ -11,7 +11,9 @@ Source0:	%{name}-%{version}.tar.gz
 BuildArch:  noarch
 BuildRequires:	python-devel
 BuildRequires:  python-setuptools
-Requires:   pysnmp
+Requires:   python-flask
+Requires:   python-psycopg2
+Requires:   python-pysnmp
 Requires:   rrdtool-python
 
 %description

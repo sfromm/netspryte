@@ -1,4 +1,5 @@
 prune test
+prune venv
 include README.md COPYING
 include Makefile
 recursive-include lib/netspryte
