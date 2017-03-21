@@ -23,6 +23,7 @@ from netspryte.snmp.host import HostSystem
 class CiscoCerent(HostSystem):
 
     NAME = 'cerent'
+    DESCRIPTION = 'Cisco Cerent OTN'
     BASE_OID = "1.3.6.1.4.1.3607"
 
     ATTRS = {

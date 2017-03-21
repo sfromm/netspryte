@@ -25,6 +25,7 @@ from pysnmp.proto.rfc1902 import Counter32
 class HostInterface(HostSystem):
 
     NAME = 'interface'
+    DESCRIPTION = "Network Interfaces"
 
     ATTRS = {
         'ifIndex'       : '1.3.6.1.2.1.2.2.1.1',

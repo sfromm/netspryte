@@ -24,6 +24,7 @@ from netspryte.errors import *
 class HostSystem(object):
 
     NAME = 'system'
+    DESCRIPTION = "Base System SNMP Information"
 
     ATTRS = {
         'sysDescr'    : '1.3.6.1.2.1.1.1',

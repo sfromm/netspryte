@@ -26,6 +26,7 @@ from pysnmp.proto.rfc1902 import Counter32
 class CiscoCBQOS(CiscoDevice):
 
     NAME = 'cbqos'
+    DESCRIPTION = "CBQOS Policers"
 
     ATTRS = {
         'cbQosIfType'                 : '1.3.6.1.4.1.9.9.166.1.1.1.1.2',

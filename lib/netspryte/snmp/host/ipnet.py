@@ -24,6 +24,7 @@ from netspryte.utils import *
 class HostIpNetwork(HostSystem):
 
     NAME = 'ipnetwork'
+    DESCRIPTION = 'IP Networks'
 
     ATTRS = {
 #        'ipAddressPrefixOrigin' : '1.3.6.1.2.1.4.32.1.5',

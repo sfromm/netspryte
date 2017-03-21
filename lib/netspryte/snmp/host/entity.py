@@ -24,6 +24,7 @@ from netspryte.snmp.host import HostSystem
 class HostEntity(HostSystem):
 
     NAME = 'entity'
+    DESCRIPTION = "Device Physical and Logical Components"
 
     ATTRS = {
         'entPhysicalDescr'       : '1.3.6.1.2.1.47.1.1.1.1.2',
