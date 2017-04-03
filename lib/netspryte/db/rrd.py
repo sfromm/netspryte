@@ -61,7 +61,7 @@ def rrd_create(path, step, data, rra):
         logging.debug("RRD RRA: %s", " ".join(rra))
         logging.info("creating rrd %s", path)
         rrdtool.create(str(path), '--step', str(step), data_sources, *rra)
-    except rrdtool.error as e:
+    except (rrdtool.OperationalError, rrdtool.ProgrammingError) as e:
         logging.error("failed to create rrd %s: %s", path, str(e))
 
 def rrd_update(path, data, ts=time.time()):
@@ -80,7 +80,7 @@ def rrd_update(path, data, ts=time.time()):
         logging.info("updating rrd %s", path)
         logging.debug("updating rrd %s with template: %s %s:%s", path, flat_template, ts, flat_values)
         rrdtool.update(str(path), '--template', flat_template, "%s:%s" % (ts, flat_values))
-    except rrdtool.error as e:
+    except (rrdtool.OperationalError, rrdtool.ProgrammingError) as e:
         logging.error("failed to update rrd %s: %s", path, str(e))
 
 def rrd_graph(path, rrd_opts, graph_opts):
@@ -105,7 +105,7 @@ def rrd_graph(path, rrd_opts, graph_opts):
     try:
         logging.info("creating graph %s", path)
         data = rrdtool.graphv(path, rrd_opts, graph_opts)
-    except rrdtool.error as e:
+    except (rrdtool.OperationalError, rrdtool.ProgrammingError) as e:
         logging.error("failed to create graph %s: %s", path, str(e))
     return data
 
@@ -132,7 +132,7 @@ def rrd_info(path):
     try:
         logging.debug("getting info for rrd %s", path)
         return rrdtool.info(path)
-    except rrdtool.error as e:
+    except (rrdtool.OperationalError, rrdtool.ProgrammingError) as e:
         logging.error("failed to get info for %s: %s", path, str(e))
 
 def rrd_get_ds_list(path):
@@ -154,7 +154,7 @@ def rrd_tune_ds_max(path, ds_max):
             tune_ds.append("--maximum")
             tune_ds.append(str("%s:%s" % (tune, ds_max)))
         rrdtool.tune(path, tune_ds)
-    except rrdtool.error as e:
+    except (rrdtool.OperationalError, rrdtool.ProgrammingError) as e:
         logging.error("failed to tune max for %s: %s", path, str(e))
 
 def mk_rrd_ds(data):
