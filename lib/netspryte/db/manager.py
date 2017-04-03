@@ -107,6 +107,7 @@ class Manager(object):
         logging.debug("getting or creating object")
         instance = None
         try:
+            logging.info("creating/updating %s %s", str(model), kwargs['name'])
             ( instance, created ) = model.get_or_create(**kwargs)
             self.save(instance)
         except peewee.DatabaseError as e:
