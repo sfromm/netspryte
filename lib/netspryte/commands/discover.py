@@ -44,18 +44,18 @@ class DiscoverCommand(BaseCommand):
         setup_logging(args.verbose)
         logging.debug("beginning discovery")
         for device in args.devices:
-            process_device(device, args)
+            self.process_device(device, args)
 
-def process_device(device, args):
-    try:
-        msnmp = netspryte.snmp.SNMPSession(host=device)
-        data = list()
-        snmp_modules = snmp_module_loader.all()
-        for cls, module in snmp_modules.iteritems():
-            mod = cls(msnmp)
-            if mod.data:
-                data.extend(mod.data)
-        pprint.pprint(data)
-    except Exception as e:
-        logging.error("encountered error with %s; skipping to next device: %s", device, str(e))
+    def process_device(self, device, args):
+        try:
+            msnmp = netspryte.snmp.SNMPSession(host=device)
+            data = list()
+            snmp_modules = snmp_module_loader.all()
+            for cls, module in snmp_modules.iteritems():
+                mod = cls(msnmp)
+                if mod.data:
+                    data.extend(mod.data)
+            pprint.pprint(data)
+        except Exception as e:
+            logging.error("encountered error with %s; skipping to next device: %s", device, str(e))
 
