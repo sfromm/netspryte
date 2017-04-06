@@ -20,6 +20,7 @@ import datetime
 import os
 import pwd
 import ConfigParser
+import multiprocessing
 from netspryte.errors import *
 
 def get_config(p, section, key, env_var, default, boolean=False, integer=False, islist=False):
@@ -88,7 +89,7 @@ DEFAULT_LOG_FORMAT     = get_config(p, DEFAULTS, "logformat",      "NETSPRYTE_LO
 DEFAULT_LOG_NAME       = get_config(p, DEFAULTS, "logname",        "NETSPRYTE_LOG_NAME",       "netspryte")
 
 DEFAULT_DATABASE       = get_config(p, DEFAULTS, "database",       "NETSPRYTE_DATABASE",       ["rrd"], islist=True)
-DEFAULT_WORKERS        = get_config(p, DEFAULTS, "workers",        "NETSPRYTE_WORKERS",        4, integer=True)
+DEFAULT_WORKERS        = get_config(p, DEFAULTS, "workers",        "NETSPRYTE_WORKERS",        multiprocessing.cpu_count(), integer=True)
 DEFAULT_DEVICES        = get_config(p, DEFAULTS, "devices",        "NETSPRYTE_DEVICES",        ["localhost"], islist=True)
 DEFAULT_DATADIR        = get_config(p, DEFAULTS, "datadir",        "NETSPRYTE_DATADIR",        "data")
 DEFAULT_DATA_JOINED    = get_config(p, DEFAULTS, "data_joined",    "NETSPRYTE_DATA_JOINED",      "netspryte.json")
