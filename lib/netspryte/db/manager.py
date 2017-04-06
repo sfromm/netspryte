@@ -83,6 +83,7 @@ class Manager(object):
 
     def save(self, modinst, nocommit=False):
         ''' save an object '''
+        logging.debug("saving %s %s", str(modinst.__class__), modinst.name)
         modinst.save()
 
     def get(self, model, **kwargs):
@@ -107,7 +108,7 @@ class Manager(object):
         logging.debug("getting or creating object")
         instance = None
         try:
-            logging.info("creating/updating %s %s", str(model), kwargs['name'])
+            logging.debug("get_or_create %s %s", str(model), kwargs['name'])
             ( instance, created ) = model.get_or_create(**kwargs)
             self.save(instance)
         except peewee.DatabaseError as e:
