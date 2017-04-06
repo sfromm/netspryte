@@ -2,6 +2,8 @@ NAME = 'netspryte'
 PYTHON=python
 EPEP8 = "E501,E201,E202,E203,E221,E241,E302,E303"
 VERSION := $(shell grep __version lib/$(NAME)/__init__.py | sed -e 's|^.*= ||' -e "s|'||g" )
+VENV_ROOT = /usr/local/netspryte
+.PHONY: venv
 
 # Get the branch information from git
 ifneq ($(shell which git),)
@@ -54,6 +56,12 @@ python:
 
 install:
 	$(PYTHON) setup.py install
+
+venv:
+	virtualenv $(VENV_ROOT)
+
+venv-install: venv
+	$(VENV_ROOT)/bin/pip install -I $(PWD)
 
 sdist: clean
 	$(PYTHON) setup.py sdist

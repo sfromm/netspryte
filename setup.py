@@ -18,13 +18,16 @@ setup(name='netspryte',
       author_email=__email__,
       license='GPLv3',
       install_requires=[
-          'flask',
+          'Flask',
           'peewee',
           'psycopg2',
           'pysnmp',
+          'rrdtool',
           ],
       package_dir={'' : 'lib'},
       packages=find_packages('lib'),
+      include_package_data=True,
+      zip_safe=False,
       classifiers=[
           'Development Status :: 4 - Beta',
           'Environment :: Console',
@@ -46,5 +49,11 @@ setup(name='netspryte',
           'bin/netspryte-gen-graph.cgi',
           'bin/netspryte-mk-html',
           'bin/rrd-add-ds',
+          'bin/rrd-tune',
+          'bin/rrd-remove-spikes',
       ],
-      data_files=[])
+      data_files=[
+          ('etc/netspryte', ['etc/netspryte.cfg']),
+          ('etc/cron.d', ['etc/netspryte.cron']),
+      ]
+)

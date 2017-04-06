@@ -2,5 +2,9 @@ prune test
 prune venv
 include README.md COPYING
 include Makefile
-recursive-include lib/netspryte
-recursive-include bin/
+include docker-compose.yml
+include etc/netspryte.cfg
+include etc/netspryte.cron
+include bin/*
+recursive-include lib/netspryte/static *
+recursive-include lib/netspryte/templates *
