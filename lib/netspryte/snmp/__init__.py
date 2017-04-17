@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with netspryte.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
+import time
 import logging
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 from pysnmp.proto.rfc1902 import (
@@ -38,6 +38,7 @@ from pysnmp.proto.rfc1905 import (
 import netspryte.utils
 from netspryte import constants as C
 from netspryte.errors import *
+from netspryte.utils.timer import Timer
 
 def value_is_metric(arg):
     if isinstance(arg, Counter32) or isinstance(arg, Counter64):
@@ -120,6 +121,8 @@ def deconstruct_oid(arg, oid_set):
 
 def get_snmp_data(snmp, host, cls_name, snmp_oids, snmp_conversion):
     ''' take a dictionary of snmp oids and return object with data '''
+    t = Timer("snmp query {0}-{1}".format(snmp.host, cls_name))
+    t.start_timer()
     data = dict()
     results = snmp.walk( *[ oid for oid in snmp_oids.values() ] )
     for obj in results:
@@ -137,6 +140,7 @@ def get_snmp_data(snmp, host, cls_name, snmp_oids, snmp_conversion):
             data[index][oid['name']] = snmp_conversion[oid['name']][int(obj[1])]
         else:
             data[index][oid['name']] = obj[1]
+    t.stop_timer()
     return data
 
 class SNMPSession(object):
@@ -156,6 +160,7 @@ class SNMPSession(object):
         self._authkey   = C.DEFAULT_SNMP_AUTHKEY
         self._privkey   = C.DEFAULT_SNMP_PRIVKEY
         self._bulk      = C.DEFAULT_SNMP_BULK
+        self._cache     = dict()   # (oids) -> [ time, result ]
 
         for key in kwargs.keys():
             if hasattr(self, key):
@@ -267,6 +272,24 @@ class SNMPSession(object):
         else:
             raise ValueError("SNMPv3 level must be one of: " + ", ".join(C.DEFAULT_ALLOWED_SNMP_LEVELS))
 
+    def _snmp_varbind_to_list(self, varbind):
+        ''' take a oid object and return a tuple of ( numerical_oid, value ) '''
+        oid = varbind[0]
+        value = varbind[1]
+        if isinstance(value, OctetString):
+            value = clean_octet_string(value)
+        num_oid = oid.prettyPrint()
+        if hasattr(oid, 'getOid'):
+            num_oid = str(oid.getOid())
+        if isinstance(value, EndOfMibView):
+            logging.debug("reached end of mib view with %s", num_oid)
+        logging.debug("snmp varbind %s: %s=%s", self.host, num_oid, mk_pretty_value(value))
+        return (num_oid, value)
+
+    def _cache_results(self, oids, result):
+        ''' tie results to oid query set in cache '''
+        self._cache[oids] = [ time.time(), result ]
+
     def _cmd(self, cmd, *oids):
         ''' apply a generic snmp operation '''
         results = []
@@ -280,41 +303,35 @@ class SNMPSession(object):
         if errorStatus:
             raise NetspryteSNMPError(errorStatus.prettyPrint())
         if cmd in [self._cmdgen.getCmd, self._cmdgen.setCmd]:
-            for oid, value in varBindTable:
-                if isinstance(value, OctetString):
-                    value = clean_octet_string(value)
-                results.append(value)
+            results = [ self._snmp_varbind_to_list(varbind) for varbind in varBindTable ]
         else:
-            for row in varBindTable:
-                for oid, value in row:
-                    if isinstance(value, OctetString):
-                        value = clean_octet_string(value)
-                    num_oid = oid.prettyPrint()
-                    if hasattr(oid, 'getOid'):
-                        num_oid = str(oid.getOid())
-                    if isinstance(value, EndOfMibView):
-                        logging.debug("reached end of mib view with %s", num_oid)
-                        continue
-                    results.append((num_oid, value))
-                    logging.debug("snmp get %s: %s=%s", self.host, num_oid, mk_pretty_value(value))
+            results = [ self._snmp_varbind_to_list(varbind)
+                         for row in varBindTable for varbind in row if not isinstance(varbind[1], EndOfMibView) ]
         return results
+
+    def _cache_or_cmd(self, cmd, *oids):
+        ''' pull result from cache or query host for OIDS '''
+        if oids in self._cache:
+            t, result = self._cache[oids]
+            if ( time.time() - t ) < C.DEFAULT_SNMP_CACHE_TIMEOUT:
+                return result
+        result = self._cmd(cmd, *oids)
+        self._cache_results(oids, result)
+        return result
 
     def get(self, *oids):
         ''' perform snmp get queries for list of snmp oids '''
-        results = self._cmd(self._cmdgen.getCmd, *oids)
-        if len(results) == 1:
-            results = results[0]
+        results = self._cache_or_cmd(self._cmdgen.getCmd, *oids)
         return results
 
     def walk(self, *oids):
         ''' perform snmp getnext or getbulk queries for list of snmp oids '''
         results = list()
-        cmd_gen = cmdgen.CommandGenerator()
         if self.version == '1' or not self.bulk:
-            return self._cmd(self._cmdgen.nextCmd, *oids)
+            return self._cache_or_cmd(self._cmdgen.nextCmd, *oids)
         args = [0, self.bulk] + list(oids)
         try:
-            return self._cmd(self._cmdgen.bulkCmd, *args)
+            return self._cache_or_cmd(self._cmdgen.bulkCmd, *args)
         except NetspryteSNMPError as e:
             logging.error("caught snmp error with %s: %s", self.host, str(e))
             return results
