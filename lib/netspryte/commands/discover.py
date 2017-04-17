@@ -25,6 +25,7 @@ import pprint
 
 import netspryte
 import netspryte.snmp
+from netspryte.utils.timer import Timer
 from netspryte.plugins import snmp_module_loader
 
 from netspryte.commands import BaseCommand
@@ -48,6 +49,9 @@ class DiscoverCommand(BaseCommand):
 
     def process_device(self, device, args):
         try:
+            logging.info("beginning discovery of %s", device)
+            t = Timer("snmp discover %s" % device)
+            t.start_timer()
             msnmp = netspryte.snmp.SNMPSession(host=device)
             data = list()
             snmp_modules = snmp_module_loader.all()
@@ -55,7 +59,9 @@ class DiscoverCommand(BaseCommand):
                 mod = cls(msnmp)
                 if mod.data:
                     data.extend(mod.data)
+            t.stop_timer()
             pprint.pprint(data)
+            logging.warn("%s elapsed time: %.2fs", device, t.elapsed)
         except Exception as e:
             logging.error("encountered error with %s; skipping to next device: %s", device, str(e))
 
