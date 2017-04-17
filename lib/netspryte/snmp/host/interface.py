@@ -20,6 +20,7 @@ import logging
 import netspryte.snmp
 from netspryte.snmp.host import HostSystem
 from netspryte.utils import *
+from netspryte.utils.timer import Timer
 from pysnmp.proto.rfc1902 import Counter32
 
 class HostInterface(HostSystem):
@@ -33,7 +34,7 @@ class HostInterface(HostSystem):
         'ifType'        : '1.3.6.1.2.1.2.2.1.3',
         'ifMtu'         : '1.3.6.1.2.1.2.2.1.4',
         'ifSpeed'       : '1.3.6.1.2.1.2.2.1.5',
-        'ifPhysAddress' : '.1.3.6.1.2.1.2.2.1.6',
+        'ifPhysAddress' : '1.3.6.1.2.1.2.2.1.6',
         'ifAdminStatus' : '1.3.6.1.2.1.2.2.1.7',
         'ifOperStatus'  : '1.3.6.1.2.1.2.2.1.8',
         'ifName'        : '1.3.6.1.2.1.31.1.1.1.1',
@@ -89,9 +90,10 @@ class HostInterface(HostSystem):
     def __init__(self, snmp):
         self.snmp = snmp
         super(HostInterface, self).__init__(snmp)
-        logging.info("inspecting %s for interface data", snmp.host)
+        t = Timer("snmp inspect %s %s" % (HostInterface.NAME, snmp.host))
+        t.start_timer()
         self.data = self._get_interface()
-        logging.info("done inspecting %s for interface data", snmp.host)
+        t.stop_timer()
 
     def _get_interface(self):
         '''
@@ -106,6 +108,9 @@ class HostInterface(HostSystem):
             descr = attrs[k].get('ifAlias', 'NA')
             data[k] = self.initialize_instance(HostInterface.NAME, k)
             data[k]['attrs'] = v
+            if 'ifPhysAddress' in v and v['ifPhysAddress']:
+                data[k]['attrs']['ifPhysAddress'] = ':'.join(['%x' % ord(x) for x in v['ifPhysAddress']])
+
             data[k]['presentation'] = {'title': title, 'description': descr}
             if k in metrics:
                 data[k]['metrics'] = metrics[k]
