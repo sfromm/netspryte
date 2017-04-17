@@ -82,10 +82,11 @@ DEFAULT_SNMP_PRIVACY   = get_config(p, DEFAULTS, "snmp_PRIVACY",   "NETSPRYTE_SN
 DEFAULT_SNMP_AUTHKEY   = get_config(p, DEFAULTS, "snmp_authkey",   "NETSPRYTE_SNMP_AUTHKEY",   "na")
 DEFAULT_SNMP_PRIVKEY   = get_config(p, DEFAULTS, "snmp_privkey",   "NETSPRYTE_SNMP_PRIVKEY",   "na")
 DEFAULT_SNMP_BULK      = get_config(p, DEFAULTS, "snmp_bulk",      "NETSPRYTE_SNMP_BULK",      20)
+DEFAULT_SNMP_CACHE_TIMEOUT = get_config(p, DEFAULTS, "snmp_cache_timeout", "NETSPRYTE_SNMP_CACHE_TIMEOUT", 60, integer=True)
 
 DEFAULT_VERBOSE        = get_config(p, DEFAULTS, "verbose",        "NETSPRYTE_VERBOSE",        0, integer=True)
 DEFAULT_LOG_LEVEL      = get_config(p, DEFAULTS, "loglevel",       "NETSPRYTE_LOG_LEVEL",      0)
-DEFAULT_LOG_FORMAT     = get_config(p, DEFAULTS, "logformat",      "NETSPRYTE_LOG_FORMAT",     '%(asctime)s: [%(process)s:%(levelname)s] %(message)s')
+DEFAULT_LOG_FORMAT     = get_config(p, DEFAULTS, "logformat",      "NETSPRYTE_LOG_FORMAT",     '%(asctime)s.%(msecs)03d: [%(process)s:%(levelname)s] %(message)s')
 DEFAULT_LOG_NAME       = get_config(p, DEFAULTS, "logname",        "NETSPRYTE_LOG_NAME",       "netspryte")
 
 DEFAULT_DATABASE       = get_config(p, DEFAULTS, "database",       "NETSPRYTE_DATABASE",       ["rrd"], islist=True)
