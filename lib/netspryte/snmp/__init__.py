@@ -119,12 +119,29 @@ def deconstruct_oid(arg, oid_set):
             break
     return oid
 
-def get_snmp_data(snmp, host, cls_name, snmp_oids, snmp_conversion):
-    ''' take a dictionary of snmp oids and return object with data '''
+def get_snmp_data(snmp, host, cls_name, snmp_oids, snmp_conversion, chunk=None):
+    '''
+    Take a dictionary of snmp oids and return object with data.
+    Arguments:
+    - snmp: SNMPSession object
+    - host: SNMP query module object
+    - cls_name: Name of SNMP query module
+    - snmp_oids: dict of variable name to OID to query
+    - snmp_conversion: dict of key/value pairs of substitutions for snmp responses
+    - chunk: optional argument for splitting queries up into smaller chunks.  This is the chunk size.
+    Returns a dictionary indexed by the SNMP index for the table.
+    '''
     t = Timer("snmp query {0}-{1}".format(snmp.host, cls_name))
     t.start_timer()
     data = dict()
-    results = snmp.walk( *[ oid for oid in snmp_oids.values() ] )
+    results = list()
+    if chunk:
+        oids = snmp_oids.values()
+        qry_oids = [ oids[i:i + chunk] for i in xrange(0, len(oids), chunk) ]
+        for qry_set in qry_oids:
+            results.extend( snmp.walk( *qry_set ) )
+    else:
+        results = snmp.walk( *[ oid for oid in snmp_oids.values() ] )
     for obj in results:
         logging.debug("Processing %s OID=%s, value=%s", snmp.host, obj[0], obj[1])
         oid = deconstruct_oid(obj[0], snmp_oids)
@@ -271,6 +288,10 @@ class SNMPSession(object):
             self._level = arg
         else:
             raise ValueError("SNMPv3 level must be one of: " + ", ".join(C.DEFAULT_ALLOWED_SNMP_LEVELS))
+
+    def expire_cache(self):
+        ''' expire the cache '''
+        self._cache     = dict()
 
     def _snmp_varbind_to_list(self, varbind):
         ''' take a oid object and return a tuple of ( numerical_oid, value ) '''
