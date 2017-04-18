@@ -32,6 +32,12 @@ class BaseModel(Model):
     class Meta:
         database = DB_PROXY
 
+class Netspryte(BaseModel):
+    schema = IntegerField(default=1)
+
+    class Meta:
+        db_table = 'netspryte'
+
 class Host(BaseModel):
     name = CharField(index=True)
     lastseen = DateTimeField(default=datetime.datetime.now, index=True)
@@ -40,6 +46,9 @@ class Host(BaseModel):
     class Meta:
         db_table = 'host'
         order_by = ("name",)
+
+    def __repr__(self):
+        return '<Host: %s>' % self.name
 
 class MeasurementClass(BaseModel):
     name = CharField()
@@ -54,18 +63,47 @@ class MeasurementClass(BaseModel):
             (('name', 'transport'), True),
         )
 
+    def __repr__(self):
+        return '<MeasurementClass: %s>' % self.name
+
 class MeasurementInstance(BaseModel):
-    name  = CharField(index=True, unique=True)
+    name = CharField(index=True, unique=True)
     index = CharField()
     attrs = BinaryJSONField(null=True)
     metrics = BinaryJSONField(null=True)
     presentation = BinaryJSONField(null=True)
     lastseen = DateTimeField(default=datetime.datetime.now, index=True)
-    host   = ForeignKeyField(Host,
-                             related_name='measurement_instances', null=False, on_delete='CASCADE')
+    host = ForeignKeyField(Host,
+                           related_name='measurement_instances', null=False, on_delete='CASCADE')
     measurement_class = ForeignKeyField(MeasurementClass,
                                         related_name='measurement_instances', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "measurement_instance"
         order_by = ("name",)
+
+    def __repr__(self):
+        return '<MeasurementInstance: %s>' % self.name
+
+class Tag(BaseModel):
+    name = CharField()
+
+    class Meta:
+        db_table = "tag"
+
+    def __repr__(self):
+        return '<Tag: %s>' % self.name
+
+class MeasurementInstanceTag(BaseModel):
+    measurement_instance = ForeignKeyField(MeasurementInstance)
+    tag = ForeignKeyField(Tag)
+
+    class Meta:
+        db_table = "measurement_instance_tag"
+
+class HostTag(BaseModel):
+    host = ForeignKeyField(Host)
+    tag = ForeignKeyField(Tag)
+
+    class Meta:
+        db_table = "host_tag"

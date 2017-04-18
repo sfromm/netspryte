@@ -68,9 +68,13 @@ class Manager(object):
 
     def create_tables(self):
         ''' create tables if they do not exist '''
+        Netspryte.create_table(fail_silently=True)
         Host.create_table(fail_silently=True)
         MeasurementClass.create_table(fail_silently=True)
         MeasurementInstance.create_table(fail_silently=True)
+        Tag.create_table(fail_silently=True)
+        MeasurementInstanceTag.create_table(fail_silently=True)
+        HostTag.create_table(fail_silently=True)
 
     def execute(self, modquery, nocommit=False):
         ''' execute a model query; returns number of rows affected '''
@@ -83,8 +87,9 @@ class Manager(object):
 
     def save(self, modinst, nocommit=False):
         ''' save an object '''
-        logging.debug("saving %s %s", str(modinst.__class__), modinst.name)
+        logging.debug("saving %s", str(modinst))
         modinst.save()
+        logging.debug("done saving %s %s", str(modinst))
 
     def get(self, model, **kwargs):
         ''' get an object '''
@@ -108,7 +113,10 @@ class Manager(object):
         logging.debug("getting or creating object")
         instance = None
         try:
-            logging.debug("get_or_create %s %s", str(model), kwargs['name'])
+            name = ""
+            if 'name' in kwargs:
+                name = kwargs['name']
+            logging.debug("get_or_create %s %s", model, name)
             ( instance, created ) = model.get_or_create(**kwargs)
             self.save(instance)
         except peewee.DatabaseError as e:
@@ -120,12 +128,14 @@ class Manager(object):
     def update(self, modinst, **kwargs):
         ''' update an object '''
         updated = False
+        logging.debug("updating %s %s", str(modinst))
         for k, v in kwargs:
             if hasattr(modinst, k):
                 setattr(modinst, k, v)
         if hasattr(modinst, 'lastseen'):
             modinst.lastseen = datetime.datetime.now()
         self.save(modinst)
+        logging.debug("done updating %s %s", str(modinst))
 
     def to_dict(self, modinst):
         return model_to_dict(modinst)
@@ -178,9 +188,22 @@ class Manager(object):
         Return list of measurement instances based on a matching presentation value.
         If paginated is True, return a peewee Query object.
         '''
-        if isinstance(val, list):
-            pass
         qry = MeasurementInstance.select().where(MeasurementInstance.presentation[key].startswith(val))
+        if paginated:
+            return qry
+        else:
+            return [ q for q in qry ]
+
+    def get_instances_by_tags(self, tags, paginated=False):
+        '''
+        Return list of measurement instances based on associated tags.
+        If paginated is True, return a peewee Query object.
+        '''
+        qry = (MeasurementInstance.select()
+               .join(MeasurementInstanceTag)
+               .join(Tag)
+               .where((Tag.name << tags))
+               .group_by(MeasurementInstance))
         if paginated:
             return qry
         else:
