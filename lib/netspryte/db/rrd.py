@@ -168,14 +168,7 @@ def mk_rrd_ds(data):
 
 def mk_rrd_filename(device, *args):
     ''' create a rrd filename based on the collected object '''
-    parts = list()
-    if hasattr(device, 'sysName'):
-        dev_name = device.sysName
-    else:
-        dev_name = device
-    for arg in args:
-        parts.append( arg.replace(".", "-") )
-    return os.path.join(C.DEFAULT_DATADIR, dev_name, "{0}.rrd".format("-".join(parts)))
+    return netspryte.utils.mk_measurement_instance_filename(device, *args)
 
 def rrd_preserve(rrd_path):
     ''' rename existing RRD for preservation
