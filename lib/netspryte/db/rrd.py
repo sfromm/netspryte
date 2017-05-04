@@ -148,7 +148,7 @@ def rrd_get_ds_list(path):
 def rrd_tune_ds_max(path, ds_max):
     ''' tune max for all DS in rrd '''
     try:
-        logging.info("tuning maximum value to %s for all DS in rrd %s", ds_max, path)
+        logging.warn("tuning maximum value to %s for all DS in rrd %s", ds_max, path)
         tune_ds = list()
         for tune in rrd_get_ds_list(path):
             tune_ds.append("--maximum")
