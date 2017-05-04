@@ -28,7 +28,7 @@ from hashlib import sha1
 
 import netspryte.db
 import netspryte.db.rrd
-
+from netspryte.manager import *
 from netspryte import constants as C
 
 def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL, use_syslog=False):

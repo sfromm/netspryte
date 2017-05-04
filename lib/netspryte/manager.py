@@ -23,7 +23,7 @@ import subprocess
 import traceback
 
 from netspryte import constants as C
-from netspryte.db.model import *
+from netspryte.model import *
 
 import peewee
 from playhouse.postgres_ext import *

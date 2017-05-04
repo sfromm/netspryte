@@ -24,7 +24,7 @@ import glob
 import pprint
 
 import netspryte
-from netspryte.db.manager import *
+from netspryte.manager import *
 
 from netspryte.commands import BaseCommand
 from netspryte import constants as C
