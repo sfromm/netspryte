@@ -19,4 +19,4 @@
 __name__ = 'netspryte'
 __author__ = 'Stephen Fromm'
 __email__  = 'stephenf@nero.net'
-__version__ = '17.04'
+__version__ = '17.05'
