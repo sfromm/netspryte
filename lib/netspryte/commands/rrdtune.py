@@ -26,6 +26,7 @@ from netspryte.commands import BaseCommand
 from netspryte import constants as C
 from netspryte.utils import *
 from netspryte.db.rrd import *
+from netspryte.manager import *
 
 class RrdTuneCommand(BaseCommand):
 
@@ -43,16 +44,22 @@ class RrdTuneCommand(BaseCommand):
         cfg = C.load_config()
         rrd_xml = list()
         rrd_path = args.file
+        if not os.path.exists(rrd_path):
+            logging.error("rrd path does not exist: %s", rrd_path)
+            return
+        data_id = mk_data_instance_id_from_filename(rrd_path)
         xml_path = rrd_path.replace('rrd', 'xml')
-        json_path = rrd_path.replace('rrd', 'json')
-        data = parse_json_from_file(json_path)
-
+        mgr = Manager()
+        this_inst = mgr.get(MeasurementInstance, name=data_id)
+        if not this_inst:
+            logging.error("failed to look up measurement instance associated with file %s", rrd_path)
+            return
         info = rrd_info(rrd_path)
         try:
-            if '_class' in data and data['_class'] == 'interface':
-                ds_max = int(data['ifSpeed'])
+            if this_inst.measurement_class.name in ["interface", "cbqos"]:
+                ds_max = int(this_inst.attrs['ifSpeed'])
                 if ds_max == ( 2**32 - 1):
-                    ds_max = int(data['ifHighSpeed']) * 10**6
+                    ds_max = int(this_inst.attrs['ifHighSpeed']) * 10**6
                 if ds_max == 0:
                     ds_max = 40 * 10**9
                 rrd_tune_ds_max(rrd_path, ds_max)
