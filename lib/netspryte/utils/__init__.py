@@ -158,57 +158,22 @@ def parse_json_from_file(path):
         logging.error('failed to parse json from file %s: %s', path, str(e))
         return None
 
-def get_data_instances_from_joined():
-    ''' load all cached data on all collected instances from the single joined json file
-    returns a list of dicts '''
-    data_sets = list()
-    path = os.path.join(C.DEFAULT_DATADIR, C.DEFAULT_DATA_JOINED)
-    if os.path.exists(path):
-        data_sets = parse_json_from_file(path)
-    return data_sets
-
-def get_data_instances_from_disjoined():
-    ''' load all cached data on all collected instances from disjoined json files
-    returns a list of dicts '''
-    data_sets = list()
-    for path in glob.glob("{0}/*/*.json".format(C.DEFAULT_DATADIR)):
-        data = load_instance_data(path)
-        if data is not None:
-            # a bit of a hack to make sure path information is still available
-            if '_path' not in data:
-                data['_path'] = path
-            data_sets.append(data)
-    return data_sets
-
 def get_data_instances():
     ''' load all cached data on all collected instances
     returns a list of dicts
     If the joined state file exists, this will read from that first.
     If not, the disjoined json files are read.n
     '''
-    path = os.path.join(C.DEFAULT_DATADIR, C.DEFAULT_DATA_JOINED)
-    if os.path.exists(path):
-        return get_data_instances_from_joined()
-    else:
-        return get_data_instances_from_disjoined()
+    mgr = Manager()
+    qry = mgr.get_all(MeasurementInstance)
+    return [ q for q in qry ]
 
 def get_data_instances_by_id():
     ''' return all instances as a dictionary indexed by id '''
     data_set = dict()
     for data in get_data_instances():
-        data_set[ data['_id'] ] = data
+        data_set[ data['name'] ] = data
     return data_set
-
-def load_instance_data(path):
-    ''' load cached data regarding single collected instance
-    If a site local file is found, that will also be loaded and update the returned data.
-    '''
-    site_data = parse_json_from_file(path)
-    local_path = path.replace('.json', '-local.json')
-    if os.path.exists(local_path):
-        local_data = parse_json_from_file(local_path)
-        site_data.update(local_data)
-    return site_data
 
 def get_db_backend():
     backends = list()
