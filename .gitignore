@@ -3,6 +3,7 @@
 *.py[co]
 *.*.swp
 *~
+*.egg-info/
 build
 alembic.ini
 venv
