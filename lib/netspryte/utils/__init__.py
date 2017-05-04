@@ -213,6 +213,17 @@ def mk_data_instance_id(device, cls, instance):
         id.append(n.replace(".", "_"))
     return ".".join(id)
 
+def mk_data_instance_id_from_filename(arg):
+    ''' create a data instance id from the associated instance filename '''
+    path = os.path.abspath(arg)
+    path = os.path.splitext(path)[0]
+    host = os.path.basename(os.path.dirname(path))
+    base = os.path.basename(path)
+    cls, instance = base.split('-', 1)
+    cls = cls.replace("-", ".")
+    instance = instance.replace("-", ".")
+    return mk_data_instance_id(host, cls, instance)
+
 def mk_secure_hash(arg, hash_func=sha1):
     ''' takes string as argument and procudes a checksum
     This comes from ansible/lib/ansible/utils/hashing.py '''
