@@ -21,6 +21,7 @@ import netspryte.snmp
 import netspryte.snmp.host.interface
 from netspryte.snmp.vendor.cisco import CiscoDevice
 from netspryte.utils import *
+from netspryte.utils.timer import Timer
 from pysnmp.proto.rfc1902 import Counter32
 
 class CiscoCBQOS(CiscoDevice):
@@ -128,9 +129,13 @@ class CiscoCBQOS(CiscoDevice):
         'if'   : '',
     }
 
+    SNMP_QUERY_CHUNKS = 1
+
     def __init__(self, snmp):
         self.snmp = snmp
         self.data = dict()
+        t = Timer("snmp inspect %s %s" % (CiscoCBQOS.NAME, snmp.host))
+        t.start_timer()
         super(CiscoCBQOS, self).__init__(snmp)
         if CiscoDevice.BASE_OID not in str(self.sysObjectID):
             logging.debug("skipping cbqos check on non-cisco device %s", self.sysName)
@@ -139,15 +144,17 @@ class CiscoCBQOS(CiscoDevice):
         host = netspryte.snmp.host.interface.HostInterface(self.snmp)
         self.interfaces = host.interfaces
         self.data = self._get_configuration()
-        logging.info("done inspecting %s for cbqos data", snmp.host)
+        t.stop_timer()
 
     def _get_configuration(self):
         ''' get cbqos objects '''
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
-                                             CiscoCBQOS.ATTRS, CiscoCBQOS.CONVERSION)
+                                             CiscoCBQOS.ATTRS, CiscoCBQOS.CONVERSION,
+                                             CiscoCBQOS.SNMP_QUERY_CHUNKS )
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
-                                               CiscoCBQOS.STAT, CiscoCBQOS.CONVERSION)
+                                               CiscoCBQOS.STAT, CiscoCBQOS.CONVERSION,
+                                               CiscoCBQOS.SNMP_QUERY_CHUNKS )
         interfaces = { k['index']: k for k in self.interfaces }
         skip_instances = [ k for k in attrs.keys() if '.' not in k ]
 
@@ -209,6 +216,9 @@ class CiscoCBQOS(CiscoDevice):
                 continue
             data[key]['presentation']['title'] = self.get_policy_map_name(key, data)
             data[key]['presentation']['description'] = "{0}:{1}".format(data[key]['presentation']['title'], data[key].get('ifAlias', 'NA'))
+        for key in data.keys():
+            if data[key]['attrs']['cbQosObjectsType'] != 'police':
+                del(data[key])
         return data
 
     @property
