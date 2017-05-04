@@ -1,0 +1,14 @@
+#!/usr/bin/python
+__requires__ = ['netspryte']
+try:
+    import pkg_resources
+except Exception:
+    pass
+import sys
+
+from netspryte.commands.janitor import JanitorCommand
+
+if __name__ == '__main__':
+    cmd = JanitorCommand()
+    sys.exit(cmd.execute())
+
