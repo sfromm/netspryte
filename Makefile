@@ -85,12 +85,23 @@ start:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d
 
+restart: restart-db restart-web restart-collector
+
+restart-db:
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart $(DB_IMAGE_NAME)
+
+restart-web:
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart $(WEB_IMAGE_NAME)
+
+restart-collector:
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart $(COLLECTOR_IMAGE_NAME)
+
 cron-show:
-	docker exec -it $(MAIN_CONTAINER_NAME) /usr/bin/netspryte-janitor cron -a show -c "/usr/bin/netspryte-collect-snmp -v -M"
+	docker exec -it $(MAIN_CONTAINER_NAME) /usr/local/bin/netspryte-janitor cron -a show -c "/usr/bin/netspryte-collect-snmp -v -M"
 
 cron-add:
-	docker exec -it $(MAIN_CONTAINER_NAME) /usr/bin/netspryte-janitor cron -a add -c "/usr/bin/netspryte-collect-snmp -v -M" -t $(TIME)
+	docker exec -it $(MAIN_CONTAINER_NAME) /usr/local/bin/netspryte-janitor cron -a add -c "/usr/bin/netspryte-collect-snmp -v -M" -t $(TIME)
 
 cron-delete:
-	docker exec -it $(MAIN_CONTAINER_NAME) /usr/bin/netspryte-janitor cron -a delete -c "/usr/bin/netspryte-collect-snmp -v -M" -t $(TIME)
+	docker exec -it $(MAIN_CONTAINER_NAME) /usr/local/bin/netspryte-janitor cron -a delete -c "/usr/bin/netspryte-collect-snmp -v -M" -t $(TIME)
 
