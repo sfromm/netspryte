@@ -1,0 +1,15 @@
+#!/bin/bash
+
+export COLLECTOR_CONTAINER_DIR=docker/collector
+export WEB_CONTAINER_DIR=docker/web
+
+export COLLECTOR_IMAGE_NAME=sfromm/netspryte-collector
+export WEB_IMAGE_NAME=sfromm/netspryte-web
+
+export COLLECTOR_CONTAINER_NAME=netspryte-collector
+export WEB_CONTAINER_NAME=netspryte-web
+export DB_CONTAINER_NAME=netspryte-db
+export MAIN_CONTAINER_NAME=${COLLECTOR_CONTAINER_NAME}
+
+export CONTAINER_CONFIGDIR=/private/netspryte/etc
+export CONTAINER_DATADIR=/private/netspryte/data

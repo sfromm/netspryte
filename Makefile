@@ -18,6 +18,7 @@ TIME ?= 1m
 
 include $(VAR_FILE)
 
+RUN_OPTIONS = IMAGE_TAG=$(IMAGE_TAG)
 # Get the branch information from git
 ifneq ($(shell which git),)
 GIT_DATE := $(shell git log -n 1 --format="%ai")
@@ -78,11 +79,11 @@ push: push-web push-collector
 
 stop:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
-	docker-compose -f $(DOCKER_COMPOSE) down
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) down
 
 start:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
-	docker-compose -f $(DOCKER_COMPOSE) up -d
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d
 
 cron-show:
 	docker exec -it $(MAIN_CONTAINER_NAME) /usr/bin/netspryte-janitor cron -a show -c "/usr/bin/netspryte-collect-snmp -v -M"
