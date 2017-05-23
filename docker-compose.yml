@@ -1,0 +1,27 @@
+collector:
+  image: $COLLECTOR_IMAGE_NAME:$IMAGE_TAG
+  container_name: $MAIN_CONTAINER_NAME
+  volumes:
+    - $CONTAINER_CONFIGDIR:/etc/netspryte
+    - $CONTAINER_DATADIR:/var/lib/netspryte/data
+    - /etc/localtime:/etc/localtime:ro
+web:
+  image: $WEB_IMAGE_NAME:$IMAGE_TAG
+  container_name: $WEB_CONTAINER_NAME
+  ports:
+    - "80:80"
+  volumes:
+    - $CONTAINER_CONFIGDIR:/etc/netspryte
+    - $CONTAINER_DATADIR:/var/lib/netspryte/data
+    - /etc/localtime:/etc/localtime:ro
+database:
+  image: postgres
+  container_name: $DB_CONTAINER_NAME
+  ports:
+    - "5432:5432"
+  environment:
+    POSTGRES_USER: netspryte
+    POSTGRES_PASSWORD: netspryte
+    POSTGRES_DB: netspryte
+  volumes:
+    - /etc/localtime:/etc/localtime:ro

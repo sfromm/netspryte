@@ -2,33 +2,26 @@ NAME = 'netspryte'
 PYTHON=python
 EPEP8 = "E501,E201,E202,E203,E221,E241,E302,E303"
 VERSION := $(shell grep __version lib/$(NAME)/__init__.py | sed -e 's|^.*= ||' -e "s|'||g" )
-VENV_ROOT = /usr/local/netspryte
+BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
+ifeq ($(BRANCH),master)
+	IMAGE_TAG = latest
+else
+	IMAGE_TAG = $(BRANCH)
+endif
+
+VENV_ROOT ?= /usr/local/netspryte
+VAR_FILE ?= netspryte.params
+DOCKER_COMPOSE ?= docker-compose.yml
+TIME ?= 1m
+
 .PHONY: venv
+
+include $(VAR_FILE)
 
 # Get the branch information from git
 ifneq ($(shell which git),)
 GIT_DATE := $(shell git log -n 1 --format="%ai")
 endif
-
-ifeq ($(OS), FreeBSD)
-DATE := $(shell date -j -f "%Y-%m-%d %H:%M:%s"  "$(GIT_DATE)" +%Y%m%d%H%M)
-else
-ifeq ($(OS), Darwin)
-DATE := $(shell date -j -f "%Y-%m-%d %H:%M:%S"  "$(GIT_DATE)" +%Y%m%d%H%M)
-else
-DATE := $(shell date --utc --date="$(GIT_DATE)" +%Y%m%d%H%M)
-endif
-endif
-
-# RPM build parameters
-RPMSPECDIR = packaging/rpm
-RPMSPEC = $(RPMSPECDIR)/$(NAME).spec
-RPMDIST = $(shell rpm --eval '%dist')
-RPMRELEASE = 1
-ifeq ($(OFFICIAL),)
-RPMRELEASE = 0.git$(DATE)
-endif
-RPMNVR = "$(NAME)-$(VERSION)-$(RPMRELEASE)$(RPMDIST)"
 
 test: clean
 	PYTHONPATH=lib \
@@ -66,36 +59,37 @@ venv-install: venv
 sdist: clean
 	$(PYTHON) setup.py sdist
 
-rpmcommon: sdist
-	@echo "make rpmcommon"
-	@mkdir -p rpm-build
-	@cp dist/*.gz rpm-build/
-	@echo '$(VERSION)'
-	@sed -e 's/^Version:.*/Version: $(VERSION)/' \
-		-e 's/^Release:.*/Release: $(RPMRELEASE)%{?dist}/' \
-		$(RPMSPEC) > rpm-build/$(NAME).spec
+build-collector:
+	@echo "build netspryte collector container"
+	docker build -f $(COLLECTOR_CONTAINER_DIR)/Dockerfile -t $(COLLECTOR_IMAGE_NAME):$(IMAGE_TAG) .
 
-srpm: rpmcommon
-	@echo make srpm
-	@rpmbuild --define "_topdir %(pwd)/rpm-build" \
-		--define "_builddir %{_topdir}" \
-		--define "_rpmdir %{_topdir}" \
-		--define "_srcrpmdir %{_topdir}" \
-		--define "_specdir $(RPMSPECDIR)" \
-		--define "_sourcedir %{_topdir}" \
-		-bs rpm-build/$(NAME).spec
-	@rm -f rpm-build/$(NAME).spec
-	@echo "$(NAME) SRPM is built:"
-	@echo "    rpm-build/$(RPMNVR).src.rpm"
+build-web:
+	@echo "build netspryte web container"
+	docker build -f $(WEB_CONTAINER_DIR)/Dockerfile -t $(WEB_IMAGE_NAME):$(IMAGE_TAG) .
 
-rpm: rpmcommon
-	@rpmbuild --define "_topdir %(pwd)/rpm-build" \
-		--define "_builddir %{_topdir}" \
-		--define "_rpmdir %{_topdir}" \
-		--define "_srcrpmdir %{_topdir}" \
-		--define "_specdir $(RPMSPECDIR)" \
-		--define "_sourcedir %{_topdir}" \
-		-ba rpm-build/$(NAME).spec
-	@rm -f rpm-build/$(NAME).spec
-	@echo "$(NAME) RPM is built:"
-	@echo "    rpm-build/noarch/$(RPMNVR).noarch.rpm"
+push-collector:
+	docker push $(COLLECTOR_IMAGE_NAME)
+
+push-web:
+	docker push $(WEB_IMAGE_NAME)
+
+push: push-web push-collector
+	@echo "Pushing images to docker hub"
+
+stop:
+	@echo "Using docker compose file $(DOCKER_COMPOSE)"
+	docker-compose -f $(DOCKER_COMPOSE) down
+
+start:
+	@echo "Using docker compose file $(DOCKER_COMPOSE)"
+	docker-compose -f $(DOCKER_COMPOSE) up -d
+
+cron-show:
+	docker exec -it $(MAIN_CONTAINER_NAME) /usr/bin/netspryte-janitor cron -a show -c "/usr/bin/netspryte-collect-snmp -v -M"
+
+cron-add:
+	docker exec -it $(MAIN_CONTAINER_NAME) /usr/bin/netspryte-janitor cron -a add -c "/usr/bin/netspryte-collect-snmp -v -M" -t $(TIME)
+
+cron-delete:
+	docker exec -it $(MAIN_CONTAINER_NAME) /usr/bin/netspryte-janitor cron -a delete -c "/usr/bin/netspryte-collect-snmp -v -M" -t $(TIME)
+

@@ -12,6 +12,14 @@ except ImportError:
     print("netspryte needs setuptools to build")
     sys.exit(1)
 
+def get_file_list(base):
+    paths = list()
+    for root, dirs, files in os.walk(base):
+        for path in files:
+            reldir = os.path.relpath(root, base)
+            paths.append(os.path.join(base, reldir, path))
+    return paths
+
 setup(name='netspryte',
       version=__version__,
       author=__author__,
@@ -22,6 +30,7 @@ setup(name='netspryte',
           'peewee',
           'psycopg2',
           'pysnmp',
+          'python-crontab',
           'rrdtool',
           ],
       package_dir={'' : 'lib'},
@@ -58,5 +67,11 @@ setup(name='netspryte',
       data_files=[
           ('etc/netspryte', ['etc/netspryte.cfg']),
           ('etc/cron.d', ['etc/netspryte.cron']),
+          ('share/netspryte/www', ['web/hello.py']),
+          ('share/netspryte/www/', ['web/uwsgi.ini']),
+          ('share/netspryte/www/static/css', get_file_list('web/static/css')),
+          ('share/netspryte/www/static/images', get_file_list('web/static/images')),
+          ('share/netspryte/www/static/js', get_file_list('web/static/js')),
+          ('share/netspryte/www/templates', get_file_list('web/templates')),
       ]
 )
