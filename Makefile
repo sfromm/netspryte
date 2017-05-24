@@ -77,9 +77,13 @@ push-web:
 push: push-web push-collector
 	@echo "Pushing images to docker hub"
 
-stop:
+down:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) down
+
+stop:
+	@echo "Using docker compose file $(DOCKER_COMPOSE)"
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop
 
 start:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
