@@ -89,7 +89,7 @@ class Manager(object):
         ''' save an object '''
         logging.debug("saving %s", str(modinst))
         modinst.save()
-        logging.debug("done saving %s %s", str(modinst))
+        logging.debug("done saving %s", str(modinst))
 
     def get(self, model, **kwargs):
         ''' get an object '''
@@ -121,21 +121,19 @@ class Manager(object):
             self.save(instance)
         except peewee.DatabaseError as e:
             logging.error("error while attempting to update database: %s", traceback.format_exc())
-        except peewee.DatabaseError as e:
-            logging.error("error while attempting to update database: %s", traceback.format_exc())
         return instance
 
     def update(self, modinst, **kwargs):
         ''' update an object '''
         updated = False
-        logging.debug("updating %s %s", str(modinst))
+        logging.debug("updating %s", str(modinst))
         for k, v in kwargs:
             if hasattr(modinst, k):
                 setattr(modinst, k, v)
         if hasattr(modinst, 'lastseen'):
             modinst.lastseen = datetime.datetime.now()
         self.save(modinst)
-        logging.debug("done updating %s %s", str(modinst))
+        logging.debug("done updating %s", str(modinst))
 
     def to_dict(self, modinst):
         return model_to_dict(modinst)
