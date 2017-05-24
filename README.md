@@ -29,6 +29,13 @@ To start the services:
 make start
 ```
 
+While the normal jobs will take care of initializing the database, you
+can also do this directly:
+
+``` shell
+make initdb
+```
+
 This will start all the services.  To stop:
 
 ``` shell

@@ -121,3 +121,6 @@ cron-delete:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
 		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a delete -I $(TIME) -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
 
+initdb:
+	docker exec -it $(COLLECTOR_CONTAINER_NAME) $(CONTAINER_EXEC_PATH)/netspryte-janitor initdb
+
