@@ -88,9 +88,9 @@ class CollectSnmpWorker(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.task_queue = task_queue
         self.metrics_only = metrics_only
-        self.mgr = Manager()
 
     def run(self):
+        self.mgr = Manager()
         proc_name = self.name
         t = Timer()
         while True:
@@ -139,6 +139,9 @@ class CollectSnmpWorker(multiprocessing.Process):
                 this_host = self.mgr.get_or_create(Host, name=data['host'])
             if not this_class:
                 this_class = self.mgr.get_or_create(MeasurementClass, name=data['class'], transport=data['transport'])
+            if this_host is None or this_class is None:
+                logging.error("encountered database error; skipping to next instance")
+                continue
             t.name = "select and update database %s-%s" % (this_host.name, this_class.name)
             if not log_me:
                 logging.info("updating database for %s %s", this_host.name, this_class.name)
