@@ -68,14 +68,17 @@ build-web:
 	@echo "build netspryte web container"
 	docker build -f $(WEB_CONTAINER_DIR)/Dockerfile -t $(WEB_IMAGE_NAME):$(IMAGE_TAG) .
 
+build: build-collector build-web
+	@echo "Build collector and web containers"
+
 push-collector:
 	docker push $(COLLECTOR_IMAGE_NAME)
 
 push-web:
 	docker push $(WEB_IMAGE_NAME)
 
-push: push-web push-collector
-	@echo "Pushing images to docker hub"
+push: push-collector push-web
+	@echo "Push images to docker hub"
 
 down:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
@@ -89,6 +92,12 @@ start:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d
 
+status:
+	@echo "Using docker compose file $(DOCKER_COMPOSE)"
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) ps
+
+ps: status
+
 restart: restart-db restart-web restart-collector
 
 restart-db:
@@ -101,11 +110,14 @@ restart-collector:
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart $(COLLECTOR_IMAGE_NAME)
 
 cron-show:
-	docker exec -it $(MAIN_CONTAINER_NAME) /usr/local/bin/netspryte-janitor cron -a show -c "/usr/bin/netspryte-collect-snmp -v -M"
+	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
+		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a show -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
 
 cron-add:
-	docker exec -it $(MAIN_CONTAINER_NAME) /usr/local/bin/netspryte-janitor cron -a add -c "/usr/bin/netspryte-collect-snmp -v -M" -t $(TIME)
+	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
+		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a add -I $(TIME) -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
 
 cron-delete:
-	docker exec -it $(MAIN_CONTAINER_NAME) /usr/local/bin/netspryte-janitor cron -a delete -c "/usr/bin/netspryte-collect-snmp -v -M" -t $(TIME)
+	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
+		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a delete -I $(TIME) -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
 
