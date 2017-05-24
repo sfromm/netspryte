@@ -44,3 +44,11 @@ class BaseDatabaseBackend(object):
     @host.setter
     def host(self, arg):
         self._host = arg
+
+    @property
+    def measurement_instance(self):
+        return self._measurement_instance
+
+    @measurement_instance.setter
+    def measurement_instance(self, arg):
+        self._measurement_instance = arg
