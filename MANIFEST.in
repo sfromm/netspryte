@@ -6,5 +6,4 @@ include docker-compose.yml
 include etc/netspryte.cfg
 include etc/netspryte.cron
 include bin/*
-recursive-include lib/netspryte/static *
-recursive-include lib/netspryte/templates *
+recursive-include web/ *
