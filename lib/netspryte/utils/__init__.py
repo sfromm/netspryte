@@ -251,3 +251,17 @@ def skip_data_instance(data):
         return True
     else:
         return False
+
+def xlate_metric_names(data, xlate):
+    values = dict()
+    for k in data:
+        newk = clean_metric_name(k, xlate)
+        values[newk] = data[k]
+    return values
+
+def clean_metric_name(name, xlate):
+    if xlate is None:
+        return name
+    for k,v in xlate.iteritems():
+        name = name.replace(k, v, 1)
+    return name
