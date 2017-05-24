@@ -135,18 +135,16 @@ class CollectSnmpWorker(multiprocessing.Process):
         t.start_timer()
         for data in snmp_mod.data:
             now = datetime.datetime.now()
-            this_host = self.mgr.get_or_create(Host, name=data['host'])
-            this_class = self.mgr.get_or_create(MeasurementClass, name=data['class'], transport=data['transport'])
+            if not this_host:
+                this_host = self.mgr.get_or_create(Host, name=data['host'])
+            if not this_class:
+                this_class = self.mgr.get_or_create(MeasurementClass, name=data['class'], transport=data['transport'])
             t.name = "select and update database %s-%s" % (this_host.name, this_class.name)
             if not log_me:
                 logging.info("updating database for %s %s", this_host.name, this_class.name)
                 log_me = True
             if hasattr(snmp_mod, 'DESCRIPTION') and not this_class.description:
                 this_class.description = snmp_mod.DESCRIPTION
-            if not metric_types and 'metrics' in data:
-                for k, v in data['metrics'].iteritems():
-                    metric_types[k] = netspryte.snmp.get_value_type(v)
-                this_class.metric_type = json_ready(metric_types)
             this_inst = self.mgr.get_or_create(MeasurementInstance,
                                           name=data['name'], index=data['index'],
                                           host=this_host, measurement_class=this_class)
@@ -157,6 +155,10 @@ class CollectSnmpWorker(multiprocessing.Process):
                 this_inst.presentation = json_ready(data['presentation'])
             if 'metrics' in data:
                 this_inst.metrics = json_ready(data['metrics'])
+                if not metric_types:
+                    for k, v in data['metrics'].iteritems():
+                        metric_types[k] = netspryte.snmp.get_value_type(v)
+                    this_class.metric_type = json_ready(metric_types)
             self.mgr.save(this_inst)
             if this_inst.metrics:
                 these_insts.append(this_inst)
