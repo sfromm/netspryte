@@ -68,6 +68,8 @@ def hello():
     related = dict()
     for m in mgr.get_all(MeasurementClass):
         measurement_classes.append(m.name)
+    if not cls and not host and not instance:
+        cls = 'interface'
     measurement_instances = mgr.get_instances_by_tags([tag], True)
     if cls:
         measurement_instances = mgr.get_instances_by_class(cls, True)
