@@ -33,13 +33,10 @@ class RrdDatabaseBackend(BaseDatabaseBackend):
     def __init__(self, backend, **kwargs):
         super(RrdDatabaseBackend, self).__init__(backend, **kwargs)
         if 'path' in kwargs:
-            self._path = kwargs['path']
-
-    def write(self, data):
-        ''' write data to rrd database '''
-        if not os.path.exists(self.path):
-            rrd_create(self.path, C.DEFAULT_RRD_STEP, data, C.DEFAULT_RRD_RRA)
-        return rrd_update(self.path, data)
+            self.path = kwargs['path']
+        else:
+            self.path = None
+        self.measurement_instance = None
 
     @property
     def path(self):
@@ -49,13 +46,30 @@ class RrdDatabaseBackend(BaseDatabaseBackend):
     def path(self, arg):
         self._path = arg
 
-def rrd_create(path, step, data, rra):
+    def write(self, data, xlate=None):
+        ''' write data to rrd database '''
+        if self.measurement_instance is None:
+            logging.error("unable to write to rrd without a measurement_instance property")
+            return None
+        host = self.measurement_instance.host.name
+        mcls = self.measurement_instance.measurement_class.name
+        transport = self.measurement_instance.measurement_class.transport
+        inst = self.measurement_instance.index
+        if not self.path:
+            self.path = mk_rrd_filename(host, mcls, inst)
+        if not os.path.exists(self.path):
+            mcls_types = self.measurement_instance.measurement_class.metric_type
+            mcls_types = netspryte.utils.xlate_metric_names(mcls_types, xlate)
+            rrd_create(self.path, C.DEFAULT_RRD_STEP, mcls_types, C.DEFAULT_RRD_RRA)
+        return rrd_update(self.path, data)
+
+def rrd_create(path, step, data_types, rra):
     ''' create a rrd '''
     args = [path, '--step', str(step)]
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     try:
-        data_sources = mk_rrd_ds(data)
+        data_sources = mk_rrd_ds(data_types)
         logging.debug("RRD STEP: %s", step)
         logging.debug("RRD DS: %s", " ".join(data_sources))
         logging.debug("RRD RRA: %s", " ".join(rra))
@@ -162,13 +176,12 @@ def mk_rrd_ds(data):
     ds = list()
     heartbeat = C.DEFAULT_RRD_STEP * C.DEFAULT_RRD_HEARTBEAT
     for k, v in data.iteritems():
-        type = netspryte.snmp.get_value_type(v)
-        ds.append("DS:{0}:{1}:{2}:U:U".format(k.lower(), type.upper(), heartbeat))
+        ds.append("DS:{0}:{1}:{2}:U:U".format(k.lower(), v.upper(), heartbeat))
     return ds
 
 def mk_rrd_filename(device, *args):
     ''' create a rrd filename based on the collected object '''
-    return netspryte.utils.mk_measurement_instance_filename(device, *args)
+    return "{0}.rrd".format(netspryte.utils.mk_measurement_instance_filename(device, *args))
 
 def rrd_preserve(rrd_path):
     ''' rename existing RRD for preservation
