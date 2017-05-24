@@ -57,13 +57,14 @@ class CollectSnmpCommand(BaseCommand):
             logging.error("Path to data directory does not exist: %s", args.datadir)
             return 1
         setup_logging(args.verbose)
-        stime = time.time()
-        logging.warn("devices are: %s", ", ".join(args.devices))
-        logging.warn("beginning snmp collection")
+        t = Timer("snmp collection")
+        t.start_timer()
         cfg = C.load_config()
+        random.shuffle(args.devices) # randomize list of devices
         num_workers = C.DEFAULT_WORKERS
         if len(args.devices) < num_workers:
             num_workers = len(args.devices)
+        logging.warn("beginning snmp collection with %s workers", num_workers)
         CollectSnmpCommand.SNMP_MODULES = snmp_module_loader.all()
         task_queue = multiprocessing.JoinableQueue()
         if args.nofork:
@@ -79,10 +80,7 @@ class CollectSnmpCommand(BaseCommand):
         for i in range(num_workers):
             task_queue.put(None)
         task_queue.join()
-        etime = time.time()
-        elapsed = etime - stime
-        logging.warn("snmp collection elapsed time: %.2f", elapsed)
-
+        t.stop_timer()
 
 class CollectSnmpWorker(multiprocessing.Process):
 
@@ -90,21 +88,22 @@ class CollectSnmpWorker(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.task_queue = task_queue
         self.metrics_only = metrics_only
-        self.stat = dict()
+        self.mgr = Manager()
 
     def run(self):
         proc_name = self.name
+        t = Timer()
         while True:
             device = self.task_queue.get()
             if device is None:
                 logging.info("worker %s exiting", proc_name)
                 self.task_queue.task_done()
                 break
-            self.stat['stime'] = time.time()
+            t.name = "%s snmp worker" % device
+            t.start_timer()
             logging.warn("processing %s", device)
             try:
                 msnmp = netspryte.snmp.SNMPSession(host=device)
-                self.stat['host'] = msnmp.host
                 for cls, module in CollectSnmpCommand.SNMP_MODULES.iteritems():
                     if self.metrics_only and not cls.STAT:
                         continue
@@ -119,22 +118,36 @@ class CollectSnmpWorker(multiprocessing.Process):
             except Exception as e:
                 logging.error("encountered error with %s; skipping to next device: %s", device, traceback.format_exc())
             finally:
-                self.stat['etime'] = time.time()
-                self.stat['elapsed'] = self.stat['etime'] - self.stat['stime']
-                logging.warn("%s elapsed time: %.2f", device, self.stat['elapsed'])
+                t.stop_timer()
             self.task_queue.task_done()
         return
 
     def process_module_data(self, snmp_mod):
-        mgr = Manager()
         this_class_updated = False
+        this_host = None
+        this_class = None
+        log_me = False
+        these_insts = list()
+        metric_types = dict()
+        if not snmp_mod.data:
+            return
+        t = Timer("database")
+        t.start_timer()
         for data in snmp_mod.data:
             now = datetime.datetime.now()
-            this_host = mgr.get_or_create(Host, name=data['host'])
-            this_class = mgr.get_or_create(MeasurementClass, name=data['class'], transport=data['transport'])
+            this_host = self.mgr.get_or_create(Host, name=data['host'])
+            this_class = self.mgr.get_or_create(MeasurementClass, name=data['class'], transport=data['transport'])
+            t.name = "select and update database %s-%s" % (this_host.name, this_class.name)
+            if not log_me:
+                logging.info("updating database for %s %s", this_host.name, this_class.name)
+                log_me = True
             if hasattr(snmp_mod, 'DESCRIPTION') and not this_class.description:
                 this_class.description = snmp_mod.DESCRIPTION
-            this_inst = mgr.get_or_create(MeasurementInstance,
+            if not metric_types and 'metrics' in data:
+                for k, v in data['metrics'].iteritems():
+                    metric_types[k] = netspryte.snmp.get_value_type(v)
+                this_class.metric_type = json_ready(metric_types)
+            this_inst = self.mgr.get_or_create(MeasurementInstance,
                                           name=data['name'], index=data['index'],
                                           host=this_host, measurement_class=this_class)
             this_host.lastseen = now
@@ -144,46 +157,23 @@ class CollectSnmpWorker(multiprocessing.Process):
                 this_inst.presentation = json_ready(data['presentation'])
             if 'metrics' in data:
                 this_inst.metrics = json_ready(data['metrics'])
-            # attrs = data['attrs']
-            if 'metrics' in data:
-                metric_types = dict()
-                for k, v in data['metrics'].iteritems():
-                    metric_types[k] = netspryte.snmp.get_value_type(v)
-                this_class.metric_type = json_ready(metric_types)
-                metrics = CollectSnmpWorker.xlate_data(data['metrics'], snmp_mod.XLATE)
-                self.process_data_instance(snmp_mod, snmp_mod.NAME, data, metrics)
-            mgr.save(this_inst)
-            if not this_class_updated:
-                mgr.save(this_host)
-                mgr.save(this_class)
-                this_class_updated = True
+            self.mgr.save(this_inst)
+            if this_inst.metrics:
+                these_insts.append(this_inst)
+        self.mgr.save(this_host)
+        self.mgr.save(this_class)
+        logging.info("done updating database for %s %s", this_host.name, this_class.name)
+        t.stop_timer()
+        t = Timer("%s-%s-metrics update" % (this_host.name, this_class.name))
+        t.start_timer()
+        for this_inst in these_insts:
+            self.process_data_instance(this_inst, snmp_mod.XLATE)
+        t.stop_timer()
 
-    def process_data_instance(self, mod, name, data, values):
+    def process_data_instance(self, measurement_instance, xlate):
         ''' '''
-        if not values:
-            return
-        rrd_path = mk_rrd_filename(mod, name, data['index'])
+        metrics = xlate_metric_names(measurement_instance.metrics, xlate)
         dbs = get_db_backend()
         for db in dbs:
-            if db.backend == 'rrd':
-                db.path = rrd_path
-            self.record_stats(db, values)
-
-    @staticmethod
-    def record_stats(db, data):
-        db.write(data)
-
-    @staticmethod
-    def xlate_data(data, xlate):
-        values = dict()
-        for k in data:
-            newk = CollectSnmpWorker.clean_name(k, xlate)
-            values[newk] = data[k]
-        return values
-
-    @staticmethod
-    def clean_name(name, xlate):
-        for k,v in xlate.iteritems():
-            name = name.replace(k, v, 1)
-        return name
-
+            db.measurement_instance = measurement_instance
+            db.write(metrics, xlate)
