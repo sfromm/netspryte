@@ -4,6 +4,21 @@ netspryte
 *netspryte* is a library and set of utilities to query network equipment
 and get structured data back that describes the device.
 
+Prerequisites
+----------------
+
+You will need *docker* and *docker-compose* to install *netspryte*.
+Please refer to documentation on installing these packages.
+
+* [https://developer.fedoraproject.org/tools/docker/docker-installation.html](Getting started with Docker on Fedora)
+* [https://wiki.debian.org/Docker](Docker on Debian)
+* [https://docs.docker.com/engine/installation/](Install Docker)
+* [https://docs.docker.com/compose/install/](Install Docker Compose)
+
+For *docker-compose*, it should be enough to do a **pip install
+docker-compose**.  See [https://docs.docker.com/compose/install/#alternative-install-options](Install using pip)
+for details.
+
 Installation
 ---------------
 
