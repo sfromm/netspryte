@@ -11,12 +11,15 @@ endif
 
 VENV_ROOT ?= /usr/local/netspryte
 VAR_FILE ?= netspryte.params
+HOST_VAR_FILE ?= netspryte.params.$(HOSTNAME)
 DOCKER_COMPOSE ?= docker-compose.yml
-TIME ?= 1m
+COLLECTOR_INTERVAL ?= 1m
+DISCOVER_INTERVAL ?= 1h
 
-.PHONY: venv
-
+# Include the default parameters file.
+# And optionally include a host-specific parameters file to override defaults.
 include $(VAR_FILE)
+-include $(HOST_VAR_FILE)
 
 RUN_OPTIONS = IMAGE_TAG=$(IMAGE_TAG)
 # Get the branch information from git
@@ -111,16 +114,25 @@ restart-collector:
 
 cron-show:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
-		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a show -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
+		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a show -j all
 
 cron-add:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
-		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a add -I $(TIME) -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
+		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a add \
+		-I $(COLLECTOR_INTERVAL) -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
+	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
+		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a add \
+		-I $(DISCOVER_INTERVAL) -j "$(CONTAINER_EXEC_PATH)/netspryte-discover -v"
 
 cron-delete:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
-		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a delete -I $(TIME) -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
+		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a delete \
+		-I $(COLLECTOR_INTERVAL) -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
+	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
+		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a delete \
+		-I $(DISCOVER_INTERVAL) -j "$(CONTAINER_EXEC_PATH)/netspryte-discover -v"
 
 initdb:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) $(CONTAINER_EXEC_PATH)/netspryte-janitor initdb
 
+.PHONY: venv
