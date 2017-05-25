@@ -1,6 +1,17 @@
 TODO
 =====
 
+Goals for 17.06
+-------------------
+
+* DONE Change to different versioning scheme: YY.MM
+* DONE Continue build support for influxdb write support
+* DONE Move away from json files; use database to store information
+* DONE Move to flask web interface
+* DONE Move to plugin approach for running snmp modules
+* TODO Ability to define RRD DEFs in database - needed to override
+  individual graphs.
+
 Goals for 0.1
 ----------------
 
@@ -16,10 +27,3 @@ Goals for 0.1
 * DONE influxdb database backend write support
 * DONE CGI to produce PNG graphs
 * DONE add date/time stamp to graph
-
-Goals for 0.2
-----------------
-
-* ability to define RRD DEFs in json
-* build out support for influxdb write support
-* move away from data models using a dict to using a list
