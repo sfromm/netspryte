@@ -91,6 +91,15 @@ stop:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop
 
+stop-db:
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop $(DB_IMAGE_NAME)
+
+stop-web:
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop $(WEB_IMAGE_NAME)
+
+stop-collector:
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop $(COLLECTOR_IMAGE_NAME)
+
 start:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d
