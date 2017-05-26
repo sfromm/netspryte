@@ -124,3 +124,5 @@ DEFAULT_DB_NAME          = get_config(p, DEFAULTS, 'dbname',   'NETSPRYTE_DB_NAM
 DEFAULT_DB_HOST          = get_config(p, DEFAULTS, 'dbhost',   'NETSPRYTE_DB_HOST', 'localhost')
 DEFAULT_DB_USER          = get_config(p, DEFAULTS, 'dbuser',   'NETSPRYTE_DB_USER', 'netspryte')
 DEFAULT_DB_PASS          = get_config(p, DEFAULTS, 'dbpass',   'NETSPRYTE_DB_PASS', 'netspryte')
+
+DEFAULT_FLASK_APPLICATION_ROOT = get_config(p, 'flask', 'application_root',   'NETSPRYTE_FLASK_APPLICATION_ROOT', '/')

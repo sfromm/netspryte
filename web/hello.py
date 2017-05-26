@@ -30,6 +30,7 @@ from netspryte.db.rrd import *
 LIMIT = 10
 
 app = Flask(__name__)
+app.config['APPLICATION_ROOT'] = C.DEFAULT_FLASK_APPLICATION_ROOT
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 def get_graph_defs(mclasses, extended_data=False):
