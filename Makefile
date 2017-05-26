@@ -131,6 +131,13 @@ restart-web:
 restart-collector:
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart collector
 
+update:
+	@echo "Update netspryte and container images"
+	git pull
+	docker pull $(COLLECTOR_IMAGE_NAME):$(IMAGE_TAG)
+	docker pull $(WEB_IMAGE_NAME):$(IMAGE_TAG)
+	docker pull $(DB_IMAGE_NAME):$(IMAGE_TAG)
+
 cron-show:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
 		$(CONTAINER_EXEC_PATH)/netspryte-janitor cron -a show -j all
