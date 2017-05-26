@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <title>{{ title | default("Network Graphs") }}</title>
-    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../static/css/netspryte.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/netspryte.css') }}" rel="stylesheet">
     <script type="text/javascript">var images = new Array();</script>
   </head>
   <body>
@@ -20,7 +20,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a href="/#"><img src="../static/images/nero-logo.png" width="60"></a>
+          <a href="/#"><img src="{{ url_for('static', filename='images/nero-logo.png') }}" width="60"></a>
         </div>
         <nav class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -29,7 +29,9 @@
               <a href=# class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Related <span class="caret"></span> </a>
               <ul class="dropdown-menu scrollable-menu">
                 {% for k, v in related.iteritems() %}
-                <li><a href="/?{{ k }}">{{ v }}</a></li>
+                {% set paraml = k.split('=') %}
+                {% set paramd = { paraml[0] : paraml[1] } %}
+                <li><a href="{{ url_for('hello', **paramd) }}">{{ v }}</a></li>
                 {% endfor %}
               </ul>
             </li>
@@ -62,8 +64,8 @@
                 {% if candidate.measurement_class.name in graph -%}
                 {% for period in graph_periods -%}
                 {% set imgid = candidate.id|string + graph + period -%}
-                <a href="/?instance={{ candidate.name }}">
-                  <img id="img{{ imgid }}" src="/netspryte/graph?name={{ candidate.name }}&start={{ period }}&gdef={{ graph }}" class="img-responsive center-block"/>
+                <a href="{{ url_for('hello', instance=candidate.name ) }}">
+                  <img id="img{{ imgid }}" src="{{ url_for('get_graph', name=candidate.name, start=period, gdef=graph) }}" class="img-responsive center-block"/>
                 </a><br/>
                 <script type="text/javascript">images.push("img{{ imgid }}");</script>
                 {% endfor -%}
@@ -86,7 +88,7 @@
         <nav class="collapse navbar-collapse">
           <ul class="nav navbar-nav navbar-left">
             {% for tag in tags %}
-            <a class="btn btn-default" href="/?tag={{ tag.name }}">{{ tag.name }}</a>
+            <a class="btn btn-default" href="{{ url_for('hello', tag=tag.name) }}">{{ tag.name }}</a>
             {% endfor %}
           </ul>
           <ul class="nav navbar-nav navbar-right">
@@ -99,7 +101,7 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     <script type="text/javascript">
      window.onload = function() {
        var MIN = 300;
