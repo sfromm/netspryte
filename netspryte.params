@@ -13,6 +13,7 @@ export MAIN_CONTAINER_NAME=${COLLECTOR_CONTAINER_NAME}
 
 export CONTAINER_CONFIGDIR=/private/netspryte/etc
 export CONTAINER_DATADIR=/private/netspryte/data
+export CONTAINER_DBDIR=/private/netspryte/pgdata
 
 export CONTAINER_EXEC_PATH=/usr/local/bin
 

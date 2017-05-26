@@ -27,4 +27,5 @@ database:
     POSTGRES_PASSWORD: netspryte
     POSTGRES_DB: netspryte
   volumes:
+    - $CONTAINER_DBDIR:/var/lib/postgresql/data
     - /etc/localtime:/etc/localtime:ro
