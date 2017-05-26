@@ -17,7 +17,7 @@ web:
     - $CONTAINER_DATADIR:/var/lib/netspryte/data
     - /etc/localtime:/etc/localtime:ro
 database:
-  image: postgres
+  image: $DB_IMAGE_NAME:$IMAGE_TAG
   container_name: $DB_CONTAINER_NAME
   restart: $RESTART_POLICY
   ports:
