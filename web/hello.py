@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-from flask import (Flask, jsonify, render_template, request, make_response)
+from flask import (Flask, jsonify, render_template, request, make_response, url_for)
 from playhouse.flask_utils import object_list
 import collections
 import time
@@ -29,9 +29,26 @@ from netspryte.db.rrd import *
 
 LIMIT = 10
 
+class ReverseProxied(object):
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        script_name = environ.get('HTTP_X_SCRIPT_NAME', '')
+        if script_name:
+            environ['SCRIPT_NAME'] = script_name
+            path_info = environ['PATH_INFO']
+            if path_info.startswith(script_name):
+                environ['PATH_INFO'] = path_info[len(script_name):]
+
+        scheme = environ.get('HTTP_X_SCHEME', '')
+        if scheme:
+            environ['wsgi.url_scheme'] = scheme
+        return self.app(environ, start_response)
+
 app = Flask(__name__)
-app.config['APPLICATION_ROOT'] = C.DEFAULT_FLASK_APPLICATION_ROOT
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
+app.wsgi_app = ReverseProxied(app.wsgi_app)
 
 def get_graph_defs(mclasses, extended_data=False):
     cfg = C.load_config()
