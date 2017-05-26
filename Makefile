@@ -92,26 +92,26 @@ stop:
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop
 
 stop-db:
-	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop $(DB_IMAGE_NAME)
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop database
 
 stop-web:
-	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop $(WEB_IMAGE_NAME)
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop web
 
 stop-collector:
-	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop $(COLLECTOR_IMAGE_NAME)
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) stop collector
 
 start:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d
 
 start-db:
-	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d $(DB_IMAGE_NAME)
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d database
 
 start-web:
-	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d $(WEB_IMAGE_NAME)
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d web
 
 start-collector:
-	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d $(COLLECTOR_IMAGE_NAME)
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d collector
 
 
 status:
@@ -123,13 +123,13 @@ ps: status
 restart: restart-db restart-web restart-collector
 
 restart-db:
-	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart $(DB_IMAGE_NAME)
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart database
 
 restart-web:
-	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart $(WEB_IMAGE_NAME)
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart web
 
 restart-collector:
-	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart $(COLLECTOR_IMAGE_NAME)
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) restart collector
 
 cron-show:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
