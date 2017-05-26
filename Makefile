@@ -104,6 +104,16 @@ start:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d
 
+start-db:
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d $(DB_IMAGE_NAME)
+
+start-web:
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d $(WEB_IMAGE_NAME)
+
+start-collector:
+	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) up -d $(COLLECTOR_IMAGE_NAME)
+
+
 status:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) ps
