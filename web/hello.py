@@ -60,15 +60,16 @@ def hello():
     mgr = Manager()
     measurement_classes = list()
     measurement_instances = list()
-    tag = request.args.get('tag', 'main')
+    tag = request.args.get('tag', None)
     cls = request.args.get('class', None)
     host = request.args.get('host', None)
     instance = request.args.get('instance', None)
+    all_tags = mgr.get_all(Tag)
     extended_data = False
     related = dict()
     for m in mgr.get_all(MeasurementClass):
         measurement_classes.append(m.name)
-    if not cls and not host and not instance:
+    if not cls and not host and not instance and not tag:
         cls = 'interface'
     measurement_instances = mgr.get_instances_by_tags([tag], True)
     if cls:
@@ -103,12 +104,13 @@ def hello():
                        graph_defs=graph_defs,
                        graph_periods=graph_periods,
                        related=collections.OrderedDict(sorted(related.items())),
+                       tags=all_tags,
                        measurement_classes=measurement_classes )
 
 @app.route('/netspryte/graph', methods=['GET'])
 def get_graph():
     ''' for supplied id, create graph '''
-    EXPIRES = 300
+    EXPIRES = 120
     mgr = Manager()
     start = request.args.get('start', None)
     end = request.args.get('end', 'now')
