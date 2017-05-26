@@ -15,3 +15,5 @@ export CONTAINER_CONFIGDIR=/private/netspryte/etc
 export CONTAINER_DATADIR=/private/netspryte/data
 
 export CONTAINER_EXEC_PATH=/usr/local/bin
+
+export RESTART_POLICY=unless-stopped

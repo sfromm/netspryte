@@ -1,6 +1,7 @@
 collector:
   image: $COLLECTOR_IMAGE_NAME:$IMAGE_TAG
   container_name: $MAIN_CONTAINER_NAME
+  restart: $RESTART_POLICY
   volumes:
     - $CONTAINER_CONFIGDIR:/etc/netspryte
     - $CONTAINER_DATADIR:/var/lib/netspryte/data
@@ -8,6 +9,7 @@ collector:
 web:
   image: $WEB_IMAGE_NAME:$IMAGE_TAG
   container_name: $WEB_CONTAINER_NAME
+  restart: $RESTART_POLICY
   ports:
     - "80:80"
   volumes:
@@ -17,6 +19,7 @@ web:
 database:
   image: postgres
   container_name: $DB_CONTAINER_NAME
+  restart: $RESTART_POLICY
   ports:
     - "5432:5432"
   environment:
