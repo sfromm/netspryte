@@ -96,10 +96,10 @@ class JanitorCommand(BaseCommand):
         cron = crontab.CronTab(user='root')
         if not command or command == 'all':
             for cron_job in cron:
-                logging.error(cron_job)
+                logging.warn(cron_job)
         else:
             for cron_job in cron.find_command(command):
-                logging.error(cron_job)
+                logging.warn(cron_job)
 
     def crontab_command_add(self, command, interval):
         time_min_regex = "(\d+)m"
@@ -122,12 +122,12 @@ class JanitorCommand(BaseCommand):
             logging.error("unrecognized time interval; format examples: 1m, 5m, or 1h")
             return
         cron.write()
-        logging.error("new cronjob: %s", cron.render())
+        logging.warn("new cronjob: %s", cron.render())
 
     def crontab_command_delete(self, command, interval):
         cron = crontab.CronTab(user='root')
         for cron_job in cron.find_command(command):
-            logging.error("removing cron job: %s", cron_job)
+            logging.warn("removing cron job: %s", cron_job)
             cron.remove(cron_job)
             cron.write()
 
