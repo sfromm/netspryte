@@ -48,8 +48,11 @@ class RrdRemoveSpikesCommand(BaseCommand):
         setup_logging(args.verbose)
         cfg = C.load_config()
         rrd_xml = list()
-        rrd_path = args.file
+        rrd_path = os.path.abspath(args.file)
         xml_path = rrd_path.replace('rrd', 'xml')
+        if not os.path.exists(rrd_path):
+            logging.error("rrd path does not exist: %s", rrd_path)
+            return
         info = rrd_info(rrd_path)
         for line in rrd_dump(rrd_path):
             line = line.rstrip()
@@ -60,26 +63,8 @@ class RrdRemoveSpikesCommand(BaseCommand):
                 new_values = list()
                 values = line.split('<v>')
                 rowtime = ""
-                for value in values:
-                    if '<row>' in value or 'NaN' in value:
-                        m = re.match(r"\s*<!-- ([\d-]+ [\d:]+ ...) /", value)
-                        if m:
-                            rowtime = m.group(1)
-                        new_values.append(value)
-                        continue
-                    m = re.match(r"([\d\.]+)e[-\+](\d+).*", value)
-                    if not m:
-                        new_values.append(value)
-                        logging.warn("failed to match value: %s", value)
-                        continue
-                    val = m.group(1)
-                    exp = m.group(2)
-                    if int(exp) > args.exponent:
-                        logging.info("found %se%s exceeds exponent limit %s at %s",
-                                     val, exp, args.exponent, rowtime)
-                        new_values.append("NaN</v>")
-                    else:
-                        new_values.append(value)
+                is_bad_row = self.rrd_row_exceeds_limit(args, line)
+                new_values = self.new_rrd_row(args, line, is_bad_row)
                 line = "<v>".join(new_values)
             rrd_xml.append(line)
         with open(xml_path, 'w') as xml:
@@ -91,3 +76,55 @@ class RrdRemoveSpikesCommand(BaseCommand):
         logging.info("restoring xml to %s", rrd_path)
         rrd_restore(xml_path, rrd_path)
 
+    def rrd_row_exceeds_limit(self, args, row):
+        ''' check if row exceeds limit.  returns true if it exceeds and false if it is okay '''
+        values = row.split('<v>')
+        rowtime = ""
+        is_bad_row = False
+        for value in values:
+            if '<row>' in value or 'NaN' in value:
+                m = re.match(r"\s*<!-- ([\d-]+ [\d:]+ ...) /", value)
+                if m:
+                    rowtime = m.group(1)
+                continue
+            m = re.match(r"([\d\.]+)e[-\+](\d+).*", value)
+            if not m:
+                logging.warn("failed to match row value: %s", value)
+                continue
+            val = m.group(1)
+            exp = m.group(2)
+            if int(exp) > args.exponent:
+                logging.info("found %se%s exceeds exponent limit %s at %s",
+                             val, exp, args.exponent, rowtime)
+                is_bad_row = True
+        return is_bad_row
+
+    def new_rrd_row(self, args, row, is_bad_row):
+        ''' return a new row of data '''
+        new_values = list()
+        values = row.split('<v>')
+        rowtime = ""
+        for value in values:
+            if '<row>' in value or 'NaN' in value:
+                m = re.match(r"\s*<!-- ([\d-]+ [\d:]+ ...) /", value)
+                if m:
+                    rowtime = m.group(1)
+                new_values.append(value)
+                continue
+            m = re.match(r"([\d\.]+)e[-\+](\d+).*", value)
+            if not m:
+                new_values.append(value)
+                logging.warn("failed to match row value: %s", value)
+                continue
+            val = m.group(1)
+            exp = m.group(2)
+            if is_bad_row:
+                v = "NaN</v>"
+                if '/row' in value:
+                    v = v + "</row>"
+                new_values.append(v)
+            else:
+                new_values.append(value)
+        if is_bad_row:
+            logging.warn("removing faulty data at %s", rowtime)
+        return new_values
