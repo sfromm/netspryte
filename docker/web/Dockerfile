@@ -1,10 +1,9 @@
-FROM debian
+FROM sfromm/baseimage
 MAINTAINER Stephen <stephenf@nero.net>
 
-RUN apt-get update && apt-get -y dist-upgrade
-RUN echo "deb http://ftp.debian.org/debian jessie-backports main" >> /etc/apt/sources.list.d/backports.list && \
-    apt-get -y install nginx uwsgi uwsgi-plugin-python supervisor \
-    build-essential python-dev python-pip libpq-dev librrd-dev && \
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get -y --no-install-recommends install nginx uwsgi uwsgi-plugin-python libpq-dev librrd-dev && \
     apt-get clean
 
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
