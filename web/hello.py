@@ -99,7 +99,9 @@ def hello():
         extended_data = True
     graph_defs = get_graph_defs(measurement_classes, extended_data)
     graph_periods = get_graph_periods(extended_data)
-    measurement_instances = measurement_instances.where(~(MeasurementInstance.metrics >> None))
+    measurement_instances = (measurement_instances
+                             .where(~(MeasurementInstance.metrics >> None))
+                             .order_by(MeasurementInstance.presentation['title']))
 
     # Create a list of related items.
     for i in measurement_instances:
