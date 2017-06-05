@@ -45,8 +45,6 @@ class CollectSnmpCommand(BaseCommand):
 
     def __init__(self, daemonize=False):
         super(CollectSnmpCommand, self).__init__(daemonize)
-        self.parser.add_argument('-M', '--metrics', default=False, action='store_true',
-                                 help="Collect only from SNMP modules with metrics")
         self.parser.add_argument('devices', type=str, nargs='*',
                                  default=C.DEFAULT_DEVICES,
                                  help='list of devices to query')
@@ -70,8 +68,7 @@ class CollectSnmpCommand(BaseCommand):
         if args.nofork:
             num_workers = 1
         logging.info("creating %s workers", num_workers)
-        workers = [ CollectSnmpWorker(task_queue, args.metrics)
-                    for i in range(num_workers) ]
+        workers = [ CollectSnmpWorker(task_queue) for i in range(num_workers) ]
         for w in workers:
             w.start()
         for d in args.devices:
@@ -84,10 +81,9 @@ class CollectSnmpCommand(BaseCommand):
 
 class CollectSnmpWorker(multiprocessing.Process):
 
-    def __init__(self, task_queue, metrics_only):
+    def __init__(self, task_queue):
         multiprocessing.Process.__init__(self)
         self.task_queue = task_queue
-        self.metrics_only = metrics_only
 
     def run(self):
         self.mgr = Manager()
@@ -105,7 +101,8 @@ class CollectSnmpWorker(multiprocessing.Process):
             try:
                 msnmp = netspryte.snmp.SNMPSession(host=device)
                 for cls, module in CollectSnmpCommand.SNMP_MODULES.iteritems():
-                    if self.metrics_only and not cls.STAT:
+                    if not cls.STAT:
+                        logging.info("skipping module %s that does not collect measurement data", cls.NAME)
                         continue
                     try:
                         snmp_mod = cls(msnmp)
