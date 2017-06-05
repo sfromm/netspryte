@@ -6,9 +6,12 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -y --no-install-recommends install nginx uwsgi uwsgi-plugin-python libpq-dev librrd-dev && \
     apt-get clean
 
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf
-COPY docker/web/supervisor-netspryte.conf /etc/supervisor/conf.d/
-COPY docker/web/nginx-netspryte.conf /etc/nginx/sites-available/default
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf && \
+    mkdir /etc/service/nginx /etc/service/uwsgi
+
+ADD docker/web/nginx-netspryte.conf /etc/nginx/sites-available/default
+ADD docker/web/nginx.runit /etc/service/nginx/run
+ADD docker/web/uwsgi.runit /etc/service/uwsgi/run
 
 ADD . /root/netspryte/
 RUN mkdir -p /var/lib/netspryte/data && \
@@ -17,4 +20,4 @@ RUN mkdir -p /var/lib/netspryte/data && \
 EXPOSE 80
 VOLUME /etc/netspryte /var/lib/netspryte/data
 
-CMD ["/usr/bin/supervisord", "-n"]
+CMD ["/sbin/my_init"]
