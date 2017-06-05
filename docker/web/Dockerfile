@@ -3,7 +3,8 @@ MAINTAINER Stephen <stephenf@nero.net>
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get -y --no-install-recommends install nginx uwsgi uwsgi-plugin-python libpq-dev librrd-dev && \
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install nginx uwsgi uwsgi-plugin-python build-essential libpq-dev librrd-dev && \
     apt-get clean
 
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf && \
