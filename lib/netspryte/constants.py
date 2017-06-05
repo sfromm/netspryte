@@ -96,6 +96,7 @@ DEFAULT_DATADIR        = get_config(p, DEFAULTS, "datadir",        "NETSPRYTE_DA
 DEFAULT_CHECKSUM       = get_config(p, DEFAULTS, "checksum",       "NETSPRYTE_CHECKSUM",       "sha1")
 DEFAULT_STRFTIME       = get_config(p, DEFAULTS, 'strftime',       "NETSPRYTE_STRFTIME",       "%c")
 DEFAULT_INTERVAL       = get_config(p, DEFAULTS, "interval",       "NETSPRYTE_INTERVAL",       1, integer=True)
+DEFAULT_CRON_PATH      = get_config(p, DEFAULTS, "cron_path",       "NETSPRYTE_CRON_PATH",     "/usr/local/bin:/usr/bin:/bin")
 
 DEFAULT_ALLOWED_SNMP_VERSIONS = ['1', '2c', '3']
 DEFAULT_ALLOWED_SNMP_LEVELS   = ['authNoPriv', 'authPriv']

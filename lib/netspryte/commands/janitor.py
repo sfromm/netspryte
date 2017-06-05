@@ -121,6 +121,7 @@ class JanitorCommand(BaseCommand):
         else:
             logging.error("unrecognized time interval; format examples: 1m, 5m, or 1h")
             return
+        cron.env['PATH'] = C.DEFAULT_CRON_PATH
         cron.write()
         logging.warn("new cronjob: %s", cron.render())
 
