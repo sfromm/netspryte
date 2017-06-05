@@ -13,4 +13,4 @@ RUN mkdir -p /var/lib/netspryte/data && \
 
 VOLUME /etc/netspryte /var/lib/netspryte/data
 
-CMD ["/usr/sbin/cron", "-f"]
+CMD ["/sbin/my_init"]
