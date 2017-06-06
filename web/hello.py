@@ -19,6 +19,7 @@
 from flask import (Flask, jsonify, render_template, request, make_response, url_for)
 from playhouse.flask_utils import object_list
 import collections
+import operator
 import time
 import urllib
 
@@ -99,8 +100,9 @@ def hello():
         extended_data = True
     graph_defs = get_graph_defs(measurement_classes, extended_data)
     graph_periods = get_graph_periods(extended_data)
+    clauses = filter_measurement_instance_clauses()
     measurement_instances = (measurement_instances
-                             .where(~(MeasurementInstance.metrics >> None))
+                             .where(reduce(operator.and_, clauses))
                              .order_by(MeasurementInstance.presentation['title']))
 
     # Create a list of related items.
@@ -230,34 +232,15 @@ def get_tags():
 def close_db(error):
     pass
 
-@app.template_filter('can_graph')
-def filter_graph_candidates(candidate):
-    r = True
-    if candidate.presentation is None:
-        r = False
-    elif candidate.presentation['title'] is None:
-        r = False
-    elif candidate.presentation['description'] is None or candidate.presentation['description'] == "":
-        r = False
-    elif candidate.measurement_class.name in ["entity", "ipnetwork"]:
-        r = False
-    elif 'ifType' in candidate.attrs and candidate.attrs['ifType'] in ["32", "49", "63", "77", "81", "134", "166"]:
-        # Ignore the following ifTypes:
-        # 32 - framerelay
-        # 49 - aal5
-        # 63 - isdn
-        # 77 - lapd
-        # 81 - ds0
-        # 134 - atmSubInterface
-        # 166 - mpls
-        r = False
-    elif 'ifAdminStatus' in candidate.attrs and candidate.attrs['ifAdminStatus'] == 'down':
-        r = False
-    elif 'cbQosObjectsType' in candidate.attrs and candidate.attrs['cbQosObjectsType'] != "police":
-        r = False
-    elif 'cbQosPolicyDirection' in candidate.attrs and candidate.attrs['cbQosPolicyDirection'] == 'input':
-        r = False
-    return r
+def filter_measurement_instance_clauses():
+    clauses = [
+        (MeasurementInstance.metrics.is_null(False)),
+        (MeasurementInstance.presentation['title'].is_null(False)),
+        (MeasurementInstance.presentation['description'].is_null(False)),
+        (MeasurementInstance.presentation['title'] != ""),
+        (MeasurementInstance.presentation['description'] != ""),
+    ]
+    return clauses
 
 @app.template_filter('clean_querystring')
 def clean_querystring(request_args, *keys_to_remove, **new_values):
