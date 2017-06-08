@@ -38,8 +38,6 @@ class JanitorCommand(BaseCommand):
     def __init__(self, daemonize=False):
         super(JanitorCommand, self).__init__(daemonize)
         group1 = self.parser.add_argument_group('tag', 'Tag measurement instances')
-        group1.add_argument('-i', '--instance', action='append',
-                            help='measurement instance to tag')
         group1.add_argument('-t', '--tag', action='append',
                             help='tag name')
         group2 = self.parser.add_argument_group('cron', 'Crontab commands')
@@ -50,8 +48,13 @@ class JanitorCommand(BaseCommand):
         group2.add_argument('-I', '--interval',
                             help='Time interval to run cron job')
         group3 = self.parser.add_argument_group('initdb', 'Initialize database')
+        group4 = self.parser.add_argument_group('instance', 'Measurement Instance commands')
+        group4.add_argument('--description',
+                            help='Set description used in webui presentation')
+        self.parser.add_argument('-i', '--measurementinstance', action='append',
+                                 help='measurement instance to tag')
         self.parser.add_argument('command', type=str,
-                                 choices=['tag', 'cron', 'initdb'],
+                                 choices=['tag', 'cron', 'initdb', 'instance'],
                                  help="Sub-command")
 
     def run(self):
@@ -59,22 +62,24 @@ class JanitorCommand(BaseCommand):
         setup_logging(args.verbose)
         self.mgr = Manager()
         if args.command == 'tag':
-            self.tag_command(args.tag, args.instance)
+            self.tag_command(args.tag, args.measurementinstance)
         elif args.command == 'cron':
             self.crontab_command(args.action, args.cron, args.interval)
         elif args.command == 'initdb':
             self.initdb_command()
+        elif args.command == 'instance':
+            self.measurement_instance_command(args.measurementinstance, args.description)
         else:
             logging.error("unrecognized command")
 
-    def tag_command(self, tags, instances):
+    def tag_command(self, tags, measurementinstances):
         ''' tag measurement instances '''
-        if not tags or not instances:
+        if not tags or not measurementinstances:
             logging.error("no tags or measurement instances provided")
             return
         for tag in tags:
             this_tag = self.mgr.get_or_create(Tag, name=tag)
-            for inst in instances:
+            for inst in measurementinstances:
                 this_inst = self.mgr.get(MeasurementInstance, name=inst)
                 if not this_inst:
                     continue
@@ -136,3 +141,10 @@ class JanitorCommand(BaseCommand):
     def initdb_command(self):
         self.mgr = Manager()
         self.mgr.create_tables()
+
+    def measurement_instance_command(self, measurementinstances, description):
+        ''' manage description for a measurement instance '''
+        for inst in measurementinstances:
+            this_inst = self.mgr.get(MeasurementInstance, name=inst)
+            this_inst.presentation['description'] = description
+            self.mgr.save(this_inst)
