@@ -118,8 +118,6 @@ status:
 	@echo "Using docker compose file $(DOCKER_COMPOSE)"
 	$(RUN_OPTIONS) docker-compose -f $(DOCKER_COMPOSE) ps
 
-ps: status
-
 restart: restart-db restart-web restart-collector
 
 restart-db:
@@ -137,6 +135,11 @@ update:
 	docker pull $(COLLECTOR_IMAGE_NAME):$(IMAGE_TAG)
 	docker pull $(WEB_IMAGE_NAME):$(IMAGE_TAG)
 	docker pull $(DB_IMAGE_NAME):$(IMAGE_TAG)
+
+ps: status
+
+cli:
+	docker exec -it $(COLLECTOR_CONTAINER_NAME) /bin/bash
 
 cron-show:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
