@@ -142,24 +142,23 @@ cli:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) /bin/bash
 
 cron-show:
-	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
-		$(CONTAINER_EXEC_PATH)/netspryte-janitor -v cron -a show -j all
+	docker exec -it $(COLLECTOR_CONTAINER_NAME) $(CONTAINER_EXEC_PATH)/netspryte-janitor -v cron -a show -j all
 
 cron-add:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
 		$(CONTAINER_EXEC_PATH)/netspryte-janitor -v cron -a add \
-		-I $(COLLECTOR_INTERVAL) -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
+		-I $(COLLECTOR_INTERVAL) -j "netspryte-collect-snmp -v"
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
 		$(CONTAINER_EXEC_PATH)/netspryte-janitor -v cron -a add \
-		-I $(DISCOVER_INTERVAL) -j "$(CONTAINER_EXEC_PATH)/netspryte-discover -v"
+		-I $(DISCOVER_INTERVAL) -j "netspryte-discover -v"
 
 cron-delete:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
 		$(CONTAINER_EXEC_PATH)/netspryte-janitor -v cron -a delete \
-		-I $(COLLECTOR_INTERVAL) -j "$(CONTAINER_EXEC_PATH)/netspryte-collect-snmp -v -M"
+		-I $(COLLECTOR_INTERVAL) -j "netspryte-collect-snmp -v"
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) \
 		$(CONTAINER_EXEC_PATH)/netspryte-janitor -v cron -a delete \
-		-I $(DISCOVER_INTERVAL) -j "$(CONTAINER_EXEC_PATH)/netspryte-discover -v"
+		-I $(DISCOVER_INTERVAL) -j "netspryte-discover -v"
 
 initdb:
 	docker exec -it $(COLLECTOR_CONTAINER_NAME) $(CONTAINER_EXEC_PATH)/netspryte-janitor initdb
