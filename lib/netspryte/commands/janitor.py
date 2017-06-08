@@ -16,12 +16,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
+from __future__ import print_function
+
 import argparse
 import os
 import sys
 import logging
 import glob
-import pprint
 import re
 import crontab
 
@@ -96,10 +97,10 @@ class JanitorCommand(BaseCommand):
         cron = crontab.CronTab(user='root')
         if not command or command == 'all':
             for cron_job in cron:
-                logging.warn(cron_job)
+                print(cron_job)
         else:
             for cron_job in cron.find_command(command):
-                logging.warn(cron_job)
+                print(cron_job)
 
     def crontab_command_add(self, command, interval):
         time_min_regex = "(\d+)m"
