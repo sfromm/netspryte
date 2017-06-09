@@ -134,7 +134,7 @@ update:
 	git pull
 	docker pull $(COLLECTOR_IMAGE_NAME):$(IMAGE_TAG)
 	docker pull $(WEB_IMAGE_NAME):$(IMAGE_TAG)
-	docker pull $(DB_IMAGE_NAME):$(IMAGE_TAG)
+	docker pull $(DB_IMAGE_NAME):$(DB_IMAGE_TAG)
 
 ps: status
 

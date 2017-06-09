@@ -6,6 +6,7 @@ export WEB_CONTAINER_DIR=docker/web
 export COLLECTOR_IMAGE_NAME=sfromm/netspryte-collector
 export WEB_IMAGE_NAME=sfromm/netspryte-web
 export DB_IMAGE_NAME=postgres
+export DB_IMAGE_TAG=latest
 
 export COLLECTOR_CONTAINER_NAME=netspryte-collector
 export WEB_CONTAINER_NAME=netspryte-web
