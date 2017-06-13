@@ -215,7 +215,7 @@ class CiscoCBQOS(CiscoDevice):
             if key in skip_instances:
                 continue
             data[key]['presentation']['title'] = self.get_policy_map_name(key, data)
-            data[key]['presentation']['description'] = "{0}:{1}".format(data[key]['presentation']['title'], data[key].get('ifAlias', 'NA'))
+            data[key]['presentation']['description'] = "{0}:{1}".format(data[key]['presentation']['title'], data[key]['attrs'].get('ifAlias', 'NA'))
         for key in data.keys():
             if data[key]['attrs']['cbQosObjectsType'] != 'police':
                 del(data[key])
