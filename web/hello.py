@@ -83,7 +83,7 @@ def hello():
     cls = request.args.get('class', None)
     host = request.args.get('host', None)
     instance = request.args.get('instance', None)
-    all_tags = mgr.get_all(Tag)
+    all_tags = mgr.get_all(Tag).order_by(Tag.name)
     extended_data = False
     related = dict()
     for m in mgr.get_all(MeasurementClass):
@@ -103,7 +103,7 @@ def hello():
     clauses = filter_measurement_instance_clauses()
     measurement_instances = (measurement_instances
                              .where(reduce(operator.and_, clauses))
-                             .order_by(MeasurementInstance.presentation['title']))
+                             .order_by(MeasurementInstance.presentation['description']))
 
     # Create a list of related items.
     for i in measurement_instances:
