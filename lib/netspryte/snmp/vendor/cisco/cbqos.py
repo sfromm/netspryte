@@ -200,6 +200,8 @@ class CiscoCBQOS(CiscoDevice):
                 # Push the policer configured rate into the metrics dict
                 if 'cbQosPoliceCfgRate64' in local_attrs:
                     local_metrics['cbQosPoliceCfgRate64'] = local_attrs['cbQosPoliceCfgRate64']
+                else:
+                    local_metrics['cbQosPoliceCfgRate64'] = int(0)
 
                 # Finally, attach metrics to this measurement instance
                 data[k]['metrics'] = local_metrics
