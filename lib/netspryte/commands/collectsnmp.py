@@ -58,7 +58,6 @@ class CollectSnmpCommand(BaseCommand):
         t = Timer("snmp collection")
         t.start_timer()
         cfg = C.load_config()
-        random.shuffle(args.devices) # randomize list of devices
         num_workers = C.DEFAULT_WORKERS
         if len(args.devices) < num_workers:
             num_workers = len(args.devices)
