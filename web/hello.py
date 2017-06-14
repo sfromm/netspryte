@@ -67,7 +67,7 @@ def get_graph_defs(mclasses, extended_data=False):
 def get_graph_periods(all_periods=False):
     cfg = C.load_config()
     graph_periods = list()
-    start_periods = C.get_config(cfg, 'rrd', 'start', None, None, islist=True)
+    start_periods = C.DEFAULT_RRD_START
     if all_periods:
         graph_periods = list(start_periods)
     else:
@@ -144,7 +144,7 @@ def get_graph():
     if not mi:
         return
     response = make_response()
-    if start is not None and start in C.get_config(cfg, 'rrd', 'start', None, [], islist=True):
+    if start is not None:
         img = None
         for db in dbs:
             if db.backend == 'rrd':
