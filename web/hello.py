@@ -51,17 +51,21 @@ app = Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 app.wsgi_app = ReverseProxied(app.wsgi_app)
 
-def get_graph_defs(mclasses, extended_data=False):
+def get_graph_definitions(mclasses, extended_data=False):
     cfg = C.load_config()
     graph_defs = list()
     for cls in mclasses:
-        gd = C.get_config(cfg, "rrd_{0}".format(cls), 'graph',
-                          None, None, islist=True)
-        if gd:
-            if extended_data:
-                graph_defs.extend(gd)
+        def_ids = C.get_config(cfg, "rrd_{0}".format(cls), 'graph',
+                               None, None, islist=True)
+        if def_ids:
+            if not extended_data:
+                graph_id = def_ids[0]
+                graph_title = C.get_config(cfg, graph_id, 'title', None, None)
+                graph_defs.append( (graph_id, graph_title) )
             else:
-                graph_defs.append(gd[0])
+                for graph_id in def_ids:
+                    graph_title = C.get_config(cfg, graph_id, 'title', None, None)
+                    graph_defs.append( (graph_id, graph_title) )
     return graph_defs
 
 def get_graph_periods(all_periods=False):
@@ -98,7 +102,7 @@ def hello():
     elif instance:
         measurement_instances = mgr.get_instances("name", instance, True)
         extended_data = True
-    graph_defs = get_graph_defs(measurement_classes, extended_data)
+    graph_defs = get_graph_definitions(measurement_classes, extended_data)
     graph_periods = get_graph_periods(extended_data)
     clauses = filter_measurement_instance_clauses()
     measurement_instances = (measurement_instances
