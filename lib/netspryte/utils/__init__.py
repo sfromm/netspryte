@@ -31,7 +31,7 @@ import netspryte.db.rrd
 from netspryte.manager import *
 from netspryte import constants as C
 
-def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL, use_syslog=False):
+def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL):
     ''' set up logging '''
     C.DEFAULT_LOG_LEVEL = int(loglevel)
     if C.DEFAULT_LOG_LEVEL >= 3:
@@ -55,7 +55,7 @@ def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL, use_syslog=False):
     logargs['datefmt'] = '%FT%T'
     logargs['format'] = C.DEFAULT_LOG_FORMAT
     logging.basicConfig(**logargs)
-    if use_syslog:
+    if C.DEFAULT_SYSLOG_HOST:
         # remove default logger and add syslog handler
         logger = logging.getLogger()
         if 'flush' in dir(logger):
@@ -65,7 +65,8 @@ def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL, use_syslog=False):
 
         syslog = None
         try:
-            syslog = logging.handlers.SysLogHandler(address='/dev/log')
+            syslog = logging.handlers.SysLogHandler(address=(C.DEFAULT_SYSLOG_HOST, C.DEFAULT_SYSLOG_PORT),
+                                                    facility=C.DEFAULT_SYSLOG_FACILITY)
             formatter = logging.Formatter('%(filename)s: %(message)s')
             syslog.setFormatter(formatter)
             logger.addHandler(syslog)
