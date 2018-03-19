@@ -10,13 +10,13 @@ Prerequisites
 You will need *docker* and *docker-compose* to install *netspryte*.
 Please refer to documentation on installing these packages.
 
-* [https://developer.fedoraproject.org/tools/docker/docker-installation.html](Getting started with Docker on Fedora)
-* [https://wiki.debian.org/Docker](Docker on Debian)
-* [https://docs.docker.com/engine/installation/](Install Docker)
-* [https://docs.docker.com/compose/install/](Install Docker Compose)
+* [Getting started with Docker on Fedora](https://developer.fedoraproject.org/tools/docker/docker-installation.html)
+* [Docker on Debian](https://wiki.debian.org/Docker)
+* [Install Docker](https://docs.docker.com/engine/installation/)
+* [Install Docker Compose](https://docs.docker.com/compose/install/)
 
 For *docker-compose*, it should be enough to do a **pip install
-docker-compose**.  See [https://docs.docker.com/compose/install/#alternative-install-options](Install using pip)
+docker-compose**.  See [Install using pip](https://docs.docker.com/compose/install/#alternative-install-options)
 for details.
 
 Installation
@@ -57,6 +57,9 @@ This will start all the services.  To stop:
 make stop
 ```
 
+At this time, you can jump down to the section on configuration and
+start collecting data.
+
 ## Building containers
 
 If you wish, you can build the containers yourself.  If you also choose
@@ -72,11 +75,46 @@ make build
 You can then optionally `make push` if you have defined a new image name
 and tag.
 
+## Potential problems
+
+The following are possible issues you might run into when deploying the
+containers.
+
+### SELinux enabled container host
+
+If you plan to deploy this on a SELinux enabled system, you may have to
+add the *:z* flag to the *$CONTAINER_DBDIR*, *$CONTAINER_CONFIGDIR*, and
+*$CONTAINER_DATADIR* volume mounts in *docker-compose.yml*.  For example:
+
+``` yaml
+web:
+  image: $WEB_IMAGE_NAME:$IMAGE_TAG
+  container_name: $WEB_CONTAINER_NAME
+  restart: $RESTART_POLICY
+  ports:
+    - "80:80"
+  volumes:
+    - $CONTAINER_CONFIGDIR:/etc/netspryte:z
+    - $CONTAINER_DATADIR:/var/lib/netspryte/data:z
+
+```
+
+For more information, see:
+
+* https://www.projectatomic.io/blog/2015/06/using-volumes-with-docker-can-cause-problems-with-selinux/
+
+### Define dbhost in netspryte.cfg
+
+The default database host is defined as **localhost**.  You will likely
+want to update this to the *hostname* where the database container is
+run.  This allows you to run the web and collector containers on
+different hosts.
+
 Configuration
 ----------------
 
-Review *netspryte.cfg* for what is configurable.  This is also where the
-list of devices to poll is configured.
+Review *netspryte.cfg* for what is configurable.  The list of devices to
+poll is defined by *devices* in the *general* section.
 
 Once you have configured the list of devices to poll, it is time to
 set up the collector to poll your devices.  This can be done with:

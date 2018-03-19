@@ -3,105 +3,121 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="nocache nofollow noarchive" />
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <title>{{ title | default("Network Graphs") }}</title>
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/netspryte.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script type="text/javascript">var images = new Array();</script>
   </head>
   <body>
 
-    <header class="navbar navbar-inverse">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a href="/#"><img src="{{ url_for('static', filename='images/nero-logo.png') }}" width="60"></a>
-        </div>
-        <nav class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
+    <header>
+      <ul id="related-dropdown" class="dropdown-content">
+        {% for k, v in related.iteritems() -%}
+        {% set paraml = k.split('=') -%}
+        {% set paramd = { paraml[0] : paraml[1] } -%}
+        <li><a href="{{ url_for('hello', **paramd) }}">{{ v }}</a></li>
+        {% endfor -%}
+      </ul>
+
+      <ul id="graphs-dropdown" class="dropdown-content">
+        {% for candidate in measurement_instances -%}
+        <li><a href="#{{ candidate.name }}">{{ candidate.presentation['title'] }}</a></li>
+        {% endfor -%}
+      </ul>
+
+      <ul id="tags-dropdown" class="dropdown-content">
+        {% for tag in tags -%}
+        <li><a href="{{ url_for('hello', tag=tag.name) }}">{{ tag.name }}</a></li>
+        {% endfor -%}
+      </ul>
+
+      <nav class="grey darken-4" role="navigation">
+        <div class="nav-wrapper container">
+          <a class="left brand-logo" href="/#"><img src="{{ url_for('static', filename='images/nero-logo.png') }}" width="60"></a>
+          <ul class="right hide-on-med-and-down">
             <li><a href="#graphs">Network Graphs</a></li>
-            <li class="dropdown">
-              <a href=# class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Related <span class="caret"></span> </a>
-              <ul class="dropdown-menu scrollable-menu">
-                {% for k, v in related.iteritems() %}
-                {% set paraml = k.split('=') %}
-                {% set paramd = { paraml[0] : paraml[1] } %}
-                <li><a href="{{ url_for('hello', **paramd) }}">{{ v }}</a></li>
-                {% endfor %}
-              </ul>
+            <li class="dropdown-button">
+              <a class="dropdown-button" href="#!" data-activates="tags-dropdown"> Groups <i class="material-icons right">arrow_drop_down</i></a>
             </li>
-            <li class="dropdown">
-              <a href=# class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Graphs <span class="caret"></span> </a>
-              <ul class="dropdown-menu scrollable-menu">
-                {% for candidate in measurement_instances -%}
-                <li><a href="#{{ candidate.name }}">{{ candidate.presentation['title'] }}</a></li>
-                {% endfor -%}
-              </ul>
+            <li class="dropdown-button">
+              <a class="dropdown-button" href="#!" data-activates="related-dropdown"> Related <i class="material-icons right">arrow_drop_down</i></a>
+            </li>
+            <li class="dropdown-button">
+              <a class="dropdown-button" href="#!" data-activates="graphs-dropdown"> Graphs <i class="material-icons right">arrow_drop_down</i></a>
             </li>
           </ul>
-        </nav>
-      </div>
+        </div>
+      </nav>
     </header>
 
-
-    <div class="container-fluid">
-      {% include "pagination.html" %}
-      {% for candidate in measurement_instances -%}
+    <div class="container" id="graphs">
+      {% include "pagination.html" -%}
       <div class="row">
-        <div class="col-md-12" id="graphs">
-          <div class="panel panel-default" id="{{ candidate.name }}">
-            <div class="panel-heading">
-              <h3 class="panel-title">{{ candidate.presentation['description'] }}</h3>
-            </div>
-            <div class="panel-body">
-              <p>
-                {% for graph in graph_defs -%}
-                {% if candidate.measurement_class.name in graph -%}
+        {% if measurement_instances|length == 1 and graph_defs|length > 1 %}
+        <div class="col s12">
+          <ul class="tabs z-depth-0">
+            {% for graph in graph_defs -%}
+            {% for candidate in measurement_instances -%}
+            {% if candidate.measurement_class.name in graph[0] -%}
+            <li class="tab col"><a href="#{{ graph[0] }}">{{ graph[1] }}</a></li>
+            {% endif -%}
+            {% endfor -%}
+            {% endfor -%}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% for candidate in measurement_instances -%}
+        {% for graph in graph_defs -%}
+        {% if candidate.measurement_class.name in graph[0] -%}
+        <div class="row" id="{{ graph[0] }}">
+          <div class="col s12">
+            <div class="card" id="{{ candidate.name }}">
+              <div class="card-content">
+                <span class="card-title">{{ candidate.presentation['description'] }}</span>
+              </div>
+              <div class="card-image">
                 {% for period in graph_periods -%}
-                {% set imgid = candidate.id|string + graph + period -%}
+                {% set imgid = candidate.id|string + graph[0] + period -%}
                 <a href="{{ url_for('hello', instance=candidate.name ) }}">
-                  <img id="img{{ imgid }}" src="{{ url_for('get_graph', name=candidate.name, start=period, gdef=graph) }}" class="img-responsive center-block"/>
+                  <img id="img{{ imgid }}" src="{{ url_for('get_graph', name=candidate.name, start=period, gdef=graph[0]) }}" class="responsive-img"/>
                 </a><br/>
                 <script type="text/javascript">images.push("img{{ imgid }}");</script>
                 {% endfor -%}
-                {% if not loop.last -%}
-                <hr/>
-                {% endif -%}
-                {% endif -%}
-                {% endfor -%}
-              </p>
+              </div>
             </div>
           </div>
         </div>
+        {% endif -%}
+        {% endfor -%}
+        {% endfor -%}
       </div>
-      {% endfor -%}
-      {% include "pagination.html" %}
     </div>
 
-    <footer class="navbar">
+    <footer class="page-footer grey darken-1">
       <div class="container">
-        <nav class="collapse navbar-collapse">
-          <ul class="nav navbar-nav navbar-left">
-            {% for tag in tags %}
-            <a class="btn btn-default" href="{{ url_for('hello', tag=tag.name) }}">{{ tag.name }}</a>
-            {% endfor %}
-          </ul>
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="https://github.com/sfromm/Netspryte">netspryte</a></li>
-          </ul>
-        </nav>
+        <div class="row">
+          <div class="col s12 left">
+            {% for tag in tags -%}
+            <a class="btn" href="{{ url_for('hello', tag=tag.name) }}">{{ tag.name }}</a>
+            {% endfor -%}
+          </div>
+        </div>
+        {% include "pagination.html" %}
+      </div>
+      <div class="footer-copyright">
+        <div class="container">
+          <a class="grey-text right" href="https://github.com/sfromm/Netspryte">netspryte</a>
+        </div>
       </div>
     </footer>
-    <!-- Bootstrap core JavaScript
+    <!-- Materialize JavaScript
     ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
     <script type="text/javascript">
      window.onload = function() {
        var MIN = 300;

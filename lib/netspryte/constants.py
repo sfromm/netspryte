@@ -89,6 +89,10 @@ DEFAULT_LOG_LEVEL      = get_config(p, DEFAULTS, "loglevel",       "NETSPRYTE_LO
 DEFAULT_LOG_FORMAT     = get_config(p, DEFAULTS, "logformat",      "NETSPRYTE_LOG_FORMAT",     '%(asctime)s.%(msecs)03d: [%(process)s:%(levelname)s] %(message)s')
 DEFAULT_LOG_NAME       = get_config(p, DEFAULTS, "logname",        "NETSPRYTE_LOG_NAME",       "netspryte")
 
+DEFAULT_SYSLOG_HOST     = get_config(p, DEFAULTS, "syslog_host",     "NETSPRYTE_LOG_SYSLOG_HOST",     None)
+DEFAULT_SYSLOG_PORT     = get_config(p, DEFAULTS, "syslog_port",     "NETSPRYTE_LOG_SYSLOG_PORT",     514)
+DEFAULT_SYSLOG_FACILITY = get_config(p, DEFAULTS, "syslog_facility", "NETSPRYTE_LOG_SYSLOG_FACILITY", "daemon")
+
 DEFAULT_DATABASE       = get_config(p, DEFAULTS, "database",       "NETSPRYTE_DATABASE",       ["rrd"], islist=True)
 DEFAULT_WORKERS        = get_config(p, DEFAULTS, "workers",        "NETSPRYTE_WORKERS",        multiprocessing.cpu_count(), integer=True)
 DEFAULT_DEVICES        = get_config(p, DEFAULTS, "devices",        "NETSPRYTE_DEVICES",        ["localhost"], islist=True)
