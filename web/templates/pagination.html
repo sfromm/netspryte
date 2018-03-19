@@ -2,16 +2,13 @@
 <div class="row">
   <div class="col s12 right">
     <ul class="pagination right">
-      {% if pagination.get_page() > 1 -%}
-      <li class="previous"><a class="btn white-text" href="./?{{ request.args|clean_querystring('page', page=pagination.get_page() - 1) }}">&laquo; Previous {{ pagination.get_page() - 1 }} / {{ pagination.get_page_count() }}</a></li>  
-      {% else -%}
-      <li class="previous disabled"><a class="btn" href="#">&laquo; Previous</a></li>
-      {% endif -%}
-      {% if pagination.get_page_count() > pagination.get_page() -%}
-      <li class="next"><a class="btn white-text" href="./?{{ request.args|clean_querystring('page', page=pagination.get_page() + 1) }}">Next {{ pagination.get_page() + 1 }} / {{ pagination.get_page_count() }} &raquo;</a></li>
-      {% else -%}
-      <li class="next disabled"><a class="btn" href="#">Next &raquo;</a></li>
-      {% endif -%}
+      {% for n in range(1, pagination.get_page_count()) %}
+      {% if n == pagination.get_page() %}
+      <li class="active"><a href="#!">{{ n }}</a></li>
+      {% else %}
+      <li class="waves-effect"><a href="./?{{ request.args|clean_querystring('page', page=n) }}">{{ n }}</a></li>
+      {% endif %}
+      {% endfor %}
     </ul>
   </div>
 </div>
