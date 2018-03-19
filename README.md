@@ -10,13 +10,13 @@ Prerequisites
 You will need *docker* and *docker-compose* to install *netspryte*.
 Please refer to documentation on installing these packages.
 
-* [https://developer.fedoraproject.org/tools/docker/docker-installation.html](Getting started with Docker on Fedora)
-* [https://wiki.debian.org/Docker](Docker on Debian)
-* [https://docs.docker.com/engine/installation/](Install Docker)
-* [https://docs.docker.com/compose/install/](Install Docker Compose)
+* [Getting started with Docker on Fedora](https://developer.fedoraproject.org/tools/docker/docker-installation.html)
+* [Docker on Debian](https://wiki.debian.org/Docker)
+* [Install Docker](https://docs.docker.com/engine/installation/)
+* [Install Docker Compose](https://docs.docker.com/compose/install/)
 
 For *docker-compose*, it should be enough to do a **pip install
-docker-compose**.  See [https://docs.docker.com/compose/install/#alternative-install-options](Install using pip)
+docker-compose**.  See [Install using pip](https://docs.docker.com/compose/install/#alternative-install-options)
 for details.
 
 Installation
