@@ -2,16 +2,34 @@
 <div class="row">
   <div class="col s12 right">
     <ul class="pagination right">
-      {% if pagination.get_page() > 1 -%}
-      <li class="previous"><a class="btn white-text" href="./?{{ request.args|clean_querystring('page', page=pagination.get_page() - 1) }}">&laquo; Previous {{ pagination.get_page() - 1 }} / {{ pagination.get_page_count() }}</a></li>  
-      {% else -%}
-      <li class="previous disabled"><a class="btn" href="#">&laquo; Previous</a></li>
-      {% endif -%}
-      {% if pagination.get_page_count() > pagination.get_page() -%}
-      <li class="next"><a class="btn white-text" href="./?{{ request.args|clean_querystring('page', page=pagination.get_page() + 1) }}">Next {{ pagination.get_page() + 1 }} / {{ pagination.get_page_count() }} &raquo;</a></li>
-      {% else -%}
-      <li class="next disabled"><a class="btn" href="#">Next &raquo;</a></li>
-      {% endif -%}
+      {% set page_cur = pagination.get_page() %}
+      {% set page_count = pagination.get_page_count() %}
+      {% set page_range = 4 %}
+      {# Start by setting the range_start value #}
+      {% set range_start = page_cur %}
+      {% if page_cur <= 2 %}
+      {% set range_start = 1 %}
+      {% else %}
+      {% set range_start = page_cur - 2 %}
+      {% endif %}
+      {% if page_cur >= ( page_count - 2 ) %}
+      {% set range_start = page_count - page_range %}
+      {% if range_start < 1 %}
+      {% set range_start = 1 %}
+      {% endif %}
+      {% endif %}
+      {# Now set the range_end value #}
+      {% set range_end = range_start + page_range %}
+      {% if range_end >= page_count %}
+      {% set range_end = page_count %}
+      {% endif %}
+      {% for n in range(range_start, range_end + 1) %}
+      {% if n == pagination.get_page() %}
+      <li class="active"><a href="#!">{{ n }}</a></li>
+      {% else %}
+      <li class="waves-effect"><a href="./?{{ request.args|clean_querystring('page', page=n) }}">{{ n }}</a></li>
+      {% endif %}
+      {% endfor %}
     </ul>
   </div>
 </div>
