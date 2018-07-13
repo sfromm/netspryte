@@ -16,10 +16,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
+
 import logging
 import netspryte.snmp
 import binascii
 from netspryte.snmp.host import HostSystem
+
 
 class HostEntity(HostSystem):
 
@@ -74,7 +76,7 @@ class HostEntity(HostSystem):
     def _get_configuration(self):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostEntity.NAME, HostEntity.ATTRS, HostEntity.CONVERSION)
-        for k, v in attrs.iteritems():
+        for k, v in attrs.items():
             data[k] = self.initialize_instance(HostEntity.NAME, k)
             data[k]['attrs'] = v
             if 'entPhysicalMfgDate' in v and v['entPhysicalMfgDate']:

@@ -20,7 +20,7 @@ import logging
 import netspryte.snmp
 import netspryte.snmp.host.interface
 from netspryte.snmp.vendor.cisco import CiscoDevice
-from netspryte.utils import *
+from netspryte.utils import safe_update
 from netspryte.utils.timer import Timer
 from pysnmp.proto.rfc1902 import Counter32
 
@@ -151,15 +151,15 @@ class CiscoCBQOS(CiscoDevice):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
                                              CiscoCBQOS.ATTRS, CiscoCBQOS.CONVERSION,
-                                             CiscoCBQOS.SNMP_QUERY_CHUNKS )
+                                             CiscoCBQOS.SNMP_QUERY_CHUNKS)
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
                                                CiscoCBQOS.STAT, CiscoCBQOS.CONVERSION,
-                                               CiscoCBQOS.SNMP_QUERY_CHUNKS )
-        interfaces = { k['index']: k for k in self.interfaces }
-        skip_instances = [ k for k in attrs.keys() if '.' not in k ]
+                                               CiscoCBQOS.SNMP_QUERY_CHUNKS)
+        interfaces = {k['index']: k for k in self.interfaces}
+        skip_instances = [k for k in attrs.keys() if '.' not in k]
 
         # merge related instances into together for a coherent view
-        for k, v in attrs.iteritems():
+        for k, v in attrs.items():
             if k in skip_instances:
                 continue
             data[k] = self.initialize_instance(CiscoCBQOS.NAME, k)
@@ -251,7 +251,7 @@ class CiscoCBQOS(CiscoDevice):
 
     def get_class_map_name(self, idx, data_dict):
         key = 'cbQosCMName'
-        if key not in data[idx]['attrs']:
+        if key not in data_dict[idx]['attrs']:
             return self.get_policy_map_name(data[idx]['attrs']['parent'], data_dict)
         else:
             return data_dict[idx]['attrs'][key]

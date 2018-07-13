@@ -19,7 +19,8 @@
 import logging
 import netspryte.snmp
 import netspryte.utils
-from netspryte.errors import *
+from netspryte.errors import NetspryteError
+
 
 class HostSystem(object):
 
@@ -55,14 +56,14 @@ class HostSystem(object):
         self.data = self._get_system()
         if not self.data:
             raise NetspryteError("failed to gather base snmp host information")
-        for k, v in self.data[0]['attrs'].iteritems():
+        for k, v in self.data[0]['attrs'].items():
             setattr(self, k, v)
         logging.info("done inspecting %s for sys data", snmp.host)
 
     def _get_system(self):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostSystem.NAME, HostSystem.ATTRS, HostSystem.CONVERSION)
-        for k, v in attrs.iteritems():
+        for k, v in attrs.items():
             host = None
             if 'sysName' in v:
                 host = v['sysName']

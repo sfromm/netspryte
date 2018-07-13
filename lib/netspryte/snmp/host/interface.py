@@ -19,9 +19,9 @@
 import logging
 import netspryte.snmp
 from netspryte.snmp.host import HostSystem
-from netspryte.utils import *
 from netspryte.utils.timer import Timer
 from pysnmp.proto.rfc1902 import Counter32
+
 
 class HostInterface(HostSystem):
 
@@ -103,7 +103,7 @@ class HostInterface(HostSystem):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME, HostInterface.ATTRS, HostInterface.CONVERSION)
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME, HostInterface.STAT, HostInterface.CONVERSION)
-        for k, v in attrs.iteritems():
+        for k, v in attrs.items():
             ifdescr = attrs[k].get('ifDescr', 'NA')
             title = "{0}:{1}".format(self.sysName, ifdescr)
             descr = attrs[k].get('ifAlias', ifdescr)

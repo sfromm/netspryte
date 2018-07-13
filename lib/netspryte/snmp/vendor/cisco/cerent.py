@@ -280,7 +280,7 @@ class CiscoCerent(HostSystem):
     def _get_configuration(self):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCerent.NAME, CiscoCerent.ATTRS, CiscoCerent.CONVERSION)
-        for k, v in attrs.iteritems():
+        for k, v in attrs.items():
             data[k] = self.initialize_instance(CiscoCerent.NAME, k)
             data[k]['attrs'] = v
         return data

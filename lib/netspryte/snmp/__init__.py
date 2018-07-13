@@ -37,8 +37,9 @@ from pysnmp.proto.rfc1905 import (
 
 import netspryte.utils
 from netspryte import constants as C
-from netspryte.errors import *
+from netspryte.errors import NetspryteSNMPError
 from netspryte.utils.timer import Timer
+
 
 def value_is_metric(arg):
     if isinstance(arg, Counter32) or isinstance(arg, Counter64):
@@ -49,6 +50,7 @@ def value_is_metric(arg):
         return True
     else:
         return False
+
 
 def get_value_type(arg):
     if isinstance(arg, Counter32) or isinstance(arg, Counter64):
@@ -61,6 +63,7 @@ def get_value_type(arg):
         return 'gauge'
     else:
         return 'gauge'
+
 
 def mk_pretty_value(arg):
     ''' Inspect SNMP value type and return it '''
@@ -78,6 +81,7 @@ def mk_pretty_value(arg):
         return arg.prettyPrint()
     return arg
 
+
 def value_is_integer(arg):
     if isinstance(arg, Counter32) or \
        isinstance(arg, Counter64) or \
@@ -88,11 +92,13 @@ def value_is_integer(arg):
     else:
         return False
 
+
 def clean_octet_string(arg):
     try:
         return arg.asOctets().decode(arg.encoding).strip()
     except UnicodeDecodeError:
         return arg.asOctets()
+
 
 def strip_oid(oid, arg):
     ''' strip a substring OID from another OID '''
@@ -106,6 +112,7 @@ def strip_oid(oid, arg):
     else:
         return result
 
+
 def deconstruct_oid(arg, oid_set):
     ''' break an OID into parts '''
     oid = dict()
@@ -118,6 +125,7 @@ def deconstruct_oid(arg, oid_set):
             oid['index'] = index
             break
     return oid
+
 
 def get_snmp_data(snmp, host, cls_name, snmp_oids, snmp_conversion, chunk=None):
     '''
@@ -137,11 +145,11 @@ def get_snmp_data(snmp, host, cls_name, snmp_oids, snmp_conversion, chunk=None):
     results = list()
     if chunk:
         oids = snmp_oids.values()
-        qry_oids = [ oids[i:i + chunk] for i in xrange(0, len(oids), chunk) ]
+        qry_oids = [oids[i:i + chunk] for i in range(0, len(oids), chunk)]
         for qry_set in qry_oids:
-            results.extend( snmp.walk( *qry_set ) )
+            results.extend(snmp.walk(*qry_set))
     else:
-        results = snmp.walk( *[ oid for oid in snmp_oids.values() ] )
+        results = snmp.walk(*[oid for oid in snmp_oids.values()])
     for obj in results:
         logging.debug("Processing %s OID=%s, value=%s", snmp.host, obj[0], obj[1])
         oid = deconstruct_oid(obj[0], snmp_oids)
@@ -159,6 +167,7 @@ def get_snmp_data(snmp, host, cls_name, snmp_oids, snmp_conversion, chunk=None):
             data[index][oid['name']] = obj[1]
     t.stop_timer()
     return data
+
 
 class SNMPSession(object):
     ''' a class to handle SNMP queries '''
@@ -214,7 +223,7 @@ class SNMPSession(object):
     def timeout(self):
         return self._timeout
 
-    @port.setter
+    @timeout.setter
     def timeout(self, arg):
         try:
             self._timeout = int(arg)
@@ -225,7 +234,7 @@ class SNMPSession(object):
     def retries(self):
         return self._retries
 
-    @port.setter
+    @retries.setter
     def retries(self, arg):
         try:
             self._retries = int(arg)
@@ -249,7 +258,7 @@ class SNMPSession(object):
 
     @community.setter
     def community(self, arg):
-        if isinstance(arg, basestring):
+        if isinstance(arg, str):
             self._community = arg
         else:
             raise ValueError("SNMP community must be a string")
@@ -282,7 +291,7 @@ class SNMPSession(object):
     def level(self):
         return self._level
 
-    @username.setter
+    @level.setter
     def level(self, arg):
         if arg in C.DEFAULT_ALLOWED_SNMP_LEVELS:
             self._level = arg
@@ -291,7 +300,7 @@ class SNMPSession(object):
 
     def expire_cache(self):
         ''' expire the cache '''
-        self._cache     = dict()
+        self._cache = dict()
 
     def _snmp_varbind_to_list(self, varbind):
         ''' take a oid object and return a tuple of ( numerical_oid, value ) '''
@@ -309,7 +318,7 @@ class SNMPSession(object):
 
     def _cache_results(self, oids, result):
         ''' tie results to oid query set in cache '''
-        self._cache[oids] = [ time.time(), result ]
+        self._cache[oids] = [time.time(), result]
 
     def _cmd(self, cmd, *oids):
         ''' apply a generic snmp operation '''
@@ -324,17 +333,17 @@ class SNMPSession(object):
         if errorStatus:
             raise NetspryteSNMPError(errorStatus.prettyPrint())
         if cmd in [self._cmdgen.getCmd, self._cmdgen.setCmd]:
-            results = [ self._snmp_varbind_to_list(varbind) for varbind in varBindTable ]
+            results = [self._snmp_varbind_to_list(varbind) for varbind in varBindTable]
         else:
-            results = [ self._snmp_varbind_to_list(varbind)
-                         for row in varBindTable for varbind in row if not isinstance(varbind[1], EndOfMibView) ]
+            results = [self._snmp_varbind_to_list(varbind)
+                       for row in varBindTable for varbind in row if not isinstance(varbind[1], EndOfMibView)]
         return results
 
     def _cache_or_cmd(self, cmd, *oids):
         ''' pull result from cache or query host for OIDS '''
         if oids in self._cache:
             t, result = self._cache[oids]
-            if ( time.time() - t ) < C.DEFAULT_SNMP_CACHE_TIMEOUT:
+            if (time.time() - t) < C.DEFAULT_SNMP_CACHE_TIMEOUT:
                 return result
         result = self._cmd(cmd, *oids)
         self._cache_results(oids, result)

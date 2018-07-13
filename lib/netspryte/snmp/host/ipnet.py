@@ -19,7 +19,7 @@
 import logging
 import netspryte.snmp
 from netspryte.snmp.host import HostSystem
-from netspryte.utils import *
+
 
 class HostIpNetwork(HostSystem):
 
@@ -93,7 +93,7 @@ class HostIpNetwork(HostSystem):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostIpNetwork.NAME,
                                              HostIpNetwork.ATTRS, HostIpNetwork.CONVERSION)
-        for k, v in attrs.iteritems():
+        for k, v in attrs.items():
             data[k] = self.initialize_instance(HostIpNetwork.NAME, k)
             data[k]['attrs'] = v
             (addr_type, sub1, addr1) = k.split('.', 2)
@@ -109,6 +109,3 @@ class HostIpNetwork(HostSystem):
             data[k]['attrs']['ipAddressAddr'] = addr2
             data[k]['attrs']['ipAddressPrefix'] = str(attrs[k]['ipAddressPrefix']).split(".")[-1]
         return data
-
-
-
