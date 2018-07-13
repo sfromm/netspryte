@@ -46,7 +46,7 @@ clean:
 
 pep8:
 	@echo "Running PEP8 compliance tests"
-	-pep8 -r --ignore=$(EPEP8) lib/ 
+	-flake8 --ignore=$(EPEP8) lib/
 
 python:
 	$(PYTHON) setup.py build
