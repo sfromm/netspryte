@@ -85,7 +85,7 @@ def rrd_update(path, data, ts=time.time()):
     ''' update rrd '''
     template = list()
     values = list()
-    for k, v in data.items():
+    for k, v in list(data.items()):
         template.append(k.lower())
         if hasattr(v, 'prettyPrint'):
             values.append(v.prettyPrint())
@@ -185,7 +185,7 @@ def mk_rrd_ds(data):
     ''' take in dictionary of collected values and return a list of DS '''
     ds = list()
     heartbeat = C.DEFAULT_RRD_STEP * C.DEFAULT_RRD_HEARTBEAT
-    for k, v in data.items():
+    for k, v in list(data.items()):
         ds.append("DS:{0}:{1}:{2}:U:U".format(k.lower(), v.upper(), heartbeat))
     return ds
 

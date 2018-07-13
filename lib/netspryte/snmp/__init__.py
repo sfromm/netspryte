@@ -117,7 +117,7 @@ def deconstruct_oid(arg, oid_set):
     ''' break an OID into parts '''
     oid = dict()
     oid['oid'] = arg
-    for k in oid_set.keys():
+    for k in list(oid_set.keys()):
         index = strip_oid(oid_set[k], arg)
         if index != arg:
             oid['base'] = oid_set[k]
@@ -144,12 +144,12 @@ def get_snmp_data(snmp, host, cls_name, snmp_oids, snmp_conversion, chunk=None):
     data = dict()
     results = list()
     if chunk:
-        oids = snmp_oids.values()
+        oids = list(snmp_oids.values())
         qry_oids = [oids[i:i + chunk] for i in range(0, len(oids), chunk)]
         for qry_set in qry_oids:
             results.extend(snmp.walk(*qry_set))
     else:
-        results = snmp.walk(*[oid for oid in snmp_oids.values()])
+        results = snmp.walk(*[oid for oid in list(snmp_oids.values())])
     for obj in results:
         logging.debug("Processing %s OID=%s, value=%s", snmp.host, obj[0], obj[1])
         oid = deconstruct_oid(obj[0], snmp_oids)
@@ -188,7 +188,7 @@ class SNMPSession(object):
         self._bulk      = C.DEFAULT_SNMP_BULK
         self._cache     = dict()   # (oids) -> [ time, result ]
 
-        for key in kwargs.keys():
+        for key in list(kwargs.keys()):
             if hasattr(self, key):
                 setattr(self, key, kwargs[key])
 

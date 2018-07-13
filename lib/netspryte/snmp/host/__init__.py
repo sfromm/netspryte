@@ -56,14 +56,14 @@ class HostSystem(object):
         self.data = self._get_system()
         if not self.data:
             raise NetspryteError("failed to gather base snmp host information")
-        for k, v in self.data[0]['attrs'].items():
+        for k, v in list(self.data[0]['attrs'].items()):
             setattr(self, k, v)
         logging.info("done inspecting %s for sys data", snmp.host)
 
     def _get_system(self):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostSystem.NAME, HostSystem.ATTRS, HostSystem.CONVERSION)
-        for k, v in attrs.items():
+        for k, v in list(attrs.items()):
             host = None
             if 'sysName' in v:
                 host = v['sysName']
@@ -90,7 +90,7 @@ class HostSystem(object):
     @data.setter
     def data(self, arg):
         if isinstance(arg, dict):
-            self._data = arg.values()
+            self._data = list(arg.values())
         else:
             self._data = arg
 

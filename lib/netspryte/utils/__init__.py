@@ -83,7 +83,7 @@ def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL):
 def merge_dicts(a, b, path=None):
     if path is None:
         path = []
-    for k, v in b.items():
+    for k, v in list(b.items()):
         if k in a:
             if isinstance(a[k], dict) and isinstance(v, dict):
                 merge_dicts(a[k], v, path + [str(k)])
@@ -143,7 +143,7 @@ def mk_path(arg):
 def json_ready(data):
     ''' take a dictionary and make it json friendly '''
     newdata = dict()
-    for k, v in data.items():
+    for k, v in list(data.items()):
         if hasattr(v, 'prettyPrint'):
             newdata[k] = v.prettyPrint()
         else:
@@ -202,7 +202,7 @@ def get_db_backend():
 def safe_update(dict1, dict2):
     ''' a safe update of a dictionary so that values are not overridden '''
     newdict = dict1.copy()
-    for k, v in dict2.items():
+    for k, v in list(dict2.items()):
         if k not in newdict:
             newdict[k] = v
     return newdict
@@ -248,7 +248,7 @@ def mk_secure_hash(arg, hash_func=sha1):
     This comes from ansible/lib/ansible/utils/hashing.py '''
     digest = hash_func()
     try:
-        if not isinstance(arg, basestring):
+        if not isinstance(arg, str):
             arg = "%s" % arg
         digest.update(arg)
     except UnicodeEncodeError:
@@ -285,6 +285,6 @@ def xlate_metric_names(data, xlate):
 def clean_metric_name(name, xlate):
     if xlate is None:
         return name
-    for k, v in xlate.items():
+    for k, v in list(xlate.items()):
         name = name.replace(k, v, 1)
     return name

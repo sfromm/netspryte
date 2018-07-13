@@ -85,7 +85,7 @@ class HostUPS(HostSystem):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostUPS.NAME, HostUPS.ATTRS, HostUPS.CONVERSION)
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, HostUPS.NAME, HostUPS.STAT, HostUPS.CONVERSION)
-        for k, v in attrs.items():
+        for k, v in list(attrs.items()):
             data[k] = self.initialize_instance(HostUPS.NAME, k)
             data[k]['attrs'] = v
             data[k]['metrics'] = metrics[k]

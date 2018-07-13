@@ -103,7 +103,7 @@ class HostInterface(HostSystem):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME, HostInterface.ATTRS, HostInterface.CONVERSION)
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME, HostInterface.STAT, HostInterface.CONVERSION)
-        for k, v in attrs.items():
+        for k, v in list(attrs.items()):
             ifdescr = attrs[k].get('ifDescr', 'NA')
             title = "{0}:{1}".format(self.sysName, ifdescr)
             descr = attrs[k].get('ifAlias', ifdescr)
@@ -119,7 +119,7 @@ class HostInterface(HostSystem):
                 # (eg not available or supported for a particular ifType),
                 # go back and put them in the recorded metrics for this measurement
                 # instance.  Fake a COUNTER value of 0.
-                for stat in HostInterface.STAT.keys():
+                for stat in list(HostInterface.STAT.keys()):
                     if stat not in data[k]['metrics']:
                         data[k]['metrics'][stat] = Counter32(0)
         return data

@@ -101,7 +101,7 @@ class CollectSnmpWorker(multiprocessing.Process):
             logging.warn("processing %s", device)
             try:
                 msnmp = netspryte.snmp.SNMPSession(host=device)
-                for cls, module in CollectSnmpCommand.SNMP_MODULES.iteritems():
+                for cls, module in list(CollectSnmpCommand.SNMP_MODULES.items()):
                     if not cls.STAT:
                         logging.info("skipping module %s that does not collect measurement data", cls.NAME)
                         continue
@@ -157,7 +157,7 @@ class CollectSnmpWorker(multiprocessing.Process):
             if 'metrics' in data:
                 this_inst.metrics = json_ready(data['metrics'])
                 if not metric_types:
-                    for k, v in data['metrics'].iteritems():
+                    for k, v in list(data['metrics'].items()):
                         metric_types[k] = netspryte.snmp.get_value_type(v)
                     this_class.metric_type = json_ready(metric_types)
             self.mgr.save(this_inst)

@@ -19,7 +19,7 @@
 import datetime
 import os
 import pwd
-import ConfigParser
+import configparser
 import multiprocessing
 from netspryte.errors import *
 
@@ -51,7 +51,7 @@ def get_config(p, section, key, env_var, default, boolean=False, integer=False, 
 
 def load_config():
     ''' load config file '''
-    p = ConfigParser.ConfigParser()
+    p = configparser.ConfigParser()
     path0 = os.getenv("NETSPRYTE_CONFIG", None)
     if path0 is not None:
         path0 = os.path.expanduser(path0)
@@ -62,7 +62,7 @@ def load_config():
         if path is not None and os.path.exists(path):
             try:
                 p.read(path)
-            except ConfigParser.Error as e:
+            except configparser.Error as e:
                 raise NetspryteError("Configuration error: " + str(e))
             return p
     return None

@@ -93,7 +93,7 @@ class DiscoverWorker(multiprocessing.Process):
             logging.warn("processing %s", device)
             try:
                 msnmp = netspryte.snmp.SNMPSession(host=device)
-                for cls, module in DiscoverCommand.SNMP_MODULES.items():
+                for cls, module in list(DiscoverCommand.SNMP_MODULES.items()):
                     try:
                         snmp_mod = cls(msnmp)
                         name = snmp_mod.sysName or msnmp.host
@@ -147,7 +147,7 @@ class DiscoverWorker(multiprocessing.Process):
             if 'metrics' in data:
                 this_inst.metrics = json_ready(data['metrics'])
                 if not metric_types:
-                    for k, v in data['metrics'].items():
+                    for k, v in list(data['metrics'].items()):
                         metric_types[k] = netspryte.snmp.get_value_type(v)
                     this_class.metric_type = json_ready(metric_types)
             self.mgr.save(this_inst)

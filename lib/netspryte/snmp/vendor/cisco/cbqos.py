@@ -156,10 +156,10 @@ class CiscoCBQOS(CiscoDevice):
                                                CiscoCBQOS.STAT, CiscoCBQOS.CONVERSION,
                                                CiscoCBQOS.SNMP_QUERY_CHUNKS)
         interfaces = {k['index']: k for k in self.interfaces}
-        skip_instances = [k for k in attrs.keys() if '.' not in k]
+        skip_instances = [k for k in list(attrs.keys()) if '.' not in k]
 
         # merge related instances into together for a coherent view
-        for k, v in attrs.items():
+        for k, v in list(attrs.items()):
             if k in skip_instances:
                 continue
             data[k] = self.initialize_instance(CiscoCBQOS.NAME, k)
@@ -209,16 +209,16 @@ class CiscoCBQOS(CiscoDevice):
                 # (eg not available or supported),
                 # go back and put them in the recorded metrics for this measurement
                 # instance.  Fake a COUNTER value of 0.
-                for stat in CiscoCBQOS.STAT.keys():
+                for stat in list(CiscoCBQOS.STAT.keys()):
                     if stat not in data[k]['metrics']:
                         data[k]['metrics'][stat] = Counter32(0)
 
-        for key in data.keys():
+        for key in list(data.keys()):
             if key in skip_instances:
                 continue
             data[key]['presentation']['title'] = self.get_policy_map_name(key, data)
             data[key]['presentation']['description'] = "{0}:{1}".format(data[key]['presentation']['title'], data[key]['attrs'].get('ifAlias', 'NA'))
-        for key in data.keys():
+        for key in list(data.keys()):
             if data[key]['attrs']['cbQosObjectsType'] != 'police':
                 del(data[key])
         return data

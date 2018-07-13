@@ -125,7 +125,7 @@ def influxdb_write(client, data, ts=time.time()):
     data_title = data.presentation.title
     data_id = data.name
     data_host = data.host.name
-    for k, v in data.items():
+    for k, v in list(data.items()):
         if k.startswith('_'):
             continue
         if hasattr(v, 'prettyPrint'):

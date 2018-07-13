@@ -93,7 +93,7 @@ class HostIpNetwork(HostSystem):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostIpNetwork.NAME,
                                              HostIpNetwork.ATTRS, HostIpNetwork.CONVERSION)
-        for k, v in attrs.items():
+        for k, v in list(attrs.items()):
             data[k] = self.initialize_instance(HostIpNetwork.NAME, k)
             data[k]['attrs'] = v
             (addr_type, sub1, addr1) = k.split('.', 2)

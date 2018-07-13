@@ -76,7 +76,7 @@ class HostEntity(HostSystem):
     def _get_configuration(self):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostEntity.NAME, HostEntity.ATTRS, HostEntity.CONVERSION)
-        for k, v in attrs.items():
+        for k, v in list(attrs.items()):
             data[k] = self.initialize_instance(HostEntity.NAME, k)
             data[k]['attrs'] = v
             if 'entPhysicalMfgDate' in v and v['entPhysicalMfgDate']:
