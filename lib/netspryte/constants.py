@@ -44,10 +44,11 @@ def get_config(p, section, key, env_var, default, boolean=False, integer=False, 
             else:
                 return False
         elif islist:
-            return [ x.lstrip() for x in value.split('\n') ]
+            return [x.lstrip() for x in value.split('\n')]
         else:
             return value
     return default
+
 
 def load_config():
     ''' load config file '''
@@ -117,6 +118,11 @@ DEFAULT_RRD_RRA =        get_config(p, 'rrd', 'rra',       "NETSPRYTE_RRD_RRA", 
                                                                                         "RRA:MAX:0.5:30:4320",
                                                                                         "RRA:MAX:0.5:120:2232",
                                                                                         "RRA:MAX:0.5:1440:1098" ], islist=True)
+
+DEFAULT_CARBON_HOST     = get_config(p, 'graphite', 'carbon_host',   'NETSPRYTE_CARBON_HOST',   'localhost')
+DEFAULT_CARBON_PORT     = get_config(p, 'graphite', 'carbon_port',   'NETSPRYTE_CARBON_PORT',   2003, integer=True)
+DEFAULT_GRAPHITE_HOST   = get_config(p, 'graphite', 'graphite_host', 'NETSPRYTE_GRAPHITE_HOST', 'localhost')
+DEFAULT_GRAPHITE_PORT   = get_config(p, 'graphite', 'graphite_port', 'NETSPRYTE_GRAPHITE_PORT', 8000, integer=True)
 
 DEFAULT_INFLUXDB_HOST     = get_config(p, 'influxdb', 'host',     'NETSPRYTE_INFLUXDB_HOST',     'localhost')
 DEFAULT_INFLUXDB_PORT     = get_config(p, 'influxdb', 'port',     'NETSPRYTE_INFLUXDB_PORT',     8086, integer=True)
