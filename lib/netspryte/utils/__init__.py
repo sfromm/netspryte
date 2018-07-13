@@ -22,14 +22,15 @@ import json
 import logging
 import logging.handlers
 import tempfile
-import ConfigParser
+import configparser
 import socket
 from hashlib import sha1
 
 import netspryte.db
 import netspryte.db.rrd
-from netspryte.manager import *
+from netspryte.manager import Manager, MeasurementInstance
 from netspryte import constants as C
+
 
 def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL):
     ''' set up logging '''
@@ -78,10 +79,11 @@ def setup_logging(loglevel=C.DEFAULT_LOG_LEVEL):
             if isinstance(filelogger, logging.FileHandler):
                 filelogger.close()
 
+
 def merge_dicts(a, b, path=None):
     if path is None:
         path = []
-    for k, v in b.iteritems():
+    for k, v in b.items():
         if k in a:
             if isinstance(a[k], dict) and isinstance(v, dict):
                 merge_dicts(a[k], v, path + [str(k)])
@@ -93,6 +95,7 @@ def merge_dicts(a, b, path=None):
             a[k] = v
     return a
 
+
 def cp_path_perms(src, dest):
     ''' copy ownership and permissions from dest to src '''
     dest_stat = None
@@ -100,6 +103,7 @@ def cp_path_perms(src, dest):
         dest_stat = os.stat(dest)
         os.chmod(src, dest_stat.st_mode & int('07777', 8))
         os.chown(src, dest_stat.st_uid, dest_stat.st_gid)
+
 
 def json2path(data, path):
     ''' take dictionary data and write json to path '''
@@ -115,6 +119,7 @@ def json2path(data, path):
     except TypeError as e:
         logging.error("failed to write JSON: %s", str(e))
 
+
 def data2path(data, path):
     ''' take arbitrary string and write to path '''
     try:
@@ -129,23 +134,27 @@ def data2path(data, path):
     except Exception as e:
         logging.error("failed to write to file: %s", str(e))
 
+
 def mk_path(arg):
     if not os.path.exists(arg):
         os.makedirs(arg)
 
+
 def json_ready(data):
     ''' take a dictionary and make it json friendly '''
     newdata = dict()
-    for k, v in data.iteritems():
+    for k, v in data.items():
         if hasattr(v, 'prettyPrint'):
             newdata[k] = v.prettyPrint()
         else:
             newdata[k] = str(v)
     return newdata
 
+
 def parse_json(data):
     ''' convert json string to data structure '''
     return json.loads(data)
+
 
 def parse_json_from_file(path):
     ''' read json string from path and convert to data structure '''
@@ -159,6 +168,7 @@ def parse_json_from_file(path):
         logging.error('failed to parse json from file %s: %s', path, str(e))
         return None
 
+
 def get_data_instances():
     ''' load all cached data on all collected instances
     returns a list of dicts
@@ -167,14 +177,16 @@ def get_data_instances():
     '''
     mgr = Manager()
     qry = mgr.get_all(MeasurementInstance)
-    return [ q for q in qry ]
+    return [q for q in qry]
+
 
 def get_data_instances_by_id():
     ''' return all instances as a dictionary indexed by id '''
     data_set = dict()
     for data in get_data_instances():
-        data_set[ data['name'] ] = data
+        data_set[data['name']] = data
     return data_set
+
 
 def get_db_backend():
     backends = list()
@@ -186,13 +198,15 @@ def get_db_backend():
         backends.append(netspryte.db.rrd.RrdDatabaseBackend("rrd"))
     return backends
 
+
 def safe_update(dict1, dict2):
     ''' a safe update of a dictionary so that values are not overridden '''
     newdict = dict1.copy()
-    for k, v in dict2.iteritems():
+    for k, v in dict2.items():
         if k not in newdict:
             newdict[k] = v
     return newdict
+
 
 def mk_measurement_instance_filename(device, *args):
     ''' create a filename based on the collected object '''
@@ -202,17 +216,20 @@ def mk_measurement_instance_filename(device, *args):
     else:
         dev_name = device
     for arg in args:
-        parts.append( arg.replace(".", "-") )
+        parts.append(arg.replace(".", "-"))
     return os.path.join(C.DEFAULT_DATADIR, dev_name, "{0}".format("-".join(parts)))
+
 
 def mk_json_filename(device, *args):
     return "{0}.json".format(mk_measurement_instance_filename(device, *args))
 
+
 def mk_data_instance_id(device, cls, instance):
     id = list()
-    for n in [ device, cls, instance ]:
+    for n in [device, cls, instance]:
         id.append(n.replace(".", "_"))
     return ".".join(id)
+
 
 def mk_data_instance_id_from_filename(arg):
     ''' create a data instance id from the associated instance filename '''
@@ -224,6 +241,7 @@ def mk_data_instance_id_from_filename(arg):
     cls = cls.replace("-", ".")
     instance = instance.replace("-", ".")
     return mk_data_instance_id(host, cls, instance)
+
 
 def mk_secure_hash(arg, hash_func=sha1):
     ''' takes string as argument and procudes a checksum
@@ -237,10 +255,12 @@ def mk_secure_hash(arg, hash_func=sha1):
         digest.update(arg.encode('utf-8'))
     return digest.hexdigest()
 
+
 def clean_string(arg, replace="_"):
     for char in [' ', '.', '/', '[', ']', ':']:
         arg.replace(char, replace)
     return arg
+
 
 def skip_data_instance(data):
     ''' simple helper to determine whether to graph a data instance '''
@@ -253,6 +273,7 @@ def skip_data_instance(data):
     else:
         return False
 
+
 def xlate_metric_names(data, xlate):
     values = dict()
     for k in data:
@@ -260,9 +281,10 @@ def xlate_metric_names(data, xlate):
         values[newk] = data[k]
     return values
 
+
 def clean_metric_name(name, xlate):
     if xlate is None:
         return name
-    for k,v in xlate.iteritems():
+    for k, v in xlate.items():
         name = name.replace(k, v, 1)
     return name

@@ -17,23 +17,25 @@
 # 02110-1301, USA.
 
 import argparse
+import datetime
 import os
 import sys
 import logging
 import glob
 import pprint
+import traceback
 import multiprocessing
 
 import netspryte
 import netspryte.snmp
-from netspryte.utils.timer import Timer
 from netspryte.plugins import snmp_module_loader
 
 from netspryte.commands import BaseCommand
 from netspryte import constants as C
-from netspryte.utils import *
+from netspryte.utils import setup_logging, json_ready
 from netspryte.utils.timer import Timer
-from netspryte.manager import *
+from netspryte.manager import Manager, MeasurementInstance, MeasurementClass, Host
+
 
 class DiscoverCommand(BaseCommand):
 
@@ -58,7 +60,7 @@ class DiscoverCommand(BaseCommand):
         if args.nofork:
             num_workers = 1
         logging.info("creating %s workers", num_workers)
-        workers = [ DiscoverWorker(task_queue) for i in range(num_workers) ]
+        workers = [DiscoverWorker(task_queue) for i in range(num_workers)]
         for w in workers:
             w.start()
         for d in args.devices:
@@ -68,6 +70,7 @@ class DiscoverCommand(BaseCommand):
             task_queue.put(None)
         task_queue.join()
         t.stop_timer()
+
 
 class DiscoverWorker(multiprocessing.Process):
 
@@ -90,7 +93,7 @@ class DiscoverWorker(multiprocessing.Process):
             logging.warn("processing %s", device)
             try:
                 msnmp = netspryte.snmp.SNMPSession(host=device)
-                for cls, module in DiscoverCommand.SNMP_MODULES.iteritems():
+                for cls, module in DiscoverCommand.SNMP_MODULES.items():
                     try:
                         snmp_mod = cls(msnmp)
                         name = snmp_mod.sysName or msnmp.host
@@ -144,7 +147,7 @@ class DiscoverWorker(multiprocessing.Process):
             if 'metrics' in data:
                 this_inst.metrics = json_ready(data['metrics'])
                 if not metric_types:
-                    for k, v in data['metrics'].iteritems():
+                    for k, v in data['metrics'].items():
                         metric_types[k] = netspryte.snmp.get_value_type(v)
                     this_class.metric_type = json_ready(metric_types)
             self.mgr.save(this_inst)
@@ -172,5 +175,3 @@ class DiscoverWorker(multiprocessing.Process):
     #         logging.warn("%s elapsed time: %.2fs", device, t.elapsed)
     #     except Exception as e:
     #         logging.error("encountered error with %s; skipping to next device: %s", device, str(e))
-
-

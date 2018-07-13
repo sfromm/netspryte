@@ -16,8 +16,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-from __future__ import print_function
-
 import argparse
 import os
 import sys
@@ -27,11 +25,12 @@ import re
 import crontab
 
 import netspryte
-from netspryte.manager import *
+from netspryte.manager import Manager, MeasurementInstance, MeasurementInstanceTag, Tag
 
 from netspryte.commands import BaseCommand
 from netspryte import constants as C
-from netspryte.utils import *
+from netspryte.utils import setup_logging
+
 
 class JanitorCommand(BaseCommand):
 

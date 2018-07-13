@@ -25,8 +25,9 @@ import re
 
 import netspryte.snmp
 import netspryte.utils
-from netspryte.db import *
+from netspryte.db import BaseDatabaseBackend
 from netspryte import constants as C
+
 
 class RrdDatabaseBackend(BaseDatabaseBackend):
 
@@ -63,6 +64,7 @@ class RrdDatabaseBackend(BaseDatabaseBackend):
             rrd_create(self.path, C.DEFAULT_RRD_STEP, mcls_types, C.DEFAULT_RRD_RRA)
         return rrd_update(self.path, data)
 
+
 def rrd_create(path, step, data_types, rra):
     ''' create a rrd '''
     args = [path, '--step', str(step)]
@@ -78,11 +80,12 @@ def rrd_create(path, step, data_types, rra):
     except (rrdtool.OperationalError, rrdtool.ProgrammingError) as e:
         logging.error("failed to create rrd %s: %s", path, str(e))
 
+
 def rrd_update(path, data, ts=time.time()):
     ''' update rrd '''
     template = list()
     values = list()
-    for k, v in data.iteritems():
+    for k, v in data.items():
         template.append(k.lower())
         if hasattr(v, 'prettyPrint'):
             values.append(v.prettyPrint())
@@ -96,6 +99,7 @@ def rrd_update(path, data, ts=time.time()):
         rrdtool.update(str(path), '--template', flat_template, "%s:%s" % (ts, flat_values))
     except (rrdtool.OperationalError, rrdtool.ProgrammingError) as e:
         logging.error("failed to update rrd %s: %s", path, str(e))
+
 
 def rrd_graph(path, rrd_opts, graph_opts):
     ''' create a graph for rrd
@@ -123,6 +127,7 @@ def rrd_graph(path, rrd_opts, graph_opts):
         logging.error("failed to create graph %s: %s", path, str(e))
     return data
 
+
 def rrd_dump(path):
     ''' dump rrd to xml string '''
     try:
@@ -137,10 +142,12 @@ def rrd_dump(path):
     except Exception as e:
         logging.error("failed to dump rrd %s to xml: %s", path, str(e))
 
+
 def rrd_restore(xml_path, rrd_path):
     ''' restore rrd from xml file '''
     cmd = ['rrdtool', 'restore', xml_path, rrd_path]
     popen = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+
 
 def rrd_info(path):
     try:
@@ -148,6 +155,7 @@ def rrd_info(path):
         return rrdtool.info(path)
     except (rrdtool.OperationalError, rrdtool.ProgrammingError) as e:
         logging.error("failed to get info for %s: %s", path, str(e))
+
 
 def rrd_get_ds_list(path):
     ''' return list of DS in rrd '''
@@ -158,6 +166,7 @@ def rrd_get_ds_list(path):
             if m:
                 ds_list.append(m.group(1))
     return ds_list
+
 
 def rrd_tune_ds_max(path, ds_max):
     ''' tune max for all DS in rrd '''
@@ -171,17 +180,20 @@ def rrd_tune_ds_max(path, ds_max):
     except (rrdtool.OperationalError, rrdtool.ProgrammingError) as e:
         logging.error("failed to tune max for %s: %s", path, str(e))
 
+
 def mk_rrd_ds(data):
     ''' take in dictionary of collected values and return a list of DS '''
     ds = list()
     heartbeat = C.DEFAULT_RRD_STEP * C.DEFAULT_RRD_HEARTBEAT
-    for k, v in data.iteritems():
+    for k, v in data.items():
         ds.append("DS:{0}:{1}:{2}:U:U".format(k.lower(), v.upper(), heartbeat))
     return ds
+
 
 def mk_rrd_filename(device, *args):
     ''' create a rrd filename based on the collected object '''
     return "{0}.rrd".format(netspryte.utils.mk_measurement_instance_filename(device, *args))
+
 
 def rrd_preserve(rrd_path):
     ''' rename existing RRD for preservation
@@ -195,6 +207,7 @@ def rrd_preserve(rrd_path):
                            "backup-{0}-{1}".format(str(mtime), basename)
               )
     )
+
 
 def rrd_graph_data_instance(data, cfg, graph_def, start, end='now'):
     '''
@@ -223,6 +236,7 @@ def rrd_graph_data_instance(data, cfg, graph_def, start, end='now'):
             image = g['image']
     return image
 
+
 def _rrd_graph_command_opts(cfg):
     base_rrd_opts = list()
     for name, val in cfg.items('rrd'):
@@ -235,6 +249,7 @@ def _rrd_graph_command_opts(cfg):
             base_rrd_opts.append(val)
     return base_rrd_opts
 
+
 def _rrd_graph_data_definitions(data_set, graph, rrd_path, cfg):
     graph_opts = list()
     rrd_opts = _rrd_graph_command_opts(cfg)
@@ -243,12 +258,12 @@ def _rrd_graph_data_definitions(data_set, graph, rrd_path, cfg):
             for opt in C.get_config(cfg, graph, name, None, None, islist=True):
                 if '%s' in opt and name == 'def':
                     opt = opt % rrd_path
-                graph_opts.append( str(opt ) )
+                graph_opts.append(str(opt))
         else:
             rrd_opts.append('--{0}'.format(name))
             if val:
                 rrd_opts.append(val)
     if '--title' not in rrd_opts:
         rrd_opts.append('--title')
-        rrd_opts.append( str(data_set['presentation']['title']) )
+        rrd_opts.append(str(data_set['presentation']['title']))
     return (rrd_opts, graph_opts)

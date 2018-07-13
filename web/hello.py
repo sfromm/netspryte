@@ -21,14 +21,15 @@ from playhouse.flask_utils import object_list
 import collections
 import operator
 import time
-import urllib
+import urllib.parse
 
-from netspryte.utils import *
+from netspryte.utils import get_db_backend
 from netspryte import constants as C
-from netspryte.manager import *
+from netspryte.manager import MeasurementInstance, MeasurementClass, Manager, Tag, Host
 from netspryte.db.rrd import *
 
 LIMIT = 10
+
 
 class ReverseProxied(object):
     def __init__(self, app):
@@ -47,9 +48,11 @@ class ReverseProxied(object):
             environ['wsgi.url_scheme'] = scheme
         return self.app(environ, start_response)
 
+
 app = Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 app.wsgi_app = ReverseProxied(app.wsgi_app)
+
 
 def get_graph_definitions(mclasses, extended_data=False):
     cfg = C.load_config()
@@ -61,12 +64,13 @@ def get_graph_definitions(mclasses, extended_data=False):
             if not extended_data:
                 graph_id = def_ids[0]
                 graph_title = C.get_config(cfg, graph_id, 'title', None, None)
-                graph_defs.append( (graph_id, graph_title) )
+                graph_defs.append((graph_id, graph_title))
             else:
                 for graph_id in def_ids:
                     graph_title = C.get_config(cfg, graph_id, 'title', None, None)
-                    graph_defs.append( (graph_id, graph_title) )
+                    graph_defs.append((graph_id, graph_title))
     return graph_defs
+
 
 def get_graph_periods(all_periods=False):
     cfg = C.load_config()
@@ -77,6 +81,7 @@ def get_graph_periods(all_periods=False):
     else:
         graph_periods.append(start_periods[0])
     return graph_periods
+
 
 @app.route('/', methods=['GET'])
 def hello():
@@ -131,7 +136,8 @@ def hello():
                        graph_periods=graph_periods,
                        related=collections.OrderedDict(sorted(related.items())),
                        tags=all_tags,
-                       measurement_classes=measurement_classes )
+                       measurement_classes=measurement_classes)
+
 
 @app.route('/netspryte/graph', methods=['GET'])
 def get_graph():
@@ -161,13 +167,15 @@ def get_graph():
             response.headers['Expires'] = expires
     return response
 
+
 @app.route('/api/v1.0/host/<host>', methods=['GET'])
 def get_host(host):
     mgr = Manager()
     modinst = mgr.get(Host, name=host)
     if not modinst:
         modinst = dict()
-    return jsonify( mgr.to_dict(modinst) )
+    return jsonify(mgr.to_dict(modinst))
+
 
 @app.route('/api/v1.0/hosts', methods=['GET'])
 def get_hosts():
@@ -178,14 +186,16 @@ def get_hosts():
         result['hosts'].append(mgr.to_dict(h))
     return jsonify(result)
 
+
 @app.route('/api/v1.0/host_instances/<host>', methods=['GET'])
 def get_host_instances(host):
     mgr = Manager()
     modinst = mgr.get(Host, name=host)
     if not modinst:
-        return jsonify( {} )
-    result = { 'instances': [ q.name for q in modinst.measurement_instances ] }
-    return jsonify( result )
+        return jsonify({})
+    result = {'instances': [q.name for q in modinst.measurement_instances]}
+    return jsonify(result)
+
 
 @app.route('/api/v1.0/class/<arg>', methods=['GET'])
 def get_measurement_class(arg):
@@ -193,7 +203,8 @@ def get_measurement_class(arg):
     modinst = mgr.get(MeasurementClass, name=arg)
     if not modinst:
         modinst = dict()
-    return jsonify( mgr.to_dict(modinst) )
+    return jsonify(mgr.to_dict(modinst))
+
 
 @app.route('/api/v1.0/classes', methods=['GET'])
 def get_measurement_classes():
@@ -204,13 +215,15 @@ def get_measurement_classes():
         result['classes'].append(mgr.to_dict(m))
     return jsonify(result)
 
+
 @app.route('/api/v1.0/instance/<arg>', methods=['GET'])
 def get_measurement_instance(arg):
     mgr = Manager()
     modinst = mgr.get(MeasurementInstance, name=arg)
     if not modinst:
         modinst = dict()
-    return jsonify( mgr.to_dict(modinst) )
+    return jsonify(mgr.to_dict(modinst))
+
 
 @app.route('/api/v1.0/instances', methods=['GET'])
 def get_measurement_instances():
@@ -222,6 +235,7 @@ def get_measurement_instances():
     result['instances'].sort()
     return jsonify(result)
 
+
 @app.route('/api/v1.0/tags', methods=['GET'])
 def get_tags():
     ''' return list of tags '''
@@ -232,9 +246,11 @@ def get_tags():
     result['tags'].sort()
     return jsonify(result)
 
+
 @app.teardown_appcontext
 def close_db(error):
     pass
+
 
 def filter_measurement_instance_clauses():
     clauses = [
@@ -245,6 +261,7 @@ def filter_measurement_instance_clauses():
         (MeasurementInstance.presentation['description'] != ""),
     ]
     return clauses
+
 
 @app.template_filter('clean_querystring')
 def clean_querystring(request_args, *keys_to_remove, **new_values):
@@ -257,7 +274,8 @@ def clean_querystring(request_args, *keys_to_remove, **new_values):
     for key in keys_to_remove:
         querystring.pop(key, None)
     querystring.update(new_values)
-    return urllib.urlencode(querystring)
+    return urllib.parse.urlencode(querystring)
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

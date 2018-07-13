@@ -34,10 +34,11 @@ from netspryte.plugins import snmp_module_loader
 
 from netspryte.commands import BaseCommand
 from netspryte import constants as C
-from netspryte.utils import *
+from netspryte.utils import setup_logging, json_ready, xlate_metric_names, get_db_backend
 from netspryte.utils.timer import Timer
-from netspryte.manager import *
+from netspryte.manager import Manager, MeasurementInstance, MeasurementClass, Host
 from netspryte.db.rrd import *
+
 
 class CollectSnmpCommand(BaseCommand):
 
@@ -67,7 +68,7 @@ class CollectSnmpCommand(BaseCommand):
         if args.nofork:
             num_workers = 1
         logging.info("creating %s workers", num_workers)
-        workers = [ CollectSnmpWorker(task_queue) for i in range(num_workers) ]
+        workers = [CollectSnmpWorker(task_queue) for i in range(num_workers)]
         for w in workers:
             w.start()
         for d in args.devices:
@@ -77,6 +78,7 @@ class CollectSnmpCommand(BaseCommand):
             task_queue.put(None)
         task_queue.join()
         t.stop_timer()
+
 
 class CollectSnmpWorker(multiprocessing.Process):
 
