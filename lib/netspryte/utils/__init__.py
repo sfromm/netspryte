@@ -195,7 +195,7 @@ def get_db_backend():
         if backend == "rrd":
             backends.append(netspryte.db.rrd.RrdDatabaseBackend(backend))
         elif backend == "graphite":
-            backends.append(netspryte.db.rrd.GraphiteDatabaseBackend(backend))
+            backends.append(netspryte.db.graphite.GraphiteDatabaseBackend(backend))
     if not backends:
         backends.append(netspryte.db.rrd.RrdDatabaseBackend("rrd"))
     return backends
