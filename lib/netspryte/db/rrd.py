@@ -37,6 +37,9 @@ class RrdDatabaseBackend(BaseDatabaseBackend):
             self.path = kwargs['path']
         else:
             self.path = None
+        if not os.path.exists(C.DEFAULT_DATADIR):
+            logging.error("Path to data directory does not exist: %s", C.DEFAULT_DATADIR)
+            return 1
         self.measurement_instance = None
 
     @property

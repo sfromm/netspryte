@@ -52,9 +52,6 @@ class CollectSnmpCommand(BaseCommand):
 
     def run(self):
         args = self.parser.parse_args()
-        if not args.datadir or not os.path.exists(args.datadir):
-            logging.error("Path to data directory does not exist: %s", args.datadir)
-            return 1
         setup_logging(args.verbose)
         t = Timer("snmp collection")
         t.start_timer()
