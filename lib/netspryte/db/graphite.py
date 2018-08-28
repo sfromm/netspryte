@@ -19,7 +19,7 @@
 import logging
 import socket
 import time
-import urllib
+import urllib.request
 
 from netspryte.db import BaseDatabaseBackend
 import netspryte.snmp
@@ -70,9 +70,9 @@ class GraphiteDatabaseBackend(BaseDatabaseBackend):
         tags = "host={0};measurement_class={1};transport={2};name={3};index={4}".format(
             host, mcls_name, mcls_transport, name, index
         )
-        for k, v in self.measurement_instance.attrs:
+        for k, v in list(self.measurement_instance.attrs):
             tags += ";{0}={1}".format(k.lower(), v)
-        for k, v in data.iteritems():
+        for k, v in list(data.items()):
             msg = "{0}.{1};{2} {3} {4}".format(
                 mcls_name, k, tags, v, ts
             )
@@ -83,7 +83,7 @@ class GraphiteDatabaseBackend(BaseDatabaseBackend):
         ''' build request and return a graph object from graphite '''
         url = "http://{0}:{1}/render?".format(C.DEFAULT_GRAPHITE_HOST,
                                               C.DEFAULT_GRAPHITE_PORT)
-        for k, v in xargs.iteritems():
+        for k, v in list(xargs.items()):
             url += "{0}={1}".format(k, v)
         graph = None
         with urllib.request.urlopen(url) as g:
