@@ -55,10 +55,10 @@ install:
 	$(PYTHON) setup.py install
 
 venv:
-	virtualenv $(VENV_ROOT)
+	python3 -mvenv $(VENV_ROOT)
 
 venv-install: venv
-	$(VENV_ROOT)/bin/pip install -I $(PWD)
+	$(VENV_ROOT)/bin/pip3 install -I $(PWD)
 
 sdist: clean
 	$(PYTHON) setup.py sdist
