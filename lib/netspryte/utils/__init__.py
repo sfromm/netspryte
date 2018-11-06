@@ -18,11 +18,11 @@
 
 import os
 import glob
+import hashlib
 import json
 import logging
 import logging.handlers
 import tempfile
-import configparser
 import socket
 from hashlib import sha1
 
@@ -153,7 +153,11 @@ def json_ready(data):
 
 def parse_json(data):
     ''' convert json string to data structure '''
-    return json.loads(data)
+    try:
+        return json.loads(data)
+    except json.JSONDecodeError as e:
+        logging.warn("failed to decode json: %s", str(e))
+        return None
 
 
 def parse_json_from_file(path):
@@ -168,6 +172,14 @@ def parse_json_from_file(path):
         logging.error('failed to parse json from file %s: %s', path, str(e))
         return None
 
+
+def md5_string(arg):
+    ''' Return md5sum of string '''
+    return hashlib.md5(arg.encode('utf-8')).hexdigest()
+
+def sha1_string(arg):
+    ''' Return sha1sum of string '''
+    return hashlib.sha1(arg.encode('utf-8')).hexdigest()
 
 def get_data_instances():
     ''' load all cached data on all collected instances
