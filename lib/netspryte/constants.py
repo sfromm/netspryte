@@ -49,6 +49,23 @@ def get_config(p, section, key, env_var, default, boolean=False, integer=False, 
             return value
     return default
 
+
+def config_has_section(p, section):
+    ''' Check if config has configuration section '''
+    present = False
+    if p is not None:
+        present = p.has_section(section)
+    return present
+
+
+def config_has_option(p, section, key):
+    ''' Check if configuration section has key '''
+    present = False
+    if p is not None:
+        present = p.has_option(section, key)
+    return present
+
+
 def load_config():
     ''' load config file '''
     p = configparser.ConfigParser()
@@ -70,6 +87,8 @@ def load_config():
 p = load_config()
 
 DEFAULTS = 'general'
+DEFAULT_SYSTEM_TIMEOUT   = get_config(p, DEFAULTS, "system_timeout",   "NETSPRYTE_SYSTEM_TIMEOUT",   30)
+
 DEFAULT_SNMP_HOST      = get_config(p, DEFAULTS, "snmp_host",      "NETSPRYTE_SNMP_HOST",      "localhost")
 DEFAULT_SNMP_PORT      = get_config(p, DEFAULTS, "snmp_port",      "NETSPRYTE_SNMP_PORT",      161)
 DEFAULT_SNMP_TIMEOUT   = get_config(p, DEFAULTS, "snmp_timeout",   "NETSPRYTE_SNMP_TIMEOUT",   5)
