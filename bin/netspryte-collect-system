@@ -1,0 +1,13 @@
+#!/usr/bin/python3
+__requires__ = ['netspryte']
+try:
+    import pkg_resources
+except Exception:
+    pass
+import sys
+
+from netspryte.commands.collectsystem import CollectSystemCommand
+
+if __name__ == '__main__':
+    cmd = CollectSystemCommand()
+    sys.exit(cmd.execute())
