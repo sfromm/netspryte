@@ -88,5 +88,7 @@ class PluginLoader:
                 self.modules[cls] = module
         return self.modules
 
+
 snmp_module_loader = PluginLoader(['snmp/host', 'snmp/vendor/*'])
-metric_db_loader   = PluginLoader(['db'])
+system_module_loader = PluginLoader(['system'])
+metric_db_loader = PluginLoader(['db'])
