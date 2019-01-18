@@ -9,7 +9,7 @@ else
 	IMAGE_TAG = $(BRANCH)
 endif
 
-VENV_ROOT ?= /usr/local/netspryte
+VENV_ROOT ?= venv
 VAR_FILE ?= netspryte.params
 HOST_VAR_FILE ?= netspryte.params.$(HOSTNAME)
 DOCKER_COMPOSE ?= docker-compose.yml
@@ -30,9 +30,8 @@ endif
 test: clean
 	PYTHONPATH=lib \
 		NETSPRYTE_CONFIG=tests/netspryte.cfg \
-		NETSPRYTE_SNMP_HOST="localhost" \
 		NETSPRYTE_INFLUXDB_DATABASE="netspryte-test" \
-		nosetests -s -d -v --with-coverage \
+		nosetests -s -v --with-coverage \
 		--cover-erase --cover-package=netspryte
 
 clean:
