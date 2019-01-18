@@ -67,7 +67,7 @@ class TestSnmp(unittest.TestCase):
 
     def test_snmp_get(self):
         msnmp = netspryte.snmp.SNMPSession()
-        self.assertEqual(isinstance(msnmp.get('1.3.6.1.2.1.1.5.0'), basestring), True)
+        self.assertEqual(isinstance(msnmp.get('1.3.6.1.2.1.1.5.0')[0][1], str), True)
 
     def test_snmp_walk(self):
         msnmp = netspryte.snmp.SNMPSession()
@@ -87,6 +87,5 @@ class TestSnmp(unittest.TestCase):
     def test_snmp_load_all_modules(self):
         msnmp = netspryte.snmp.SNMPSession()
         snmp_modules = snmp_module_loader.all()
-        for cls, module in snmp_modules.iteritems():
+        for cls, module in snmp_modules.items():
             mod = cls(msnmp)
-
