@@ -55,20 +55,3 @@ class TestDatabase(unittest.TestCase):
                                                        database=C.DEFAULT_INFLUXDB_DATABASE)
         for data in self.hostintf.data:
             db.write(data)
-
-    def test_db_mongodb_port_is_integer(self):
-        db = netspryte.db.mongo.MongoDatabaseBackend('mongodb')
-        self.assertEqual(db.port, C.DEFAULT_MONGODB_PORT)
-
-    def test_db_mongodb_create(self):
-        db = netspryte.db.mongo.MongoDatabaseBackend('mongodb',
-                                                     host=C.DEFAULT_MONGODB_HOST,
-                                                     database=C.DEFAULT_MONGODB_DATABASE)
-        self.assertTrue(hasattr(db, 'db'))
-
-    def test_db_mongodb_write(self):
-        db = netspryte.db.mongo.MongoDatabaseBackend('mongodb',
-                                                     host=C.DEFAULT_MONGODB_HOST,
-                                                     database=C.DEFAULT_MONGODB_DATABASE)
-        for data in self.hostintf.data:
-            db.write(data)

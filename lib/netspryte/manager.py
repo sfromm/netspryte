@@ -17,192 +17,129 @@
 # along with netspryte.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import os
 import logging
-import subprocess
+import pymongo
 import traceback
+from bson.objectid import ObjectId
 
 from netspryte import constants as C
-from netspryte.model import *
 
-import peewee
-from playhouse.postgres_ext import *
-from playhouse.shortcuts import model_to_dict, dict_to_model
-
-peewee_logger = logging.getLogger('peewee')
-peewee_logger.addHandler(logging.StreamHandler())
 
 class Manager(object):
-    ''' db manager object '''
+    ''' data store manager object '''
 
     def __init__(self, **kwargs):
         ''' initialize manager object '''
-        engine = kwargs.get('engine', C.DEFAULT_DB_ENGINE)
-        name   = kwargs.get('name', C.DEFAULT_DB_NAME)
-        host   = kwargs.get('host', C.DEFAULT_DB_HOST)
-        user   = kwargs.get('user', C.DEFAULT_DB_USER)
-        passwd = kwargs.get('pass', C.DEFAULT_DB_PASS)
+        name = kwargs.get('name', C.DEFAULT_MONGO_NAME)
+        host = kwargs.get('host', C.DEFAULT_MONGO_HOST)
+        port = kwargs.get('port', C.DEFAULT_MONGO_PORT)
 
-        self.engine = engine
+        self.client = pymongo.MongoClient(host, port)
+        self.db = self.client[name]
         self.name = name
+        self.host = host
+        self.port = port
+        self.create_collections()
 
-        if 'sqlite' in engine:
-            # http://docs.peewee-orm.com/en/latest/peewee/database.html?#additional-connection-initialization
-            database = SqliteDatabase(name, threadlocals=True, pragmas=(
-                ('journal_mode', 'WAL'),
-                ('foreign_keys', 'ON'),
-            ))
-        elif 'postgres' in engine:
-            database = PostgresqlExtDatabase(name, register_hstore=False, user=user, password=passwd, host=host)
-        else:
-            database = None
+    def create_collections(self):
+        ''' create collections if they do not exist '''
+        self.host_collection = self.db.host
+        self.measurement_class_collection = self.db.measurement_class
+        self.measurement_instance_collection = self.db.measurement_instance
 
-        DB_PROXY.initialize(database)
-        self.database = database
-        try:
-            self.database.connect()
-        except OperationalError as e:
-            logging.error("failed to open database %s", name)
-            raise
-        self.create_tables()
-
-    def create_tables(self):
-        ''' create tables if they do not exist '''
-        Netspryte.create_table(fail_silently=True)
-        Host.create_table(fail_silently=True)
-        MeasurementClass.create_table(fail_silently=True)
-        MeasurementInstance.create_table(fail_silently=True)
-        Tag.create_table(fail_silently=True)
-        MeasurementInstanceTag.create_table(fail_silently=True)
-        HostTag.create_table(fail_silently=True)
-
-    def execute(self, modquery, nocommit=False):
-        ''' execute a model query; returns number of rows affected '''
-        r = modquery.execute()
-        return r
+    def drop_collections(self):
+        self.db.drop_collection("host")
+        self.db.drop_collection("measurement_class")
+        self.db.drop_collection("measurement_instance")
 
     def close(self):
-        ''' close connection to database '''
-        self.database.close()
+        ''' close connection -- noop '''
+        pass
 
-    def save(self, modinst, nocommit=False):
-        ''' save an object '''
-        logging.debug("saving %s", str(modinst))
-        modinst.save()
-        logging.debug("done saving %s", str(modinst))
-
-    def get(self, model, **kwargs):
+    def get(self, collection, **kwargs):
         ''' get an object '''
         data = None
         try:
-            data = model.get(**kwargs)
-        except peewee.DoesNotExist as e:
-            logging.warn("failed to look up object")
+            data = collection.find_one(kwargs)
+        except Exception as e:
+            logging.warn("failed to look up document: %s", str(e))
         return data
 
-    def get_all(self, model):
+    def get_all(self, collection):
         data = None
         try:
-            data = model.select()
+            data = collection.find()
         except Exception as e:
-            logging.error("failed to retrieve model")
+            logging.error("failed to retrieve collection: %s", str(e))
         return data
 
-    def get_or_create(self, model, **kwargs):
+    def get_or_create(self, collection, **kwargs):
         ''' get or create an object '''
         logging.debug("getting or creating object")
-        instance = None
-        try:
-            name = ""
-            if 'name' in kwargs:
-                name = kwargs['name']
-            logging.debug("get_or_create %s %s", model, name)
-            ( instance, created ) = model.get_or_create(**kwargs)
-            self.save(instance)
-        except peewee.DatabaseError as e:
-            logging.error("error while attempting to update database: %s", traceback.format_exc())
-        return instance
+        document = dict()
+        logging.debug("get_or_create %s %s", collection, kwargs['name'])
+        document = self.update(collection, document, **kwargs)
+        return document
 
-    def update(self, modinst, **kwargs):
+    def update(self, collection, document, **kwargs):
         ''' update an object '''
-        updated = False
-        logging.debug("updating %s", str(modinst))
-        for k, v in kwargs:
-            if hasattr(modinst, k):
-                setattr(modinst, k, v)
-        if hasattr(modinst, 'lastseen'):
-            modinst.lastseen = datetime.datetime.now()
-        self.save(modinst)
-        logging.debug("done updating %s", str(modinst))
+        for k, v in list(kwargs.items()):
+            if isinstance(v, dict):
+                # This is a mongo document; use just the objectId
+                if '_id' in v and isinstance(v['_id'], ObjectId):
+                    v = v['_id']
+            document[k] = v
+        logging.debug("updating %s", document['name'])
+        if 'lastseen' not in kwargs:
+            document['lastseen'] = datetime.datetime.now()
 
-    def to_dict(self, modinst):
-        return model_to_dict(modinst)
+        document = collection.find_one_and_update({"name": document["name"]},
+                                                  {"$set": document}, upsert=True,
+                                                  return_document=pymongo.ReturnDocument.AFTER)
+        logging.debug("updated %s", document['name'])
+        return document
 
     def get_instances(self, key, val, paginated=False):
         ''' return measurement instances where key equals value '''
-        qry = MeasurementInstance.select().where(getattr(MeasurementInstance, key) == val)
+        qry = self.measurement_instance_collection.find({key: val})
         if paginated:
             return qry
         else:
-            return [ q for q in qry ]
+            return [q for q in qry]
 
     def get_instances_by_host(self, arg, paginated=False):
         '''
         Return list of measurement instances based on the associated host.
         If paginated is True, return a peewee Query object.
         '''
-        host = self.get(Host, name=arg)
-        qry = MeasurementInstance.select().join(Host).where(MeasurementInstance.host == host)
-        if paginated:
-            return qry
-        else:
-            return [ q for q in qry ]
+        host = self.host_collection.find({'name': arg})
+        return self.get_instances("host", host['_id'])
 
     def get_instances_by_class(self, arg, paginated=False):
         '''
         Return list of measurement instances based on the measurement class.
         If paginated is True, return a peewee Query object.
         '''
-        cls = self.get(MeasurementClass, name=arg)
-        qry = MeasurementInstance.select().join(Host).where(MeasurementInstance.measurement_class == cls)
-        if paginated:
-            return qry
-        else:
-            return [ q for q in qry ]
+        cls = self.measurement_class_collection.find({'name': arg})
+        return self.get_instances("measurement_class", cls['_id'])
 
     def get_instances_by_attribute(self, key, val, paginated=False):
         '''
         Return list of measurement instances based on a matching attribute value.
         If paginated is True, return a peewee Query object.
         '''
-        qry = MeasurementInstance.select().where(MeasurementInstance.attrs[key].startswith(val))
-        if paginated:
-            return qry
-        else:
-            return [ q for q in qry ]
+        return self.get_instances("attrs.%s" % key, val)
 
     def get_instances_by_presentation(self, key, val, paginated=False):
         '''
         Return list of measurement instances based on a matching presentation value.
         If paginated is True, return a peewee Query object.
         '''
-        qry = MeasurementInstance.select().where(MeasurementInstance.presentation[key].startswith(val))
-        if paginated:
-            return qry
-        else:
-            return [ q for q in qry ]
+        return self.get_instances("presentation.%s" % key, val)
 
     def get_instances_by_tags(self, tags, paginated=False):
         '''
         Return list of measurement instances based on associated tags.
         If paginated is True, return a peewee Query object.
         '''
-        qry = (MeasurementInstance.select()
-               .join(MeasurementInstanceTag)
-               .join(Tag)
-               .where((Tag.name << tags))
-               .group_by(MeasurementInstance))
-        if paginated:
-            return qry
-        else:
-            return [ q for q in qry ]
+        return self.get_instances("tags", {"$in": [tags]})

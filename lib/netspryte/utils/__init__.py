@@ -28,7 +28,7 @@ from hashlib import sha1
 
 import netspryte.db
 import netspryte.db.rrd
-from netspryte.manager import Manager, MeasurementInstance
+from netspryte.manager import Manager
 from netspryte import constants as C
 
 
