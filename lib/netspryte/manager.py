@@ -81,6 +81,18 @@ class Manager(object):
         document = self.update(collection, document, **kwargs)
         return document
 
+    def save_host(self, document, **kwargs):
+        ''' update/save a host document '''
+        return self.update(self.host_collection, document, **kwargs)
+
+    def save_measurement_class(self, document, **kwargs):
+        ''' update/save a measurement_class document '''
+        return self.update(self.measurement_class_collection, document, **kwargs)
+
+    def save_measurement_instance(self, document, **kwargs):
+        ''' update/save a measurement_instance document '''
+        return self.update(self.measurement_instance_collection, document, **kwargs)
+
     def update(self, collection, document, **kwargs):
         ''' update an object '''
         for k, v in list(kwargs.items()):
