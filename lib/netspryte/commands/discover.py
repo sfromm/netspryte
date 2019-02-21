@@ -137,8 +137,8 @@ class DiscoverWorker(multiprocessing.Process):
             if hasattr(snmp_mod, 'DESCRIPTION') and not this_class.description:
                 this_class.description = snmp_mod.DESCRIPTION
             this_inst = self.mgr.get_or_create(MeasurementInstance,
-                                          name=data['name'], index=data['index'],
-                                          host=this_host, measurement_class=this_class)
+                                               name=data['name'], index=data['index'],
+                                               host=this_host, measurement_class=this_class)
             this_host.lastseen = now
             this_inst.lastseen = now
             this_inst.attrs = json_ready(data['attrs'])
