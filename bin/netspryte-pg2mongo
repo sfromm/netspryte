@@ -1,0 +1,96 @@
+#!/usr/bin/python3
+
+import argparse
+import logging
+import psycopg2
+import psycopg2.extras
+import pymongo
+import os
+import sys
+
+from netspryte.commands import BaseCommand
+from netspryte import constants as C
+from netspryte.utils import setup_logging
+import netspryte.manager
+import pprint
+
+
+class Pg2MongoCommand(BaseCommand):
+
+    def __init__(self, daemonize=False):
+        super(Pg2MongoCommand, self).__init__(daemonize)
+
+    def pg_connect(self):
+        try:
+            conn = psycopg2.connect(dbname=C.DEFAULT_DB_NAME, host=C.DEFAULT_DB_HOST,
+                                    user=C.DEFAULT_DB_USER, password=C.DEFAULT_DB_PASS)
+            curr = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        except psycopg2.Error as e:
+            logging.warning("failed to connect to postgres: %s", str(e))
+            return (None, None)
+        return (conn, curr)
+
+    def run(self):
+        args = self.parser.parse_args()
+        setup_logging(args.verbose)
+        (pgconn, pgcurr) = self.pg_connect()
+        mgr = netspryte.manager.Manager()
+        print(type(mgr))
+        print(mgr.host)
+
+        pghosts = dict()
+        pgcurr.execute("SELECT * FROM host")
+        for row in pgcurr:
+            logging.debug("host %s", row['name'])
+            host = {"name": row['name'],
+                    "interval": row['interval'],
+                    "lastseen": row['lastseen']}
+            res = mgr.get_or_create(mgr.host_collection, **host)
+            pghosts[row['id']] = res['_id']
+
+        pgmclass = dict()
+        pgcurr.execute("SELECT * FROM measurement_class")
+        for row in pgcurr:
+            logging.debug("measurement_class %s", row['name'])
+            mclass = {"name": row['name'],
+                      "description": row['description'],
+                      "transport": row['transport'],
+                      "metric_type": row['metric_type']}
+            res = mgr.get_or_create(mgr.measurement_class_collection, **mclass)
+            pgmclass[row['id']] = res['_id']
+
+        # get instance tags
+        tags = dict()
+        pgcurr.execute("SELECT mi.name, tag.name FROM measurement_instance_tag "
+                       "JOIN measurement_instance as mi on measurement_instance_tag.measurement_instance_id = mi.id "
+                       "JOIN tag on measurement_instance_tag.tag_id = tag.id")
+        for row in pgcurr:
+            if row[0] not in tags:
+                tags[row[0]] = list()
+            tags[row[0]].append(row[1])
+
+        pgcurr.execute("SELECT * FROM measurement_instance")
+        for row in pgcurr:
+            logging.debug("measurement_instance %s", row['name'])
+            id = row['name']
+            if id not in tags:
+                tags[id] = list()
+            minstance = {"name": row['name'],
+                         "index": row['index'],
+                         "attrs": row['attrs'],
+                         "metrics": row['metrics'],
+                         "presentation": row['presentation'],
+                         "lastseen": row['lastseen'],
+                         "tags": tags[id],
+                         "host": pghosts[row['host_id']],
+                         "measurement_class": pgmclass[row['measurement_class_id']]}
+            res = mgr.get_or_create(mgr.measurement_instance_collection, **minstance)
+
+
+if __name__ == '__main__':
+    try:
+        cmd = Pg2MongoCommand()
+        sys.exit(cmd.execute())
+    except KeyboardInterrupt:
+        print("Exit on user request", file=sys.stderr)
+        sys.exit(1)
