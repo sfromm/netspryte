@@ -11,6 +11,7 @@ endif
 
 VENV_ROOT ?= venv
 VAR_FILE ?= netspryte.params
+HOSTNAME := $(shell hostname)
 HOST_VAR_FILE ?= netspryte.params.$(HOSTNAME)
 DOCKER_COMPOSE ?= docker-compose.yml
 COLLECTOR_INTERVAL ?= 1m
