@@ -147,7 +147,14 @@ def json_ready(data):
     newdata = dict()
     for k, v in list(data.items()):
         if hasattr(v, 'prettyPrint'):
-            newdata[k] = v.prettyPrint()
+            newv = v.prettyPrint()
+            if newv.isdigit():
+                newv = int(newv)
+            newdata[k] = newv
+        elif isinstance(v, int):
+            newdata[k] = v
+        elif isinstance(v, str) and v.isdigit():
+            newdata[k] = int(v)
         else:
             newdata[k] = str(v)
     return newdata
