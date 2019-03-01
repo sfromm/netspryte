@@ -28,6 +28,7 @@ class CiscoCBQOS(CiscoDevice):
 
     NAME = 'cbqos'
     DESCRIPTION = "CBQOS Policers"
+    ATTR_MODEL = "CBQOSAttrs"
 
     ATTRS = {
         'cbQosIfType'                 : '1.3.6.1.4.1.9.9.166.1.1.1.1.2',
@@ -252,6 +253,6 @@ class CiscoCBQOS(CiscoDevice):
     def get_class_map_name(self, idx, data_dict):
         key = 'cbQosCMName'
         if key not in data_dict[idx]['attrs']:
-            return self.get_policy_map_name(data[idx]['attrs']['parent'], data_dict)
+            return self.get_policy_map_name(data_dict[idx]['attrs']['parent'], data_dict)
         else:
             return data_dict[idx]['attrs'][key]
