@@ -18,16 +18,20 @@
 
 import logging
 import netspryte.snmp
+import ipaddress
 from netspryte.snmp.host import HostSystem
+from netspryte.snmp.host.interface import HostInterface
 
 
-class HostIpNetwork(HostSystem):
+class HostIpAddress(HostSystem):
 
-    NAME = 'ipnetwork'
-    DESCRIPTION = 'IP Networks'
+    NAME = 'ipaddress'
+    DESCRIPTION = 'IP Address'
+    ATTR_MODEL = "IPAddressAttrs"
 
     ATTRS = {
-#        'ipAddressPrefixOrigin' : '1.3.6.1.2.1.4.32.1.5',
+        'ipAdEntIfIndex'        : '1.3.6.1.2.1.4.20.1.2',
+        'ipAdEntNetMask'        : '1.3.6.1.2.1.4.20.1.3',
         'ipAddressAddrType'     : '1.3.6.1.2.1.4.34.1.1',
         'ipAddressAddr'         : '1.3.6.1.2.1.4.34.1.2',
         'ipAddressIfIndex'      : '1.3.6.1.2.1.4.34.1.3',
@@ -35,8 +39,6 @@ class HostIpNetwork(HostSystem):
         'ipAddressPrefix'       : '1.3.6.1.2.1.4.34.1.5',
         'ipAddressOrigin'       : '1.3.6.1.2.1.4.34.1.6',
         'ipAddressStatus'       : '1.3.6.1.2.1.4.34.1.7',
-        'ipAddressCreated'      : '1.3.6.1.2.1.4.34.1.8',
-        'ipAddressLastChanged'  : '1.3.6.1.2.1.4.34.1.9',
     }
 
     STAT = { }
@@ -85,19 +87,35 @@ class HostIpNetwork(HostSystem):
 
     def __init__(self, snmp):
         self.snmp = snmp
-        super(HostIpNetwork, self).__init__(snmp)
+        super(HostIpAddress, self).__init__(snmp)
         logging.info("inspecting %s for ip address data", snmp.host)
         self.data = self._get_data()
 
     def _get_data(self):
         data = dict()
-        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostIpNetwork.NAME,
-                                             HostIpNetwork.ATTRS, HostIpNetwork.CONVERSION)
+        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostIpAddress.NAME,
+                                             HostIpAddress.ATTRS, HostIpAddress.CONVERSION)
         for k, v in list(attrs.items()):
-            data[k] = self.initialize_instance(HostIpNetwork.NAME, k)
+            if 'ipAdEntIfIndex' in v:
+                netmask = v['ipAdEntNetMask']
+                ifindex = v['ipAdEntIfIndex']
+                net = ipaddress.ip_network('%s/%s' % (k, netmask), strict=False)
+                data[k] = self.initialize_instance(HostInterface.NAME, ifindex)
+                data[k]['attrs'] = dict()
+                data[k]['attrs']['ipAddressAddr'] = k
+                data[k]['attrs']['ipAddressPrefix'] = net.prefixlen
+                data[k]['attrs']['ipAddressAddrType'] = 'ipv4'
+                data[k]['attrs']['ipAddressIfIndex'] = ifindex
+
+        for k, v in list(attrs.items()):
+            if 'ipAdEntIfIndex' in v:
+                continue
+            if 'ipaddressPrefix' not in v:
+                continue
+            data[k] = self.initialize_instance(HostIpAddress.NAME, k)
             data[k]['attrs'] = v
             (addr_type, sub1, addr1) = k.split('.', 2)
-            attrs[k]['ipAddressAddrType'] = HostIpNetwork.CONVERSION['ipAddressAddrType'][int(addr_type)]
+            attrs[k]['ipAddressAddrType'] = HostIpAddress.CONVERSION['ipAddressAddrType'][int(addr_type)]
             addr2 = ""
             if attrs[k]['ipAddressAddrType'] == 'ipv4':
                 addr2 = addr1
