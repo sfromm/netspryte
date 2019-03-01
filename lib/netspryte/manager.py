@@ -86,13 +86,8 @@ class Manager(object):
 
     def create_tables(self):
         ''' create tables if they do not exist '''
-        Netspryte.create_table(fail_silently=True)
-        Host.create_table(fail_silently=True)
-        MeasurementClass.create_table(fail_silently=True)
-        MeasurementInstance.create_table(fail_silently=True)
-        Tag.create_table(fail_silently=True)
-        MeasurementInstanceTag.create_table(fail_silently=True)
-        HostTag.create_table(fail_silently=True)
+        models = BaseModel.__subclasses__()
+        self.database.create_tables(models, fail_silently=True)
 
     def execute(self, modquery, nocommit=False):
         ''' execute a model query; returns number of rows affected '''
@@ -135,7 +130,7 @@ class Manager(object):
             if 'name' in kwargs:
                 name = kwargs['name']
             logging.debug("get_or_create %s %s", model, name)
-            ( instance, created ) = model.get_or_create(**kwargs)
+            (instance, created) = model.get_or_create(**kwargs)
             self.save(instance)
         except peewee.DatabaseError as e:
             logging.error("error while attempting to update database: %s", traceback.format_exc())
@@ -161,7 +156,7 @@ class Manager(object):
         ''' update an object '''
         updated = False
         logging.debug("updating %s", str(modinst))
-        for k, v in kwargs:
+        for k, v in list(kwargs.items()):
             if hasattr(modinst, k):
                 setattr(modinst, k, v)
         if hasattr(modinst, 'lastseen'):
