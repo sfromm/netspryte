@@ -34,6 +34,7 @@ from netspryte.commands import BaseCommand
 from netspryte import constants as C
 from netspryte.utils import setup_logging, json_ready
 from netspryte.utils.timer import Timer
+from netspryte.utils.worker import DataWorker
 from netspryte.manager import Manager, MeasurementInstance, MeasurementClass, Host
 
 
@@ -72,11 +73,7 @@ class DiscoverCommand(BaseCommand):
         t.stop_timer()
 
 
-class DiscoverWorker(multiprocessing.Process):
-
-    def __init__(self, task_queue):
-        multiprocessing.Process.__init__(self)
-        self.task_queue = task_queue
+class DiscoverWorker(DataWorker):
 
     def run(self):
         self.mgr = Manager()
@@ -96,7 +93,6 @@ class DiscoverWorker(multiprocessing.Process):
                 for cls, module in list(DiscoverCommand.SNMP_MODULES.items()):
                     try:
                         snmp_mod = cls(msnmp)
-                        name = snmp_mod.sysName or msnmp.host
                         if snmp_mod and hasattr(snmp_mod, 'data'):
                             self.process_module_data(snmp_mod)
                     except Exception as e:
@@ -109,69 +105,3 @@ class DiscoverWorker(multiprocessing.Process):
             self.task_queue.task_done()
         self.mgr.close()
         return
-
-    def process_module_data(self, snmp_mod):
-        this_class_updated = False
-        this_host = None
-        this_class = None
-        log_me = False
-        these_insts = list()
-        metric_types = dict()
-        if not snmp_mod.data:
-            return
-        t = Timer("database")
-        t.start_timer()
-        for data in snmp_mod.data:
-            now = datetime.datetime.now()
-            if not this_host:
-                this_host = self.mgr.get_or_create(Host, name=data['host'])
-            if not this_class:
-                this_class = self.mgr.get_or_create(MeasurementClass, name=data['class'], transport=data['transport'])
-            if this_host is None or this_class is None:
-                logging.error("encountered database error; skipping to next instance")
-                continue
-            t.name = "select and update database %s-%s" % (this_host.name, this_class.name)
-            if not log_me:
-                logging.info("updating database for %s %s", this_host.name, this_class.name)
-                log_me = True
-            if hasattr(snmp_mod, 'DESCRIPTION') and not this_class.description:
-                this_class.description = snmp_mod.DESCRIPTION
-            this_inst = self.mgr.get_or_create(MeasurementInstance,
-                                          name=data['name'], index=data['index'],
-                                          host=this_host, measurement_class=this_class)
-            this_host.lastseen = now
-            this_inst.lastseen = now
-            this_inst.attrs = json_ready(data['attrs'])
-            if 'presentation' in data and not this_inst.presentation:
-                this_inst.presentation = json_ready(data['presentation'])
-            if 'metrics' in data:
-                this_inst.metrics = json_ready(data['metrics'])
-                if not metric_types:
-                    for k, v in list(data['metrics'].items()):
-                        metric_types[k] = netspryte.snmp.get_value_type(v)
-                    this_class.metric_type = json_ready(metric_types)
-            self.mgr.save(this_inst)
-            if this_inst.metrics:
-                these_insts.append(this_inst)
-        self.mgr.save(this_host)
-        self.mgr.save(this_class)
-        logging.info("done updating database for %s %s", this_host.name, this_class.name)
-        t.stop_timer()
-
-    # def process_device(self, device, args):
-    #     try:
-    #         logging.info("beginning discovery of %s", device)
-    #         t = Timer("snmp discover %s" % device)
-    #         t.start_timer()
-    #         msnmp = netspryte.snmp.SNMPSession(host=device)
-    #         data = list()
-    #         snmp_modules = snmp_module_loader.all()
-    #         for cls, module in snmp_modules.iteritems():
-    #             mod = cls(msnmp)
-    #             if mod.data:
-    #                 data.extend(mod.data)
-    #         t.stop_timer()
-    #         pprint.pprint(data)
-    #         logging.warn("%s elapsed time: %.2fs", device, t.elapsed)
-    #     except Exception as e:
-    #         logging.error("encountered error with %s; skipping to next device: %s", device, str(e))

@@ -36,7 +36,8 @@ from netspryte.commands import BaseCommand
 from netspryte import constants as C
 from netspryte.utils import setup_logging, json_ready, xlate_metric_names, get_db_backend
 from netspryte.utils.timer import Timer
-from netspryte.manager import Manager, MeasurementInstance, MeasurementClass, Host
+from netspryte.utils.worker import DataWorker
+from netspryte.manager import Manager
 from netspryte.db.rrd import *
 
 
@@ -80,11 +81,7 @@ class CollectSnmpCommand(BaseCommand):
         t.stop_timer()
 
 
-class CollectSnmpWorker(multiprocessing.Process):
-
-    def __init__(self, task_queue):
-        multiprocessing.Process.__init__(self)
-        self.task_queue = task_queue
+class CollectSnmpWorker(DataWorker):
 
     def run(self):
         self.mgr = Manager()
@@ -107,9 +104,10 @@ class CollectSnmpWorker(multiprocessing.Process):
                         continue
                     try:
                         snmp_mod = cls(msnmp)
-                        name = snmp_mod.sysName or msnmp.host
+                        hostname = snmp_mod.sysName or msnmp.host
                         if snmp_mod and hasattr(snmp_mod, 'data'):
-                            self.process_module_data(snmp_mod)
+                            has_metrics = self.process_module_data(snmp_mod)
+                            self.process_metric_data(has_metrics, snmp_mod)
                     except Exception as e:
                         logging.error("module %s failed against device %s: %s", cls.__name__, device, traceback.format_exc())
                         continue
@@ -120,61 +118,21 @@ class CollectSnmpWorker(multiprocessing.Process):
             self.task_queue.task_done()
         return
 
-    def process_module_data(self, snmp_mod):
-        this_class_updated = False
-        this_host = None
-        this_class = None
-        log_me = False
-        these_insts = list()
-        metric_types = dict()
-        if not snmp_mod.data:
+    def process_metric_data(self, measurement_instances, snmp_mod):
+        ''' Take list of instances and process the metrics '''
+        if not measurement_instances:
+            logging.warn("no metrics to record")
             return
-        t = Timer("database")
+        hostname = measurement_instances[0].host.name
+        measurement_class = measurement_instances[0].measurement_class.name
+        t = Timer("%s-%s-metrics update" % (hostname, measurement_class))
         t.start_timer()
-        for data in snmp_mod.data:
-            now = datetime.datetime.now()
-            if not this_host:
-                this_host = self.mgr.get_or_create(Host, name=data['host'])
-            if not this_class:
-                this_class = self.mgr.get_or_create(MeasurementClass, name=data['class'], transport=data['transport'])
-            if this_host is None or this_class is None:
-                logging.error("encountered database error; skipping to next instance")
-                continue
-            t.name = "select and update database %s-%s" % (this_host.name, this_class.name)
-            if not log_me:
-                logging.info("updating database for %s %s", this_host.name, this_class.name)
-                log_me = True
-            if hasattr(snmp_mod, 'DESCRIPTION') and not this_class.description:
-                this_class.description = snmp_mod.DESCRIPTION
-            this_inst = self.mgr.get_or_create(MeasurementInstance,
-                                          name=data['name'], index=data['index'],
-                                          host=this_host, measurement_class=this_class)
-            this_host.lastseen = now
-            this_inst.lastseen = now
-            this_inst.attrs = json_ready(data['attrs'])
-            if 'presentation' in data and not this_inst.presentation:
-                this_inst.presentation = json_ready(data['presentation'])
-            if 'metrics' in data:
-                this_inst.metrics = json_ready(data['metrics'])
-                if not metric_types:
-                    for k, v in list(data['metrics'].items()):
-                        metric_types[k] = netspryte.snmp.get_value_type(v)
-                    this_class.metric_type = json_ready(metric_types)
-            self.mgr.save(this_inst)
-            if this_inst.metrics:
-                these_insts.append(this_inst)
-        self.mgr.save(this_host)
-        self.mgr.save(this_class)
-        logging.info("done updating database for %s %s", this_host.name, this_class.name)
-        t.stop_timer()
-        t = Timer("%s-%s-metrics update" % (this_host.name, this_class.name))
-        t.start_timer()
-        for this_inst in these_insts:
-            self.process_data_instance(this_inst, snmp_mod.XLATE)
+        for this_inst in measurement_instances:
+            self.process_metric_data_instance(this_inst, snmp_mod.XLATE)
         t.stop_timer()
 
-    def process_data_instance(self, measurement_instance, xlate):
-        ''' '''
+    def process_metric_data_instance(self, measurement_instance, xlate):
+        ''' process a single instance data '''
         metrics = xlate_metric_names(measurement_instance.metrics, xlate)
         dbs = get_db_backend()
         for db in dbs:
