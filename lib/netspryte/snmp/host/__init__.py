@@ -26,6 +26,7 @@ class HostSystem(object):
 
     NAME = 'system'
     DESCRIPTION = "Base System SNMP Information"
+    ATTR_MODEL = "HostSnmpAttrs"
 
     ATTRS = {
         'sysDescr'    : '1.3.6.1.2.1.1.1',

@@ -22,6 +22,7 @@ class CiscoDevice(HostSystem):
 
     NAME = "cisco"
     DESCRIPTION = "Base Cisco Information"
+    ATTR_MODEL = ""
     ATTRS = { }
     STAT = { }
     CONVERSION = { }
