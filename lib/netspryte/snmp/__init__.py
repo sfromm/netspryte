@@ -67,8 +67,6 @@ def get_value_type(arg):
 
 def mk_pretty_value(arg):
     ''' Inspect SNMP value type and return it '''
-    if isinstance(arg, OctetString):
-        return clean_octet_string(arg)
     if isinstance(arg, ObjectIdentifier):
         return arg.prettyPrint()
     if isinstance(arg, Integer):
@@ -77,6 +75,10 @@ def mk_pretty_value(arg):
         return arg.prettyPrint()
     if isinstance(arg, Counter32) or isinstance(arg, Counter64):
         return arg.prettyPrint()
+    if isinstance(arg, IpAddress):
+        return str(arg.prettyPrint())
+    if isinstance(arg, OctetString):
+        return clean_octet_string(arg)
     if isinstance(arg, EndOfMibView):
         return arg.prettyPrint()
     return arg
@@ -87,7 +89,10 @@ def value_is_integer(arg):
        isinstance(arg, Counter64) or \
        isinstance(arg, Gauge32) or \
        isinstance(arg, Integer) or \
-       isinstance(arg, Integer32):
+       isinstance(arg, Integer32) or \
+       isinstance(arg, int):
+        return True
+    elif isinstance(arg, str) and arg.isdigit():
         return True
     else:
         return False
@@ -306,8 +311,8 @@ class SNMPSession(object):
         ''' take a oid object and return a tuple of ( numerical_oid, value ) '''
         oid = varbind[0]
         value = varbind[1]
-        if isinstance(value, OctetString):
-            value = clean_octet_string(value)
+        if not value_is_metric(value):
+            value = mk_pretty_value(value)
         num_oid = oid.prettyPrint()
         if hasattr(oid, 'getOid'):
             num_oid = str(oid.getOid())
