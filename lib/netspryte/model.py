@@ -54,6 +54,7 @@ class Host(BaseModel):
     def __str__(self):
         return '<Host: %s>' % self.name
 
+
 class HostSnmpAttrs(BaseModel):
     sysDescr = CharField(null=True)
     sysObjectID = CharField()
@@ -187,6 +188,41 @@ class InterfaceAttrs(BaseModel):
     def __str__(self):
         return '<InterfaceAttrs: %s:%s>' % (self.ifIndex, self.ifName)
 
+
+class InterfaceMetrics(BaseModel):
+    ifInNUcastPkts = BigIntegerField(null=True)
+    ifInDiscards = BigIntegerField(null=True)
+    ifInErrors = BigIntegerField(null=True)
+    ifInUnknownProtos = BigIntegerField(null=True)
+    ifOutNUcastPkts = BigIntegerField(null=True)
+    ifOutDiscards = BigIntegerField(null=True)
+    ifOutErrors = BigIntegerField(null=True)
+    ifOutQLen = BigIntegerField(null=True)
+    ifInMulticastPkts = BigIntegerField(null=True)
+    ifInBroadcastPkts = BigIntegerField(null=True)
+    ifOutMulticastPkts = BigIntegerField(null=True)
+    ifOutBroadcastPkts = BigIntegerField(null=True)
+    ifHCInOctets = BigIntegerField(null=True)
+    ifHCInUcastPkts = BigIntegerField(null=True)
+    ifHCInMulticastPkts = BigIntegerField(null=True)
+    ifHCInBroadcastPkts = BigIntegerField(null=True)
+    ifHCOutOctets = BigIntegerField(null=True)
+    ifHCOutUcastPkts = BigIntegerField(null=True)
+    ifHCOutMulticastPkts = BigIntegerField(null=True)
+    ifHCOutBroadcastPkts = BigIntegerField(null=True)
+    timestamp = DateTimeField(default=datetime.datetime.now, index=True)
+    measurement_instance = ForeignKeyField(MeasurementInstance, related_name='interface_metrics', null=False, on_delete='CASCADE')
+
+    class Meta:
+        db_table = "interface_metrics"
+
+    def __repr__(self):
+        return '<InterfaceMetrics: %s>' % (self.measurement_instance)
+
+    def __str__(self):
+        return '<InterfaceMetrics: %s>' % (self.measurement_instance)
+
+
 class UPSAttrs(BaseModel):
     upsIdentManufacturer = CharField()
     upsIdentModel = CharField()
@@ -231,3 +267,26 @@ class CBQOSAttrs(BaseModel):
 
     def __str__(self):
         return '<CBQOSAttrs: %s>' % self.cbQosConfigIndex
+
+
+class CBQOSMetrics(BaseModel):
+    cbQosPoliceConformedPkt64 = BigIntegerField(null=True)
+    cbQosPoliceConformedByte64 = BigIntegerField(null=True)
+    cbQosPoliceConformedBitRate = BigIntegerField(null=True)
+    cbQosPoliceExceededPkt64 = BigIntegerField(null=True)
+    cbQosPoliceExceededByte64 = BigIntegerField(null=True)
+    cbQosPoliceExceededBitRate = BigIntegerField(null=True)
+    cbQosPoliceViolatedPkt64 = BigIntegerField(null=True)
+    cbQosPoliceViolatedByte64 = BigIntegerField(null=True)
+    cbQosPoliceViolatedBitRate = BigIntegerField(null=True)
+    timestamp = DateTimeField(default=datetime.datetime.now, index=True)
+    measurement_instance = ForeignKeyField(MeasurementInstance, related_name='cbqos_metrics', null=False, on_delete='CASCADE')
+
+    class Meta:
+        db_table = "cbqos_metrics"
+
+    def __repr__(self):
+        return '<CBQOSMetrics: %s>' % self.measurement_instance
+
+    def __str__(self):
+        return '<CBQOSMetrics: %s>' % self.measurement_instance
