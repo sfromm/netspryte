@@ -19,6 +19,7 @@
 import datetime
 import os
 import logging
+import operator
 import subprocess
 import traceback
 
@@ -31,6 +32,23 @@ from playhouse.shortcuts import model_to_dict, dict_to_model
 
 peewee_logger = logging.getLogger('peewee')
 peewee_logger.addHandler(logging.StreamHandler())
+
+
+def build_clause(cls, col, val, timeop=operator.lt):
+    clause = None
+    if not hasattr(cls, col):
+        logging.warn('%s does not have the attribute %s', cls, col)
+        return clause
+    logging.debug("building filter clause %s:%s", col, val)
+    if isinstance(val, list):
+        clause = getattr(cls, col) << val
+    else:
+        if isinstance(getattr(cls, col), peewee.DateTimeField):
+            clause = timeop(getattr(cls, col), val)
+        else:
+            clause = getattr(cls, col) == val
+    return clause
+
 
 class Manager(object):
     ''' db manager object '''
@@ -122,6 +140,22 @@ class Manager(object):
         except peewee.DatabaseError as e:
             logging.error("error while attempting to update database: %s", traceback.format_exc())
         return instance
+
+    def delete(self, model, query):
+        ''' delete instances of a model '''
+        logging.debug("deleting object(s)")
+        count = 0
+        if not query:
+            logging.warn("skipping deletion with empty query")
+            return count
+        try:
+            q = model.delete().where(query)
+            print(q)
+            count = q.execute()
+            logging.info("deleted %s entries", count)
+        except peewee.DatabaseError as e:
+            logging.error("error while attempting to delete from database: %s", traceback.format_exc())
+        return count
 
     def update(self, modinst, **kwargs):
         ''' update an object '''
