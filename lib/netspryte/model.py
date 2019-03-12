@@ -95,15 +95,15 @@ class Tag(BaseModel):
         return '<Tag: %s>' % self.name
 
 class MeasurementInstanceTag(BaseModel):
-    measurement_instance = ForeignKeyField(MeasurementInstance)
-    tag = ForeignKeyField(Tag)
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='tags')
+    tag = ForeignKeyField(Tag, backref='measurementinstances')
 
     class Meta:
         db_table = "measurement_instance_tag"
 
 class HostTag(BaseModel):
-    host = ForeignKeyField(Host)
-    tag = ForeignKeyField(Tag)
+    host = ForeignKeyField(Host, backref='tags')
+    tag = ForeignKeyField(Tag, backref='hosts')
 
     class Meta:
         db_table = "host_tag"
