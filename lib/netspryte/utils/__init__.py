@@ -17,6 +17,8 @@
 # along with netspryte.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import datetime
+import dateutil.parser
 import glob
 import json
 import logging
@@ -288,3 +290,37 @@ def clean_metric_name(name, xlate):
     for k, v in list(xlate.items()):
         name = name.replace(k, v, 1)
     return name
+
+
+def parse_datetime_string(arg):
+    ''' take string argument and convert to datetime object '''
+    # if parsedatetime gets packaged, it could replace this
+    # https://github.com/bear/parsedatetime
+    try:
+        print(arg)
+        date = dateutil.parser.parse(arg, default=True)
+    except ValueError:
+        parts = arg.split()
+        if len(parts) == 1 and parts[0] == 'now':
+            return datetime.datetime.now()
+        elif len(parts) != 3 or parts[2] != 'ago':
+            return None
+        try:
+            interval = int(parts[0])
+        except ValueError:
+            return None
+        period = parts[1]
+        if 'second' in period:
+            delta = datetime.timedelta(seconds=interval)
+        elif 'minute' in period:
+            delta = datetime.timedelta(minutes=interval)
+        elif 'hour' in period:
+            delta = datetime.timedelta(hours=interval)
+        elif 'day' in period:
+            delta = datetime.timedelta(days=interval)
+        elif 'week' in period:
+            delta = datetime.timedelta(weeks=interval)
+        date = datetime.datetime.now() - delta
+    except Exception:
+        return None
+    return date
