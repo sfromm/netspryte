@@ -242,6 +242,40 @@ class UPSAttrs(BaseModel):
     def __repr__(self):
         return '<UPSAttrs: %s>' % self.upsIdentName
 
+    def __str__(self):
+        return '<UPSAttrs: %s>' % self.upsIdentName
+
+
+class UPSMetrics(BaseModel):
+    upsBatteryStatus = BigIntegerField(null=True)
+    upsSecondsOnBattery = BigIntegerField(null=True)
+    upsEstimatedMinutesRemaining = BigIntegerField(null=True)
+    upsEstimatedChargeRemaining = BigIntegerField(null=True)
+    upsBatteryVoltage = BigIntegerField(null=True)
+    upsBatteryCurrent = BigIntegerField(null=True)
+    upsBatteryTemperature = BigIntegerField(null=True)
+    upsInputLineBads = BigIntegerField(null=True)
+    upsInputFrequency = BigIntegerField(null=True)
+    upsInputVoltage = BigIntegerField(null=True)
+    upsInputCurrent = BigIntegerField(null=True)
+    upsInputTruePower = BigIntegerField(null=True)
+    upsOutputVoltage = BigIntegerField(null=True)
+    upsOutputCurrent = BigIntegerField(null=True)
+    upsOutputPower = BigIntegerField(null=True)
+    upsOutputPercentLoad = BigIntegerField(null=True)
+    timestamp = DateTimeField(default=datetime.datetime.now, index=True)
+    measurement_instance = ForeignKeyField(MeasurementInstance, related_name='hostups_metrics', null=False, on_delete='CASCADE')
+
+    class Meta:
+        db_table = "hostups_metrics"
+
+    def __repr__(self):
+        return '<UPSMetrics: %s>' % self.measurement_instance
+
+    def __str__(self):
+        return '<UPSMetrics: %s>' % self.measurement_instance
+
+
 class CBQOSAttrs(BaseModel):
     cbQosIfType = CharField(null=True)
     cbQosPolicyDirection = CharField(null=True)
