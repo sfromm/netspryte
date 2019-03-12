@@ -26,6 +26,7 @@ class HostUPS(HostSystem):
     NAME = 'ups'
     DESCRIPTION = 'UPS'
     ATTR_MODEL = "UPSAttrs"
+    METRIC_MODEL = "UPSMetrics"
 
     ATTRS = {
         'upsIdentManufacturer'         : '1.3.6.1.2.1.33.1.1.1',

@@ -28,6 +28,7 @@ class HostInterface(HostSystem):
     NAME = 'interface'
     DESCRIPTION = "Network Interfaces"
     ATTR_MODEL = "InterfaceAttrs"
+    METRIC_MODEL = "InterfaceMetrics"
 
     ATTRS = {
         'ifIndex'       : '1.3.6.1.2.1.2.2.1.1',
