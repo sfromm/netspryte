@@ -107,7 +107,7 @@ class CollectSnmpWorker(DataWorker):
                         hostname = snmp_mod.sysName or msnmp.host
                         if snmp_mod and hasattr(snmp_mod, 'data'):
                             has_metrics = self.process_module_data(snmp_mod)
-                            self.process_metric_data(has_metrics, snmp_mod)
+                            self.process_metrics(has_metrics, snmp_mod)
                     except Exception as e:
                         logging.error("module %s failed against device %s: %s", cls.__name__, device, traceback.format_exc())
                         continue
@@ -118,7 +118,7 @@ class CollectSnmpWorker(DataWorker):
             self.task_queue.task_done()
         return
 
-    def process_metric_data(self, measurement_instances, snmp_mod):
+    def process_metrics(self, measurement_instances, snmp_mod):
         ''' Take list of instances and process the metrics '''
         if not measurement_instances:
             logging.warn("no metrics to record")
@@ -128,10 +128,10 @@ class CollectSnmpWorker(DataWorker):
         t = Timer("%s-%s-metrics update" % (hostname, measurement_class))
         t.start_timer()
         for this_inst in measurement_instances:
-            self.process_metric_data_instance(this_inst, snmp_mod.XLATE)
+            self.process_measurement_instance_metrics(this_inst, snmp_mod.XLATE)
         t.stop_timer()
 
-    def process_metric_data_instance(self, measurement_instance, xlate):
+    def process_measurement_instance_metrics(self, measurement_instance, xlate):
         ''' process a single instance data '''
         metrics = xlate_metric_names(measurement_instance.metrics, xlate)
         dbs = get_db_backend()
