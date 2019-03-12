@@ -25,11 +25,11 @@ import re
 import crontab
 
 import netspryte
-from netspryte.manager import Manager, MeasurementInstance, MeasurementInstanceTag, Tag
+from netspryte.manager import Manager, MeasurementInstance, MeasurementInstanceTag, Tag, build_clause
 
 from netspryte.commands import BaseCommand
 from netspryte import constants as C
-from netspryte.utils import setup_logging
+from netspryte.utils import setup_logging, parse_datetime_string
 
 
 class JanitorCommand(BaseCommand):
@@ -48,8 +48,10 @@ class JanitorCommand(BaseCommand):
                             help='Time interval to run cron job')
         group3 = self.parser.add_argument_group('initdb', 'Initialize database')
         group4 = self.parser.add_argument_group('instance', 'Measurement Instance commands')
+        group4.add_argument('--age', help='Delete measurement instances older than AGE')
         group4.add_argument('--description',
                             help='Set description used in webui presentation')
+
         self.parser.add_argument('-i', '--measurementinstance', action='append',
                                  help='measurement instance to tag')
         self.parser.add_argument('command', type=str,
@@ -61,21 +63,31 @@ class JanitorCommand(BaseCommand):
         setup_logging(args.verbose)
         self.mgr = Manager()
         if args.command == 'tag':
-            self.tag_command(args.tag, args.measurementinstance)
+            self.tag_command(args.action, args.tag, args.measurementinstance)
         elif args.command == 'cron':
             self.crontab_command(args.action, args.cron, args.interval)
         elif args.command == 'initdb':
             self.initdb_command()
         elif args.command == 'instance':
-            self.measurement_instance_command(args.measurementinstance, args.description)
+            self.measurement_instance_command(args.measurementinstance, args.description, args.age)
         else:
             logging.error("unrecognized command")
 
-    def tag_command(self, tags, measurementinstances):
+    def tag_command(self, action, tags, measurementinstances):
         ''' tag measurement instances '''
+        print(action)
+        if not tags and action == 'show':
+            return self.tag_command_show(tags, measurementinstances)
         if not tags or not measurementinstances:
-            logging.error("no tags or measurement instances provided")
+            logging.error("missing required tags and measurement instance")
             return
+        if action == 'delete':
+            return self.tag_command_delete(tags, measurementinstances)
+        else:
+            return self.tag_command_add(tags, measurementinstances)
+
+    def tag_command_add(self, tags, measurementinstances):
+        ''' add tags to measurement instances '''
         for tag in tags:
             this_tag = self.mgr.get_or_create(Tag, name=tag)
             for inst in measurementinstances:
@@ -86,6 +98,31 @@ class JanitorCommand(BaseCommand):
                 this_inst_tag = self.mgr.get_or_create(MeasurementInstanceTag,
                                                        tag=this_tag.id,
                                                        measurement_instance=this_inst.id)
+
+    def tag_command_show(self, tags, measurementinstances):
+        ''' show tags associated with measurement instances '''
+        for inst in measurementinstances:
+            this_inst = self.mgr.get(MeasurementInstance, name=inst)
+            tags = list()
+            for mit in this_inst.tags:
+                tags.append(mit.tag.name)
+            if tags:
+                print("Measurement instance: %s, Tags: %s" % (inst, ", ".join(tags)))
+
+    def tag_command_delete(self, tags, measurementinstances):
+        ''' add tags to measurement instances '''
+        for tag in tags:
+            this_tag = self.mgr.get(Tag, name=tag)
+            for inst in measurementinstances:
+                this_inst = self.mgr.get(MeasurementInstance, name=inst)
+                if not this_inst:
+                    continue
+                logging.warn("deleting tag %s from measurement instance %s", tag, this_inst.name)
+                this_inst_tag = self.mgr.get(MeasurementInstanceTag,
+                                             tag=this_tag.id,
+                                             measurement_instance=this_inst.id)
+                c = self.mgr.delete(MeasurementInstanceTag,
+                                    build_clause(MeasurementInstanceTag, 'id', this_inst_tag.id))
 
     def crontab_command(self, action, command, interval):
         ''' manage cronjob entries for netspryte '''
@@ -141,9 +178,17 @@ class JanitorCommand(BaseCommand):
         self.mgr = Manager()
         self.mgr.create_tables()
 
-    def measurement_instance_command(self, measurementinstances, description):
+    def measurement_instance_command(self, measurementinstances, description, age):
         ''' manage description for a measurement instance '''
-        for inst in measurementinstances:
-            this_inst = self.mgr.get(MeasurementInstance, name=inst)
-            this_inst.presentation['description'] = description
-            self.mgr.save(this_inst)
+        if age:
+            date = parse_datetime_string(age)
+            if date is None:
+                logging.error("unable to parse datetime string")
+                return 1
+            logging.warn("deleting measurement instances last seen before %s", date)
+            self.mgr.delete(MeasurementInstance, build_clause(MeasurementInstance, 'lastseen', date))
+        elif description is not None:
+            for inst in measurementinstances:
+                this_inst = self.mgr.get(MeasurementInstance, name=inst)
+                this_inst.presentation['description'] = description
+                self.mgr.save(this_inst)
