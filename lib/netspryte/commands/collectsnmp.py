@@ -27,6 +27,7 @@ import time
 import traceback
 import multiprocessing
 import random
+from peewee import BigIntegerField
 
 import netspryte
 import netspryte.snmp
@@ -107,7 +108,7 @@ class CollectSnmpWorker(DataWorker):
                         hostname = snmp_mod.sysName or msnmp.host
                         if snmp_mod and hasattr(snmp_mod, 'data'):
                             has_metrics = self.process_module_data(snmp_mod)
-                            self.process_metrics(has_metrics, snmp_mod)
+                            self.process_metrics(has_metrics, snmp_mod, hostname)
                     except Exception as e:
                         logging.error("module %s failed against device %s: %s", cls.__name__, device, traceback.format_exc())
                         continue
@@ -118,11 +119,12 @@ class CollectSnmpWorker(DataWorker):
             self.task_queue.task_done()
         return
 
-    def process_metrics(self, measurement_instances, snmp_mod):
+    def process_metrics(self, measurement_instances, snmp_mod, hostname):
         ''' Take list of instances and process the metrics '''
         if not measurement_instances:
-            logging.warn("no metrics to record")
+            logging.info("%s no metrics to record for module %s", hostname, snmp_mod.NAME)
             return
+        # reset hostname to what is recorded in the measurement instance
         hostname = measurement_instances[0].host.name
         measurement_class = measurement_instances[0].measurement_class.name
         t = Timer("%s-%s-metrics update" % (hostname, measurement_class))
@@ -133,7 +135,15 @@ class CollectSnmpWorker(DataWorker):
 
     def process_measurement_instance_metrics(self, measurement_instance, xlate):
         ''' process a single instance data '''
-        metrics = xlate_metric_names(measurement_instance.metrics, xlate)
+        # querying <class>_metrics returns a ModelSelect, not the results from a query.
+        # Will want to carefully consider how to limit to most recent timestamp
+        m = getattr(measurement_instance, "%s_metrics" % (measurement_instance.measurement_class.name))[0]
+        data = self.mgr.to_dict(m)
+        # Clean up the dictionary data and remove non-metric columns
+        for field in m.__class__._meta.sorted_fields:
+            if not isinstance(field, BigIntegerField):
+                del(data[field.name])
+        metrics = xlate_metric_names(data, xlate)
         dbs = get_db_backend()
         for db in dbs:
             db.measurement_instance = measurement_instance
