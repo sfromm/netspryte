@@ -98,7 +98,6 @@ class MeasurementClass(BaseModel):
 class MeasurementInstance(BaseModel):
     name = CharField(index=True, unique=True)
     index = CharField()
-    metrics = BinaryJSONField(null=True)
     presentation = BinaryJSONField(null=True)
     lastseen = DateTimeField(default=datetime.datetime.now, index=True)
     host = ForeignKeyField(Host, related_name='measurement_instances', null=False, on_delete='CASCADE')

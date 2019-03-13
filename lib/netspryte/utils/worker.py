@@ -80,7 +80,7 @@ class DataWorker(multiprocessing.Process):
             self.mgr.save(this_inst)
             self.process_measurement_instance_data(data['attrs'], this_inst, data_mod.ATTR_MODEL)
             self.process_measurement_instance_data(data['metrics'], this_inst, data_mod.METRIC_MODEL)
-            if this_inst.metrics:
+            if 'metrics' in data:
                 has_metrics.append(this_inst)
         self.mgr.save(this_host)
         self.mgr.save(this_class)
