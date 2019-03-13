@@ -311,6 +311,7 @@ class SNMPSession(object):
         ''' take a oid object and return a tuple of ( numerical_oid, value ) '''
         oid = varbind[0]
         value = varbind[1]
+        value_type = value.__class__.__name__
         if not value_is_metric(value):
             value = mk_pretty_value(value)
         num_oid = oid.prettyPrint()
@@ -318,7 +319,7 @@ class SNMPSession(object):
             num_oid = str(oid.getOid())
         if isinstance(value, EndOfMibView):
             logging.debug("reached end of mib view with %s", num_oid)
-        logging.debug("snmp varbind %s: %s=%s", self.host, num_oid, mk_pretty_value(value))
+        logging.debug("snmp varbind %s: %s=%s (%s)", self.host, num_oid, mk_pretty_value(value), value_type)
         return (num_oid, value)
 
     def _cache_results(self, oids, result):
