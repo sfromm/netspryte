@@ -27,7 +27,7 @@ import time
 import traceback
 import multiprocessing
 import random
-from peewee import BigIntegerField
+from peewee import BigIntegerField, DecimalField
 
 import netspryte
 import netspryte.snmp
@@ -141,7 +141,7 @@ class CollectSnmpWorker(DataWorker):
         data = self.mgr.to_dict(m)
         # Clean up the dictionary data and remove non-metric columns
         for field in m.__class__._meta.sorted_fields:
-            if not isinstance(field, BigIntegerField):
+            if not isinstance(field, BigIntegerField) and not isinstance(field, DecimalField):
                 del(data[field.name])
         metrics = xlate_metric_names(data, xlate)
         dbs = get_db_backend()

@@ -16,11 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with netspryte.  If not, see <http://www.gnu.org/licenses/>.
 
+# A note on Field / Column types:
+# BigIntegerField (bigint) is an 8 byte field with a range of -9223372036854775808 to 9223372036854775807.
+# DecimalField (numeric) is variable sized, but supports up to 131072 digits before the decimal point.
+# A SNMP Counter64 object is an unsigned 64 bit integer with a range of 0 to 18446744073709551615.
+# This means any Counter64 SNMP field will overflow a BigIntegerField.
+# That then requires the use of DecimalField(max_digits=21)
+# For further reference, see:
+#   https://www.postgresql.org/docs/current/datatype-numeric.html
+#   http://docs.peewee-orm.com/en/latest/peewee/models.html#field-types-table
+#   http://docs.peewee-orm.com/en/latest/peewee/api.html#DecimalField
+
 import datetime
 
 from netspryte import constants as C
 
-from peewee import BigIntegerField, IntegerField, CharField, DateTimeField, ForeignKeyField, TextField, Proxy, Model
+from peewee import BigIntegerField, CharField, DateTimeField, ForeignKeyField, IntegerField, DecimalField, TextField, Proxy, Model
 from playhouse.postgres_ext import BinaryJSONField
 
 
@@ -189,26 +200,26 @@ class InterfaceAttrs(BaseModel):
 
 
 class InterfaceMetrics(BaseModel):
-    ifInNUcastPkts = BigIntegerField(null=True)
-    ifInDiscards = BigIntegerField(null=True)
-    ifInErrors = BigIntegerField(null=True)
-    ifInUnknownProtos = BigIntegerField(null=True)
-    ifOutNUcastPkts = BigIntegerField(null=True)
-    ifOutDiscards = BigIntegerField(null=True)
-    ifOutErrors = BigIntegerField(null=True)
-    ifOutQLen = BigIntegerField(null=True)
-    ifInMulticastPkts = BigIntegerField(null=True)
-    ifInBroadcastPkts = BigIntegerField(null=True)
-    ifOutMulticastPkts = BigIntegerField(null=True)
-    ifOutBroadcastPkts = BigIntegerField(null=True)
-    ifHCInOctets = BigIntegerField(null=True)
-    ifHCInUcastPkts = BigIntegerField(null=True)
-    ifHCInMulticastPkts = BigIntegerField(null=True)
-    ifHCInBroadcastPkts = BigIntegerField(null=True)
-    ifHCOutOctets = BigIntegerField(null=True)
-    ifHCOutUcastPkts = BigIntegerField(null=True)
-    ifHCOutMulticastPkts = BigIntegerField(null=True)
-    ifHCOutBroadcastPkts = BigIntegerField(null=True)
+    ifInNUcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifInDiscards = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifInErrors = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifInUnknownProtos = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifOutNUcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifOutDiscards = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifOutErrors = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifOutQLen = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifInMulticastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifInBroadcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifOutMulticastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifOutBroadcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifHCInOctets = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifHCInUcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifHCInMulticastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifHCInBroadcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifHCOutOctets = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifHCOutUcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifHCOutMulticastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    ifHCOutBroadcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='interface_metrics', null=False, on_delete='CASCADE')
 
@@ -247,22 +258,22 @@ class UPSAttrs(BaseModel):
 
 
 class UPSMetrics(BaseModel):
-    upsBatteryStatus = BigIntegerField(null=True)
-    upsSecondsOnBattery = BigIntegerField(null=True)
-    upsEstimatedMinutesRemaining = BigIntegerField(null=True)
-    upsEstimatedChargeRemaining = BigIntegerField(null=True)
-    upsBatteryVoltage = BigIntegerField(null=True)
-    upsBatteryCurrent = BigIntegerField(null=True)
-    upsBatteryTemperature = BigIntegerField(null=True)
-    upsInputLineBads = BigIntegerField(null=True)
-    upsInputFrequency = BigIntegerField(null=True)
-    upsInputVoltage = BigIntegerField(null=True)
-    upsInputCurrent = BigIntegerField(null=True)
-    upsInputTruePower = BigIntegerField(null=True)
-    upsOutputVoltage = BigIntegerField(null=True)
-    upsOutputCurrent = BigIntegerField(null=True)
-    upsOutputPower = BigIntegerField(null=True)
-    upsOutputPercentLoad = BigIntegerField(null=True)
+    upsBatteryStatus = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsSecondsOnBattery = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsEstimatedMinutesRemaining = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsEstimatedChargeRemaining = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsBatteryVoltage = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsBatteryCurrent = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsBatteryTemperature = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsInputLineBads = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsInputFrequency = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsInputVoltage = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsInputCurrent = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsInputTruePower = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsOutputVoltage = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsOutputCurrent = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsOutputPower = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsOutputPercentLoad = DecimalField(max_digits=20, decimal_places=0, null=True)
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='ups_metrics', null=False, on_delete='CASCADE')
 
@@ -291,7 +302,7 @@ class CBQOSAttrs(BaseModel):
     cbQosPoliceCfgConformAction = CharField(null=True)
     cbQosPoliceCfgExceedAction = CharField(null=True)
     cbQosPoliceCfgViolateAction = CharField(null=True)
-    cbQosPoliceCfgRate64 = BigIntegerField(null=True)
+    cbQosPoliceCfgRate64 = DecimalField(max_digits=20, decimal_places=0, null=True)
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='cbqos_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
@@ -305,15 +316,15 @@ class CBQOSAttrs(BaseModel):
 
 
 class CBQOSMetrics(BaseModel):
-    cbQosPoliceConformedPkt64 = BigIntegerField(null=True)
-    cbQosPoliceConformedByte64 = BigIntegerField(null=True)
-    cbQosPoliceConformedBitRate = BigIntegerField(null=True)
-    cbQosPoliceExceededPkt64 = BigIntegerField(null=True)
-    cbQosPoliceExceededByte64 = BigIntegerField(null=True)
-    cbQosPoliceExceededBitRate = BigIntegerField(null=True)
-    cbQosPoliceViolatedPkt64 = BigIntegerField(null=True)
-    cbQosPoliceViolatedByte64 = BigIntegerField(null=True)
-    cbQosPoliceViolatedBitRate = BigIntegerField(null=True)
+    cbQosPoliceConformedPkt64 = DecimalField(max_digits=20, decimal_places=0, null=True)
+    cbQosPoliceConformedByte64 = DecimalField(max_digits=20, decimal_places=0, null=True)
+    cbQosPoliceConformedBitRate = DecimalField(max_digits=20, decimal_places=0, null=True)
+    cbQosPoliceExceededPkt64 = DecimalField(max_digits=20, decimal_places=0, null=True)
+    cbQosPoliceExceededByte64 = DecimalField(max_digits=20, decimal_places=0, null=True)
+    cbQosPoliceExceededBitRate = DecimalField(max_digits=20, decimal_places=0, null=True)
+    cbQosPoliceViolatedPkt64 = DecimalField(max_digits=20, decimal_places=0, null=True)
+    cbQosPoliceViolatedByte64 = DecimalField(max_digits=20, decimal_places=0, null=True)
+    cbQosPoliceViolatedBitRate = DecimalField(max_digits=20, decimal_places=0, null=True)
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='cbqos_metrics', null=False, on_delete='CASCADE')
 
