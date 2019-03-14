@@ -137,7 +137,7 @@ class CollectSnmpWorker(DataWorker):
         ''' process a single instance data '''
         # querying <class>_metrics returns a ModelSelect, not the results from a query.
         # Will want to carefully consider how to limit to most recent timestamp
-        m = getattr(measurement_instance, "%s_metrics" % (measurement_instance.measurement_class.name))[0]
+        m = getattr(measurement_instance, "%s_metrics" % (measurement_instance.measurement_class.name)).limit(1).get()
         data = self.mgr.to_dict(m)
         # Clean up the dictionary data and remove non-metric columns
         for field in m.__class__._meta.sorted_fields:
