@@ -100,9 +100,14 @@ class Manager(object):
 
     def save(self, modinst, nocommit=False):
         ''' save an object '''
-        logging.debug("saving %s", str(modinst))
-        modinst.save()
-        logging.debug("done saving %s", str(modinst))
+        try:
+            logging.debug("saving %s", str(modinst))
+            modinst.save()
+            logging.debug("done saving %s", str(modinst))
+        except peewee.DataError:
+            logging.error("error with the data for %s while attempting to update database: %s", modinst.name, traceback.format_exc())
+        except peewee.DatabaseError:
+            logging.error("error while attempting to update database: %s", traceback.format_exc())
 
     def get(self, model, **kwargs):
         ''' get an object '''
