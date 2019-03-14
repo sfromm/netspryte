@@ -63,7 +63,7 @@ class HostSnmpAttrs(BaseModel):
     sysName = CharField()
     sysLocation = CharField(null=True)
     sysServices = CharField(null=True)
-    host = ForeignKeyField(Host, related_name='host_snmp_attrs', null=False, on_delete='CASCADE')
+    host = ForeignKeyField(Host, backref='host_snmp_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = 'host_snmp_attrs'
@@ -100,8 +100,8 @@ class MeasurementInstance(BaseModel):
     index = CharField()
     presentation = BinaryJSONField(null=True)
     lastseen = DateTimeField(default=datetime.datetime.now, index=True)
-    host = ForeignKeyField(Host, related_name='measurement_instances', null=False, on_delete='CASCADE')
-    measurement_class = ForeignKeyField(MeasurementClass, related_name='measurement_instances', null=False, on_delete='CASCADE')
+    host = ForeignKeyField(Host, backref='measurement_instances', null=False, on_delete='CASCADE')
+    measurement_class = ForeignKeyField(MeasurementClass, backref='measurement_instances', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "measurement_instance"
@@ -152,7 +152,7 @@ class IPAddressAttrs(BaseModel):
     ipAddressPrefix = CharField(null=True)
     ipAddressOrigin = CharField(null=True)
     ipAddressStatus = CharField(null=True)
-    measurement_instance = ForeignKeyField(MeasurementInstance, related_name='ipaddress_attrs', null=False, on_delete='CASCADE')
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='ipaddress_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "ipaddress_attrs"
@@ -176,7 +176,7 @@ class InterfaceAttrs(BaseModel):
     ifName = CharField(null=True)
     ifHighSpeed = IntegerField(null=True)
     ifAlias = TextField(null=True)
-    measurement_instance = ForeignKeyField(MeasurementInstance, related_name='interface_attrs', null=False, on_delete='CASCADE')
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='interface_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "interface_attrs"
@@ -210,10 +210,11 @@ class InterfaceMetrics(BaseModel):
     ifHCOutMulticastPkts = BigIntegerField(null=True)
     ifHCOutBroadcastPkts = BigIntegerField(null=True)
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
-    measurement_instance = ForeignKeyField(MeasurementInstance, related_name='interface_metrics', null=False, on_delete='CASCADE')
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='interface_metrics', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "interface_metrics"
+        order_by = ("timestamp",)
 
     def __repr__(self):
         return '<InterfaceMetrics: %s>' % (self.measurement_instance)
@@ -233,7 +234,7 @@ class UPSAttrs(BaseModel):
     upsOutputSource = CharField()
     upsOutputFrequency = IntegerField()
     upsOutputNumLines = CharField()
-    measurement_instance = ForeignKeyField(MeasurementInstance, related_name='hostups_attrs', null=False, on_delete='CASCADE')
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='ups_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "hostups_attrs"
@@ -263,10 +264,11 @@ class UPSMetrics(BaseModel):
     upsOutputPower = BigIntegerField(null=True)
     upsOutputPercentLoad = BigIntegerField(null=True)
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
-    measurement_instance = ForeignKeyField(MeasurementInstance, related_name='hostups_metrics', null=False, on_delete='CASCADE')
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='ups_metrics', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "hostups_metrics"
+        order_by = ("timestamp",)
 
     def __repr__(self):
         return '<UPSMetrics: %s>' % self.measurement_instance
@@ -290,7 +292,7 @@ class CBQOSAttrs(BaseModel):
     cbQosPoliceCfgExceedAction = CharField(null=True)
     cbQosPoliceCfgViolateAction = CharField(null=True)
     cbQosPoliceCfgRate64 = BigIntegerField(null=True)
-    measurement_instance = ForeignKeyField(MeasurementInstance, related_name='cbqos_attrs', null=False, on_delete='CASCADE')
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='cbqos_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "cbqos_attrs"
@@ -313,10 +315,11 @@ class CBQOSMetrics(BaseModel):
     cbQosPoliceViolatedByte64 = BigIntegerField(null=True)
     cbQosPoliceViolatedBitRate = BigIntegerField(null=True)
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
-    measurement_instance = ForeignKeyField(MeasurementInstance, related_name='cbqos_metrics', null=False, on_delete='CASCADE')
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='cbqos_metrics', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "cbqos_metrics"
+        order_by = ("timestamp",)
 
     def __repr__(self):
         return '<CBQOSMetrics: %s>' % self.measurement_instance
