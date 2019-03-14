@@ -78,10 +78,12 @@ class DataWorker(multiprocessing.Process):
                         metric_types[k] = netspryte.snmp.get_value_type(v)
                     this_class.metric_type = json_ready(metric_types)
             self.mgr.save(this_inst)
-            self.process_measurement_instance_data(data['attrs'], this_inst, data_mod.ATTR_MODEL)
-            self.process_measurement_instance_data(data['metrics'], this_inst, data_mod.METRIC_MODEL)
+            if 'attrs' in data:
+                self.process_measurement_instance_data(data['attrs'], this_inst, data_mod.ATTR_MODEL)
             if 'metrics' in data:
+                self.process_measurement_instance_data(data['metrics'], this_inst, data_mod.METRIC_MODEL)
                 has_metrics.append(this_inst)
+
         self.mgr.save(this_host)
         self.mgr.save(this_class)
         logging.info("done updating database for %s %s", this_host.name, this_class.name)
