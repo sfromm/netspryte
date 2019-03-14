@@ -56,6 +56,7 @@ install:
 
 venv:
 	python3 -mvenv $(VENV_ROOT)
+	$(VENV_ROOT)/bin/pip3 install wheel
 
 venv-install: venv
 	$(VENV_ROOT)/bin/pip3 install -I $(PWD)
