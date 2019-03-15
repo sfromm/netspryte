@@ -31,7 +31,7 @@ import datetime
 
 from netspryte import constants as C
 
-from peewee import BigIntegerField, CharField, DateTimeField, ForeignKeyField, IntegerField, DecimalField, TextField, Proxy, Model
+from peewee import BigIntegerField, BooleanField, CharField, DateTimeField, ForeignKeyField, IntegerField, DecimalField, TextField, Proxy, Model
 from playhouse.postgres_ext import BinaryJSONField
 
 
@@ -111,6 +111,7 @@ class MeasurementInstance(BaseModel):
     index = CharField()
     presentation = BinaryJSONField(null=True)
     lastseen = DateTimeField(default=datetime.datetime.now, index=True)
+    has_metrics = BooleanField(default=False)
     host = ForeignKeyField(Host, backref='measurement_instances', null=False, on_delete='CASCADE')
     measurement_class = ForeignKeyField(MeasurementClass, backref='measurement_instances', null=False, on_delete='CASCADE')
 
