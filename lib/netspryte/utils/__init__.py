@@ -294,8 +294,8 @@ def xlate_metric_names(data, xlate):
 def clean_metric_name(name, xlate):
     if xlate is None:
         return name
-    for k, v in list(xlate.items()):
-        name = name.replace(k, v, 1)
+    for k in sorted(xlate, key=len, reverse=True):
+        name = name.replace(k, xlate[k], 1)
     return name
 
 
