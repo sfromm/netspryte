@@ -9,7 +9,7 @@ RUN apt-get update && \
 
 ADD . /root/netspryte/
 RUN mkdir -p /var/lib/netspryte/data && \
-    cd /root/netspryte && pip install $PWD
+    cd /root/netspryte && pip3 install $PWD
 
 VOLUME /etc/netspryte /var/lib/netspryte/data
 
