@@ -112,7 +112,7 @@ def hello():
     clauses = filter_measurement_instance_clauses()
     measurement_instances = (measurement_instances
                              .where(reduce(operator.and_, clauses))
-                             .order_by(MeasurementInstance.presentation['description']))
+                             .order_by(MeasurementInstance.description))
 
     # Create a list of related items.
     for i in measurement_instances:
@@ -257,11 +257,11 @@ def close_db(error):
 
 def filter_measurement_instance_clauses():
     clauses = [
-        (MeasurementInstance.has_metrics == True)
-        (MeasurementInstance.presentation['title'].is_null(False)),
-        (MeasurementInstance.presentation['description'].is_null(False)),
-        (MeasurementInstance.presentation['title'] != ""),
-        (MeasurementInstance.presentation['description'] != ""),
+        (MeasurementInstance.has_metrics is True)
+        (MeasurementInstance.title.is_null(False)),
+        (MeasurementInstance.description.is_null(False)),
+        (MeasurementInstance.title != ""),
+        (MeasurementInstance.description != ""),
     ]
     return clauses
 

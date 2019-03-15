@@ -66,11 +66,9 @@ class DataWorker(multiprocessing.Process):
                 this_class.description = data_mod.DESCRIPTION
             this_inst = self.mgr.get_or_create(netspryte.model.MeasurementInstance,
                                                name=data['name'], index=data['index'],
+                                               title=data['title'], description=data['description'],
                                                host=this_host, measurement_class=this_class)
             this_inst.lastseen = now
-            # populate presentation info
-            if 'presentation' in data and not this_inst.presentation:
-                this_inst.presentation = json_ready(data['presentation'])
             # prepare metrics for
             if 'metrics' in data:
                 if not metric_types:

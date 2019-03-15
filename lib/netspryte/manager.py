@@ -114,7 +114,7 @@ class Manager(object):
         data = None
         try:
             data = model.get(**kwargs)
-        except peewee.DoesNotExist as e:
+        except peewee.DoesNotExist:
             logging.warn("failed to look up object")
         return data
 
@@ -215,16 +215,16 @@ class Manager(object):
         else:
             return [ q for q in qry ]
 
-    def get_instances_by_presentation(self, key, val, paginated=False):
+    def get_instances_by_title(self, arg, paginated=False):
         '''
         Return list of measurement instances based on a matching presentation value.
         If paginated is True, return a peewee Query object.
         '''
-        qry = MeasurementInstance.select().where(MeasurementInstance.presentation[key].startswith(val))
+        qry = MeasurementInstance.select().where(MeasurementInstance.title.startswith(arg))
         if paginated:
             return qry
         else:
-            return [ q for q in qry ]
+            return [q for q in qry]
 
     def get_instances_by_tags(self, tags, paginated=False):
         '''

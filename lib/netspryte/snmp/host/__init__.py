@@ -80,6 +80,8 @@ class HostSystem(object):
             data['host'] = host
         data['class'] = measurement_class
         data['index'] = index
+        data['title'] = ""
+        data['description'] = ""
         data['transport'] = 'snmp'
         data['name'] = netspryte.utils.mk_data_instance_id(data['host'], measurement_class, index)
         return data

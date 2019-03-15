@@ -6,7 +6,7 @@
   {% if candidate.measurement_class.name == "cbqos" %}
   <li><a href="/?instance={{ candidate | get_related_interface_name }}">{{ candidate | get_related_interface_ifalias }}</a></li>
   {% endif %}
-  <li class="active"><a href="#">{{ candidate.presentation['description'] }}</a></li>
+  <li class="active"><a href="#">{{ candidate.description }}</a></li>
 </ol>
 {% endfor %}
 {% endif %}

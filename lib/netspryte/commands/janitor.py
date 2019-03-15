@@ -190,5 +190,5 @@ class JanitorCommand(BaseCommand):
         elif description is not None:
             for inst in measurementinstances:
                 this_inst = self.mgr.get(MeasurementInstance, name=inst)
-                this_inst.presentation['description'] = description
+                this_inst.description = description
                 self.mgr.save(this_inst)

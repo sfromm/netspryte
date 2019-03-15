@@ -265,5 +265,5 @@ def _rrd_graph_data_definitions(data_set, graph, rrd_path, cfg):
                 rrd_opts.append(val)
     if '--title' not in rrd_opts:
         rrd_opts.append('--title')
-        rrd_opts.append(str(data_set['presentation']['title']))
+        rrd_opts.append(str(data_set['title']))
     return (rrd_opts, graph_opts)

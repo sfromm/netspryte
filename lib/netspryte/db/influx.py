@@ -122,7 +122,7 @@ def influxdb_list_databases(client):
 def influxdb_write(client, data, ts=time.time()):
     points = list()
     data_class = data.measurement_class.name
-    data_title = data.presentation.title
+    data_title = data.title
     data_id = data.name
     data_host = data.host.name
     for k, v in list(data.items()):

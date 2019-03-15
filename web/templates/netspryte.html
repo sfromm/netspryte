@@ -24,7 +24,7 @@
 
       <ul id="graphs-dropdown" class="dropdown-content">
         {% for candidate in measurement_instances -%}
-        <li><a href="#{{ candidate.name }}">{{ candidate.presentation['title'] }}</a></li>
+        <li><a href="#{{ candidate.name }}">{{ candidate.title }}</a></li>
         {% endfor -%}
       </ul>
 
@@ -77,7 +77,7 @@
           <div class="col s12">
             <div class="card" id="{{ candidate.name }}">
               <div class="card-content">
-                <span class="card-title">{{ candidate.presentation['description'] }}</span>
+                <span class="card-title">{{ candidate.description }}</span>
               </div>
               <div class="card-image">
                 {% for period in graph_periods -%}

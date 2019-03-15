@@ -113,8 +113,8 @@ class HostInterface(HostSystem):
             data[k]['attrs'] = v
             if 'ifPhysAddress' in v and v['ifPhysAddress']:
                 data[k]['attrs']['ifPhysAddress'] = ':'.join(['%x' % ord(x) for x in v['ifPhysAddress']])
-
-            data[k]['presentation'] = {'title': title, 'description': descr}
+            data[k]['title'] = title
+            data[k]['description'] = descr
             if k in metrics:
                 data[k]['metrics'] = metrics[k]
                 # In the event that not all STATs are returned

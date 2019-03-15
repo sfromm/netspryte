@@ -195,7 +195,6 @@ class CiscoCBQOS(CiscoDevice):
             if 'cbQosPoliceCfgRate64' in local_attrs:
                 local_attrs['cbQosPoliceCfgRate64'] = int(local_attrs['cbQosPoliceCfgRate64'])
             data[k]['attrs'] = local_attrs
-            data[k]['presentation'] = dict()
             if k in metrics:
                 local_metrics = metrics[k].copy()
                 local_metrics = safe_update(local_metrics, interfaces[ifidx]['metrics'])
@@ -218,8 +217,8 @@ class CiscoCBQOS(CiscoDevice):
         for key in list(data.keys()):
             if key in skip_instances:
                 continue
-            data[key]['presentation']['title'] = self.get_policy_map_name(key, data)
-            data[key]['presentation']['description'] = "{0}:{1}".format(data[key]['presentation']['title'], data[key]['attrs'].get('ifAlias', 'NA'))
+            data[key]['title'] = self.get_policy_map_name(key, data)
+            data[key]['description'] = "{0}:{1}".format(data[key]['title'], data[key]['attrs'].get('ifAlias', 'NA'))
         for key in list(data.keys()):
             if data[key]['attrs']['cbQosObjectsType'] != 'police':
                 del(data[key])
