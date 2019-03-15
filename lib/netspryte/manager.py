@@ -240,3 +240,17 @@ class Manager(object):
             return qry
         else:
             return [ q for q in qry ]
+
+    def get_instance_attributes(self, measurement_instance):
+        '''
+        Return attributes related to this measurement instance.
+        '''
+        m = getattr(measurement_instance, "%s_attrs" % (measurement_instance.measurement_class.name)).get()
+        return m
+
+    def get_instance_metrics(self, measurement_instance):
+        '''
+        Return metrics related to this measurement instance.
+        '''
+        m = getattr(measurement_instance, "%s_metrics" % (measurement_instance.measurement_class.name)).get()
+        return m
