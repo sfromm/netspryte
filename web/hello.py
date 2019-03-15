@@ -125,8 +125,11 @@ def hello():
     if measurement_instances.count() == 1:
         for i in measurement_instances:
             if i.measurement_class.name == 'cbqos':
-                key = "instance=%s.interface.%s" % (i.name.split('.')[0], i.attrs['ifIndex'])
-                related[key] = "Interface %s" % i.attrs['ifDescr']
+                attrs = mgr.get_related_attributes()
+                t_intf = get_related_interface(i, attrs.cbQosIfIndex)
+                t_intf_attrs = get_instance_attributes(i, attrs.cbQosIfIndex)
+                key = t_intf.name
+                related[key] = "Interface %s" % t_intf_attrs.ifDescr
 
     return object_list('netspryte.html',
                        measurement_instances,
@@ -254,7 +257,7 @@ def close_db(error):
 
 def filter_measurement_instance_clauses():
     clauses = [
-        (MeasurementInstance.metrics.is_null(False)),
+        (MeasurementInstance.has_metrics == True)
         (MeasurementInstance.presentation['title'].is_null(False)),
         (MeasurementInstance.presentation['description'].is_null(False)),
         (MeasurementInstance.presentation['title'] != ""),
@@ -275,6 +278,38 @@ def clean_querystring(request_args, *keys_to_remove, **new_values):
         querystring.pop(key, None)
     querystring.update(new_values)
     return urllib.parse.urlencode(querystring)
+
+
+def get_related_interface(measurement_instance, ifindex):
+    mgr = Manager()
+    intf = mgr.get(MeasurementInstance, host=measurement_instance.host.id, index=ifindex)
+    return intf
+
+
+def get_related_interface_attrs(measurement_instance, ifindex):
+    intf = get_related_interface(measurement_instance, ifindex)
+    attrs = intf.interface_attrs.get()
+    return attrs
+
+
+@app.template_filter('get_related_interface_name')
+def get_related_interface_name(measurement_instance, ifindex):
+    intf = get_related_interface(measurement_instance, ifindex)
+    return intf.name
+
+
+@app.template_filter('get_related_interface_ifalias')
+def get_related_interface_ifalias(measurement_instance, ifindex):
+    intf = get_related_interface(measurement_instance, ifindex)
+    attrs = intf.interface_attrs.get()
+    return attrs['ifAlias']
+
+
+@app.template_filter('get_related_interface_ifdescr')
+def get_related_interface_ifalias(measurement_instance, ifindex):
+    intf = get_related_interface(measurement_instance, ifindex)
+    attrs = intf.interface_attrs.get()
+    return attrs['ifDescr']
 
 
 if __name__ == '__main__':

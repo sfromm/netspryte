@@ -4,7 +4,7 @@
   <li><a href="/?host={{ candidate.host.name }}">{{ candidate.host.name }}</a></li>
   <li><a href="/?class={{ candidate.measurement_class.name }}">{{ candidate.measurement_class.name }}</a></li>
   {% if candidate.measurement_class.name == "cbqos" %}
-  <li><a href="/?instance={{ candidate.name.split('.')[0] }}.interface.{{ candidate.attrs['ifIndex'] }}">{{ candidate.attrs['ifAlias'] }}</a></li>
+  <li><a href="/?instance={{ candidate | get_related_interface_name }}">{{ candidate | get_related_interface_ifalias }}</a></li>
   {% endif %}
   <li class="active"><a href="#">{{ candidate.presentation['description'] }}</a></li>
 </ol>
