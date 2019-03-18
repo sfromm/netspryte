@@ -19,6 +19,7 @@
 from flask import (Flask, jsonify, render_template, request, make_response, url_for)
 from playhouse.flask_utils import object_list
 import collections
+import functools
 import operator
 import time
 import urllib.parse
@@ -111,7 +112,7 @@ def hello():
     graph_periods = get_graph_periods(extended_data)
     clauses = filter_measurement_instance_clauses()
     measurement_instances = (measurement_instances
-                             .where(reduce(operator.and_, clauses))
+                             .where(functools.reduce(operator.and_, clauses))
                              .order_by(MeasurementInstance.description))
 
     # Create a list of related items.
@@ -257,7 +258,7 @@ def close_db(error):
 
 def filter_measurement_instance_clauses():
     clauses = [
-        (MeasurementInstance.has_metrics is True)
+        (MeasurementInstance.has_metrics is not False),
         (MeasurementInstance.title.is_null(False)),
         (MeasurementInstance.description.is_null(False)),
         (MeasurementInstance.title != ""),

@@ -15,7 +15,7 @@
 
     <header>
       <ul id="related-dropdown" class="dropdown-content">
-        {% for k, v in related.iteritems() -%}
+        {% for k, v in related.items() -%}
         {% set paraml = k.split('=') -%}
         {% set paramd = { paraml[0] : paraml[1] } -%}
         <li><a href="{{ url_for('hello', **paramd) }}">{{ v }}</a></li>
