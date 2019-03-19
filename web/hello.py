@@ -126,9 +126,9 @@ def hello():
     if measurement_instances.count() == 1:
         for i in measurement_instances:
             if i.measurement_class.name == 'cbqos':
-                attrs = mgr.get_related_attributes()
+                attrs = mgr.get_instance_attributes(i)
                 t_intf = get_related_interface(i, attrs.cbQosIfIndex)
-                t_intf_attrs = get_instance_attributes(i, attrs.cbQosIfIndex)
+                t_intf_attrs = get_related_interface_attributes(i, attrs.cbQosIfIndex)
                 key = t_intf.name
                 related[key] = "Interface %s" % t_intf_attrs.ifDescr
 
@@ -287,7 +287,7 @@ def get_related_interface(measurement_instance, ifindex):
     return intf
 
 
-def get_related_interface_attrs(measurement_instance, ifindex):
+def get_related_interface_attributes(measurement_instance, ifindex):
     intf = get_related_interface(measurement_instance, ifindex)
     attrs = intf.interface_attrs.get()
     return attrs
