@@ -60,6 +60,7 @@ class Manager(object):
         host   = kwargs.get('host', C.DEFAULT_DB_HOST)
         user   = kwargs.get('user', C.DEFAULT_DB_USER)
         passwd = kwargs.get('pass', C.DEFAULT_DB_PASS)
+        create = kwargs.get('create', True)
 
         self.engine = engine
         self.name = name
@@ -82,7 +83,8 @@ class Manager(object):
         except OperationalError as e:
             logging.error("failed to open database %s", name)
             raise
-        self.create_tables()
+        if create:
+            self.create_tables()
 
     def create_tables(self):
         ''' create tables if they do not exist '''
