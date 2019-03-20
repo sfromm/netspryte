@@ -83,7 +83,6 @@ class DataWorker(multiprocessing.Process):
                 this_inst.has_metrics = True
             self.mgr.save(this_inst)
 
-
         self.mgr.save(this_host)
         self.mgr.save(this_class)
         logging.info("done updating database for %s %s", this_host.name, this_class.name)
