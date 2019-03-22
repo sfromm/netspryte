@@ -21,7 +21,6 @@ import os
 import sys
 import logging
 import glob
-import pprint
 import datetime
 import time
 import traceback
@@ -35,7 +34,7 @@ from netspryte.plugins import snmp_module_loader
 
 from netspryte.commands import BaseCommand
 from netspryte import constants as C
-from netspryte.utils import setup_logging, json_ready, xlate_metric_names, get_db_backend
+from netspryte.utils import safe_update, setup_logging, json_ready, xlate_metric_names, get_db_backend
 from netspryte.utils.timer import Timer
 from netspryte.utils.worker import DataWorker
 from netspryte.manager import Manager
@@ -139,6 +138,11 @@ class CollectSnmpWorker(DataWorker):
         # Will want to carefully consider how to limit to most recent timestamp
         m = getattr(measurement_instance, "%s_metrics" % (measurement_instance.measurement_class.name)).limit(1).get()
         data = self.mgr.to_dict(m)
+        related = self.mgr.get_related_metrics(measurement_instance)
+        # If this measurement instance has a related instance, pull in that data for this update
+        if related is not None:
+            related_data = self.mgr.to_dict(related)
+            data = safe_update(data, related_data)
         # Clean up the dictionary data and remove non-metric columns
         for field in m.__class__._meta.sorted_fields:
             if not isinstance(field, BigIntegerField) and not isinstance(field, DecimalField):

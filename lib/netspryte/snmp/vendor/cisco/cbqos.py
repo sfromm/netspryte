@@ -20,7 +20,7 @@ import logging
 import netspryte.snmp
 import netspryte.snmp.host.interface
 from netspryte.snmp.vendor.cisco import CiscoDevice
-from netspryte.utils import safe_update
+from netspryte.utils import safe_update, mk_data_instance_id
 from netspryte.utils.timer import Timer
 from pysnmp.proto.rfc1902 import Counter32
 
@@ -188,6 +188,9 @@ class CiscoCBQOS(CiscoDevice):
             if 'cbQosIfIndex' in local_attrs:
                 ifidx = str(local_attrs['cbQosIfIndex'])
                 local_attrs = safe_update(local_attrs, interfaces[ifidx]['attrs'])
+                data[k]['related'] = mk_data_instance_id(data[k]['host'],
+                                                         netspryte.snmp.host.interface.HostInterface.NAME,
+                                                         ifidx)
 
             # The MIB erroneously marks this as a COUNTER64 to get the requisite number of bits
             # but it behaves like a GAUGE.  Unfortunately, there is no GAUGE64 object.  So ...

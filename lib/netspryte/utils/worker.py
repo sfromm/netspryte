@@ -70,14 +70,18 @@ class DataWorker(multiprocessing.Process):
                                                host=this_host, measurement_class=this_class)
             this_inst.lastseen = now
             # prepare metrics for
+            if 'related' in data:
+                related = self.mgr.get(netspryte.model.MeasurementInstance, name=data['related'])
+                self.mgr.get_or_create(netspryte.model.Relationship,
+                                       from_measurement_instance=this_inst,
+                                       to_measurement_instance=related)
+            if 'attrs' in data:
+                self.process_measurement_instance_data(data['attrs'], this_inst, data_mod.ATTR_MODEL)
             if 'metrics' in data:
                 if not metric_types:
                     for k, v in list(data['metrics'].items()):
                         metric_types[k] = netspryte.snmp.get_value_type(v)
                     this_class.metric_type = json_ready(metric_types)
-            if 'attrs' in data:
-                self.process_measurement_instance_data(data['attrs'], this_inst, data_mod.ATTR_MODEL)
-            if 'metrics' in data:
                 self.process_measurement_instance_data(data['metrics'], this_inst, data_mod.METRIC_MODEL)
                 has_metrics.append(this_inst)
                 this_inst.has_metrics = True

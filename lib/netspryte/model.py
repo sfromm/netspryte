@@ -137,6 +137,20 @@ class Tag(BaseModel):
         return '<Tag: %s>' % self.name
 
 
+class Relationship(BaseModel):
+    from_measurement_instance = ForeignKeyField(MeasurementInstance, backref='relationships')
+    to_measurement_instance = ForeignKeyField(MeasurementInstance, backref='related_to')
+
+    class Meta:
+        db_table = "relationship"
+
+    def __repr__(self):
+        return '<RelatedMeasurementInstanceTag: %s>' % self.id
+
+    def __str__(self):
+        return '<RelatedMeasurementInstanceTag: %s>' % self.id
+
+
 class MeasurementInstanceTag(BaseModel):
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='tags')
     tag = ForeignKeyField(Tag, backref='measurementinstances')

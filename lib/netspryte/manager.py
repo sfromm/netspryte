@@ -255,3 +255,10 @@ class Manager(object):
         '''
         m = getattr(measurement_instance, "%s_metrics" % (measurement_instance.measurement_class.name)).get()
         return m
+
+    def get_related_metrics(self, measurement_instance):
+        if measurement_instance.relationships.count() != 1:
+            return None
+        related = measurement_instance.relationships.get().to_measurement_instance
+        metrics = self.get_instance_metrics(related)
+        return metrics
