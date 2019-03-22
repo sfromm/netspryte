@@ -152,7 +152,6 @@ class Manager(object):
             return count
         try:
             q = model.delete().where(query)
-            print(q)
             count = q.execute()
             logging.info("deleted %s entries", count)
         except peewee.DatabaseError as e:

@@ -304,7 +304,6 @@ def parse_datetime_string(arg):
     # if parsedatetime gets packaged, it could replace this
     # https://github.com/bear/parsedatetime
     try:
-        print(arg)
         date = dateutil.parser.parse(arg, default=True)
     except ValueError:
         parts = arg.split()

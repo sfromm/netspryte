@@ -75,7 +75,6 @@ class JanitorCommand(BaseCommand):
 
     def tag_command(self, action, tags, measurementinstances):
         ''' tag measurement instances '''
-        print(action)
         if not tags and action == 'show':
             return self.tag_command_show(tags, measurementinstances)
         if not tags or not measurementinstances:
