@@ -318,6 +318,7 @@ class CBQOSAttrs(BaseModel):
 
 
 class CBQOSMetrics(BaseModel):
+    cbQosPoliceCfgRate64 = DecimalField(max_digits=20, decimal_places=0, null=True)
     cbQosPoliceConformedPkt64 = DecimalField(max_digits=20, decimal_places=0, null=True)
     cbQosPoliceConformedByte64 = DecimalField(max_digits=20, decimal_places=0, null=True)
     cbQosPoliceConformedBitRate = DecimalField(max_digits=20, decimal_places=0, null=True)
