@@ -188,9 +188,12 @@ class CiscoCBQOS(CiscoDevice):
             if 'cbQosIfIndex' in local_attrs:
                 ifidx = str(local_attrs['cbQosIfIndex'])
                 local_attrs = safe_update(local_attrs, interfaces[ifidx]['attrs'])
-                data[k]['related'] = mk_data_instance_id(data[k]['host'],
-                                                         netspryte.snmp.host.interface.HostInterface.NAME,
-                                                         ifidx)
+                if 'related' not in data[k]:
+                    data[k]['related'] = dict()
+                data[k]['related']['name'] = mk_data_instance_id(data[k]['host'],
+                                                                 netspryte.snmp.host.interface.HostInterface.NAME,
+                                                                 ifidx)
+                data[k]['related']['metric_model'] = netspryte.snmp.host.interface.HostInterface.METRIC_MODEL
 
             # The MIB erroneously marks this as a COUNTER64 to get the requisite number of bits
             # but it behaves like a GAUGE.  Unfortunately, there is no GAUGE64 object.  So ...
