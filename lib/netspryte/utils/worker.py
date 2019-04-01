@@ -97,6 +97,7 @@ class DataWorker(multiprocessing.Process):
         ''' Process measurement instance attributes '''
         logging.debug("adding/updating attributes for %s", measurement_instance.name)
         init_data = dict()
+        now = datetime.datetime.now()
         data = json_ready(data)
         data['measurement_instance'] = measurement_instance
         if not hasattr(netspryte.model, model):
@@ -108,6 +109,11 @@ class DataWorker(multiprocessing.Process):
             logging.info("skipping model %s that does not have relation to measurement_instance", model)
             return None
         for field in cls._meta.sorted_fields:
+            # This could be where we would optionally keep a history of all metrics
+            # by checking for a fieldname of 'timestamp and that the field is an instance of DateTimeField.
+            # One possibility:
+            # if field.name == 'timestamp' and isinstance(field, peewee.DateTimeField):
+            #     data['timestamp'] = now
             if field.name == 'id' or isinstance(field, peewee.ForeignKeyField) or field.name not in data:
                 continue
             if not field.null:
@@ -117,6 +123,9 @@ class DataWorker(multiprocessing.Process):
         if m is None:
             logging.error("failed to get or create attributes for measurement instance %s", measurement_instance)
             return None
+        # Make sure to update timestamp on measurement instance
+        if hasattr(m, 'timestamp'):
+            data['timestamp'] = now
         self.mgr.update(m, **data)
         return m
 
