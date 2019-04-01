@@ -124,13 +124,10 @@ def hello():
         if i_host not in related:
             related[i_host] = i.host.name
     if measurement_instances.count() == 1:
-        for i in measurement_instances:
-            if i.measurement_class.name == 'cbqos':
-                attrs = mgr.get_instance_attributes(i)
-                t_intf = get_related_interface(i, attrs.cbQosIfIndex)
-                t_intf_attrs = get_related_interface_attributes(i, attrs.cbQosIfIndex)
-                key = t_intf.name
-                related[key] = "Interface %s" % t_intf_attrs.ifDescr
+        this_minst = measurement_instances[0]
+        for r in this_minst.relationships:
+            key = "instance=%s" % r.to_measurement_instance.name
+            related[key] = r.to_measurement_instance.title
 
     return object_list('netspryte.html',
                        measurement_instances,
@@ -258,7 +255,7 @@ def close_db(error):
 
 def filter_measurement_instance_clauses():
     clauses = [
-        (MeasurementInstance.has_metrics is not False),
+        (MeasurementInstance.has_metrics == True),
         (MeasurementInstance.title.is_null(False)),
         (MeasurementInstance.description.is_null(False)),
         (MeasurementInstance.title != ""),
