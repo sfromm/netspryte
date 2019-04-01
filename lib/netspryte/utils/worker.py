@@ -71,10 +71,13 @@ class DataWorker(multiprocessing.Process):
             this_inst.lastseen = now
             # prepare metrics for
             if 'related' in data:
-                related = self.mgr.get(netspryte.model.MeasurementInstance, name=data['related'])
+                related = self.mgr.get(netspryte.model.MeasurementInstance, name=data['related']['name'])
                 self.mgr.get_or_create(netspryte.model.Relationship,
                                        from_measurement_instance=this_inst,
                                        to_measurement_instance=related)
+                # there may be a raced condition with when the related instance is updated and this current one.
+                # Update the metrics for that now, even if it will be updated again shortly after this data model.
+                self.process_measurement_instance_data(data['metrics'], related, data['related']['metric_model'])
             if 'attrs' in data:
                 self.process_measurement_instance_data(data['attrs'], this_inst, data_mod.ATTR_MODEL)
             if 'metrics' in data:
