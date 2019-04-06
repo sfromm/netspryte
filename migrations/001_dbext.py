@@ -45,7 +45,7 @@ def down(mgr):
             mgr.database.execute_sql("ALTER TABLE measurement_instance DROP COLUMN description")
             mgr.database.execute_sql("DROP TABLE host_snmp_attrs")
             mgr.database.execute_sql("DROP TABLE ipaddress_attrs")
-            for tbl in ["interface", "cbqos"]:
+            for tbl in ["interface", "cbqos", "hostups"]:
                 mgr.database.execute_sql("DROP TABLE %s_attrs" % tbl)
                 mgr.database.execute_sql("DROP TABLE %s_metrics" % tbl)
                 logging.warn("removed tables related to attributes and metrics")
