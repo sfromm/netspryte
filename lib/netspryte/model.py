@@ -354,3 +354,35 @@ class CBQOSMetrics(BaseModel):
 
     def __str__(self):
         return '<CBQOSMetrics: %s>' % self.measurement_instance
+
+
+class JuniperFirewallAttrs(BaseModel):
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='juniperfirewall_attrs', null=False, on_delete='CASCADE')
+    jnxFWCounterType = CharField(null=True)
+    jnxFWCounterDisplayName = CharField(null=True)
+    jnxFWCounterDisplayType = CharField(null=True)
+
+    class Meta:
+        db_table = "juniperfirewall_attrs"
+
+    def __repr__(self):
+        return '<JuniperFirewallAttrs: %s>' % self.jnxFWCounterDisplayName
+
+    def __str__(self):
+        return '<JuniperFirewallAttrs: %s>' % self.jnxFWCounterDisplayName
+
+
+class JuniperFirewallMetrics(BaseModel):
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='juniperfirewall_metricso', null=False, on_delete='CASCADE')
+    timestamp = DateTimeField(default=datetime.datetime.now, index=True)
+    jnxFWCounterPacketCount = DecimalField(max_digits=20, decimal_places=0, null=True)
+    jnxFWCounterByteCount = DecimalField(max_digits=20, decimal_places=0, null=True)
+
+    class Meta:
+        db_table = "juniperfirewall_metrics"
+
+    def __repr__(self):
+        return '<JuniperFirewallMetrics: %s>' % self.measurement_instance
+
+    def __str__(self):
+        return '<JuniperFirewallMetrics: %s>' % self.measurement_instance
