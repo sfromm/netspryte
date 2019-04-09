@@ -373,7 +373,7 @@ class JuniperFirewallAttrs(BaseModel):
 
 
 class JuniperFirewallMetrics(BaseModel):
-    measurement_instance = ForeignKeyField(MeasurementInstance, backref='juniperfirewall_metricso', null=False, on_delete='CASCADE')
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='juniperfirewall_metrics', null=False, on_delete='CASCADE')
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
     jnxFWCounterPacketCount = DecimalField(max_digits=20, decimal_places=0, null=True)
     jnxFWCounterByteCount = DecimalField(max_digits=20, decimal_places=0, null=True)
