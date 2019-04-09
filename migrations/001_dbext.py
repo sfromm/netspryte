@@ -13,6 +13,9 @@ def up(mgr):
         try:
             mgr.database.execute_sql("ALTER TABLE measurement_instance ADD COLUMN title character varying(255)")
             mgr.database.execute_sql("ALTER TABLE measurement_instance ADD COLUMN description character varying(255)")
+            mgr.database.execute_sql("ALTER TABLE measurement_instance ADD COLUMN has_metrics boolean")
+            mgr.database.execute_sql("ALTER TABLE measurement_instance ALTER COLUMN name TYPE text")
+            mgr.database.execute_sql("ALTER TABLE measurement_instance ALTER COLUMN index TYPE text")
             cursor = mgr.database.execute_sql("SELECT id, presentation->'title', presentation->'description' from measurement_instance")
             for id, title, descr, in cursor:
                 MeasurementInstance.update(title=title, description=descr).where(MeasurementInstance.id==id).execute()

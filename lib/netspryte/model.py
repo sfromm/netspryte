@@ -107,10 +107,10 @@ class MeasurementClass(BaseModel):
 
 
 class MeasurementInstance(BaseModel):
-    name = CharField(index=True, unique=True)
+    name = TextField(index=True, unique=True)
     title = CharField(null=True)
     description = CharField(null=True)
-    index = CharField()
+    index = TextField()
     lastseen = DateTimeField(default=datetime.datetime.now, index=True)
     has_metrics = BooleanField(default=False)
     host = ForeignKeyField(Host, backref='measurement_instances', null=False, on_delete='CASCADE')
