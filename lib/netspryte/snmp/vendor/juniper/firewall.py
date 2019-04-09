@@ -88,9 +88,12 @@ class JuniperFirewall(JuniperDevice):
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, JuniperFirewall.NAME,
                                                JuniperFirewall.STAT, JuniperFirewall.CONVERSION)
         for k, v in list(attrs.items()):
-            title = attrs[k].get('jnxCounterDisplayName', 'NA')
+            title = attrs[k].get('jnxFWCounterDisplayName', 'NA')
             descr = "{0}: {1}".format(title, attrs[k].get('jnxFWCounterDisplayType', 'NA'))
-            data[k] = self.initialize_instance(JuniperFirewall.NAME, k)
+            # the normal convention is to use the index when initializing the instance.
+            # because the snmp table index for this mib is unbelievably long, I need to use something else.
+            # i've opted to use the title variable.
+            data[k] = self.initialize_instance(JuniperFirewall.NAME, title)
             data[k]['attrs'] = v
             data[k]['title'] = title
             data[k]['description'] = descr
