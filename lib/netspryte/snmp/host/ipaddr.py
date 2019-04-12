@@ -21,6 +21,7 @@ import netspryte.snmp
 import ipaddress
 from netspryte.snmp.host import HostSystem
 from netspryte.snmp.host.interface import HostInterface
+from netspryte.utils.timer import Timer
 
 
 class HostIpAddress(HostSystem):
@@ -88,10 +89,12 @@ class HostIpAddress(HostSystem):
     def __init__(self, snmp):
         self.snmp = snmp
         super(HostIpAddress, self).__init__(snmp)
-        logging.info("inspecting %s for ip address data", snmp.host)
-        self.data = self._get_data()
+        t = Timer("snmp inspect %s %s" % (HostIpAddress.NAME, snmp.host))
+        t.start_timer()
+        self.data = self._get_configuration()
+        t.stop_timer()
 
-    def _get_data(self):
+    def _get_configuration(self):
         data = dict()
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostIpAddress.NAME,
                                              HostIpAddress.ATTRS, HostIpAddress.CONVERSION)
@@ -110,20 +113,23 @@ class HostIpAddress(HostSystem):
         for k, v in list(attrs.items()):
             if 'ipAdEntIfIndex' in v:
                 continue
-            if 'ipaddressPrefix' not in v:
+            if 'ipAddressPrefix' not in v:
                 continue
-            data[k] = self.initialize_instance(HostIpAddress.NAME, k)
-            data[k]['attrs'] = v
+            ifindex = v['ipAddressIfIndex']
             (addr_type, sub1, addr1) = k.split('.', 2)
             attrs[k]['ipAddressAddrType'] = HostIpAddress.CONVERSION['ipAddressAddrType'][int(addr_type)]
             addr2 = ""
             if attrs[k]['ipAddressAddrType'] == 'ipv4':
                 addr2 = addr1
             if attrs[k]['ipAddressAddrType'] == 'ipv6':
-                addr2 = ""
-                for n in addr1.split('.'):
-                    addr2 += format(int(n), 'x') + ":"
-                addr2 = addr2[0:-1]
-            data[k]['attrs']['ipAddressAddr'] = addr2
-            data[k]['attrs']['ipAddressPrefix'] = str(attrs[k]['ipAddressPrefix']).split(".")[-1]
+                addrt = addr1.split(".")
+                for j, val in enumerate(addrt):
+                    addrt[j] = hex(int(val))[2:].zfill(2)
+                t = iter(addrt)
+                addr2 = ':'.join([i + next(t, '') for i in t])
+
+            data[addr2] = self.initialize_instance(HostInterface.NAME, ifindex)
+            data[addr2]['attrs'] = v
+            data[addr2]['attrs']['ipAddressAddr'] = addr2
+            data[addr2]['attrs']['ipAddressPrefix'] = str(attrs[k]['ipAddressPrefix']).split(".")[-1]
         return data
