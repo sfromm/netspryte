@@ -20,7 +20,6 @@ import logging
 import netspryte.snmp
 import netspryte.snmp.host.interface
 from netspryte.snmp.vendor.juniper import JuniperDevice
-from netspryte.utils import mk_secure_hash
 from netspryte.utils.timer import Timer
 
 
@@ -95,7 +94,7 @@ class JFirewall(JuniperDevice):
             # the normal convention is to use the index when initializing the instance.
             # because the snmp table index for this mib is unbelievably long, I need to use something else.
             # i've opted to use the title variable.
-            data[k] = self.initialize_instance(JFirewall.NAME, k, altkey=mk_secure_hash(k))
+            data[k] = self.initialize_instance(JFirewall.NAME, k)
             data[k]['attrs'] = v
             data[k]['title'] = title
             data[k]['description'] = descr
