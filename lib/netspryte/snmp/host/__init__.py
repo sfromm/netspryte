@@ -72,7 +72,7 @@ class HostSystem(object):
             data[k]['attrs'] = v
         return data
 
-    def initialize_instance(self, measurement_class, index, host=None):
+    def initialize_instance(self, measurement_class, index, host=None, altkey=None):
         ''' return a dictionary with the basics of a measurement instance '''
         data = dict()
         data['host'] = self.sysName or self.snmp.host
@@ -83,6 +83,8 @@ class HostSystem(object):
         data['title'] = ""
         data['description'] = ""
         data['transport'] = 'snmp'
+        if altkey is not None:
+            index = altkey
         data['name'] = netspryte.utils.mk_data_instance_id(data['host'], measurement_class, index)
         return data
 
