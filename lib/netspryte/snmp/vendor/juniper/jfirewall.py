@@ -70,9 +70,9 @@ class JFirewall(JuniperDevice):
     def __init__(self, snmp):
         self.snmp = snmp
         self.data = dict()
-        t = Timer("snmp inspect %s %s" % (Jfirewall.NAME, snmp.host))
+        t = Timer("snmp inspect %s %s" % (JFirewall.NAME, snmp.host))
         t.start_timer()
-        super(Jfirewall, self).__init__(snmp)
+        super(JFirewall, self).__init__(snmp)
         if JuniperDevice.BASE_OID not in str(self.sysObjectID):
             logging.debug("skipping firweall check on non-juniper device %s", self.sysName)
             return None
@@ -85,17 +85,17 @@ class JFirewall(JuniperDevice):
     def _get_configuration(self):
         ''' get junos firewall objects '''
         data = dict()
-        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, Jfirewall.NAME,
-                                             Jfirewall.ATTRS, Jfirewall.CONVERSION)
-        metrics = netspryte.snmp.get_snmp_data(self.snmp, self, Jfirewall.NAME,
-                                               Jfirewall.STAT, Jfirewall.CONVERSION)
+        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, JFirewall.NAME,
+                                             JFirewall.ATTRS, JFirewall.CONVERSION)
+        metrics = netspryte.snmp.get_snmp_data(self.snmp, self, JFirewall.NAME,
+                                               JFirewall.STAT, JFirewall.CONVERSION)
         for k, v in list(attrs.items()):
             title = attrs[k].get('jnxFWCounterDisplayName', 'NA')
             descr = "{0}: {1}".format(title, attrs[k].get('jnxFWCounterDisplayType', 'NA'))
             # the normal convention is to use the index when initializing the instance.
             # because the snmp table index for this mib is unbelievably long, I need to use something else.
             # i've opted to use the title variable.
-            data[k] = self.initialize_instance(Jfirewall.NAME, k, altkey=mk_secure_hash(k))
+            data[k] = self.initialize_instance(JFirewall.NAME, k, altkey=mk_secure_hash(k))
             data[k]['attrs'] = v
             data[k]['title'] = title
             data[k]['description'] = descr

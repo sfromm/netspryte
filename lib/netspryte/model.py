@@ -356,33 +356,33 @@ class CBQOSMetrics(BaseModel):
         return '<CBQOSMetrics: %s>' % self.measurement_instance
 
 
-class JuniperFirewallAttrs(BaseModel):
-    measurement_instance = ForeignKeyField(MeasurementInstance, backref='juniperfirewall_attrs', null=False, on_delete='CASCADE')
+class JFirewallAttrs(BaseModel):
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='jfirewall_attrs', null=False, on_delete='CASCADE')
     jnxFWCounterType = CharField(null=True)
     jnxFWCounterDisplayName = CharField(null=True)
     jnxFWCounterDisplayType = CharField(null=True)
 
     class Meta:
-        db_table = "juniperfirewall_attrs"
+        db_table = "jfirewall_attrs"
 
     def __repr__(self):
-        return '<JuniperFirewallAttrs: %s>' % self.jnxFWCounterDisplayName
+        return '<JFirewallAttrs: %s>' % self.jnxFWCounterDisplayName
 
     def __str__(self):
-        return '<JuniperFirewallAttrs: %s>' % self.jnxFWCounterDisplayName
+        return '<JFirewallAttrs: %s>' % self.jnxFWCounterDisplayName
 
 
-class JuniperFirewallMetrics(BaseModel):
-    measurement_instance = ForeignKeyField(MeasurementInstance, backref='juniperfirewall_metrics', null=False, on_delete='CASCADE')
+class JFirewallMetrics(BaseModel):
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='jfirewall_metrics', null=False, on_delete='CASCADE')
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
     jnxFWCounterPacketCount = DecimalField(max_digits=20, decimal_places=0, null=True)
     jnxFWCounterByteCount = DecimalField(max_digits=20, decimal_places=0, null=True)
 
     class Meta:
-        db_table = "juniperfirewall_metrics"
+        db_table = "jfirewall_metrics"
 
     def __repr__(self):
-        return '<JuniperFirewallMetrics: %s>' % self.measurement_instance
+        return '<JFirewallMetrics: %s>' % self.measurement_instance
 
     def __str__(self):
-        return '<JuniperFirewallMetrics: %s>' % self.measurement_instance
+        return '<JFirewallMetrics: %s>' % self.measurement_instance
