@@ -66,9 +66,12 @@ class DataWorker(multiprocessing.Process):
                 this_class.description = data_mod.DESCRIPTION
             this_inst = self.mgr.get_or_create(netspryte.model.MeasurementInstance,
                                                name=data['name'], index=data['index'],
-                                               title=data['title'], description=data['description'],
                                                host=this_host, measurement_class=this_class)
             this_inst.lastseen = now
+            if not this_inst.title:
+                this_inst.title = data['title']
+            if not this_inst.description:
+                this_inst.description = data['description']
             # prepare metrics for
             if 'related' in data:
                 related = self.mgr.get(netspryte.model.MeasurementInstance, name=data['related']['name'])
