@@ -80,5 +80,5 @@ class HostEntity(HostSystem):
             data[k] = self.initialize_instance(HostEntity.NAME, k)
             data[k]['attrs'] = v
             if 'entPhysicalMfgDate' in v and v['entPhysicalMfgDate']:
-                data[k]['attrs']['entPhysicalMfgDate'] = binascii.b2a_hex(v['entPhysicalMfgDate'])
+                data[k]['attrs']['entPhysicalMfgDate'] = binascii.b2a_hex(v['entPhysicalMfgDate'].encode('utf-8'))
         return data
