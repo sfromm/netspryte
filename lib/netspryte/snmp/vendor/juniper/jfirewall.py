@@ -20,15 +20,16 @@ import logging
 import netspryte.snmp
 import netspryte.snmp.host.interface
 from netspryte.snmp.vendor.juniper import JuniperDevice
+from netspryte.utils import mk_secure_hash
 from netspryte.utils.timer import Timer
 
 
-class JuniperFirewall(JuniperDevice):
+class JFirewall(JuniperDevice):
 
-    NAME = 'juniperfirewall'
+    NAME = 'jfirewall'
     DESCRIPTION = "Juniper Firewall"
-    ATTR_MODEL = "JuniperFirewallAttrs"
-    METRIC_MODEL = "JuniperFirewallMetrics"
+    ATTR_MODEL = "JFirewallAttrs"
+    METRIC_MODEL = "JFirewallMetrics"
 
     ATTRS = {
         'jnxFWCounterType': '1.3.6.1.4.1.2636.3.5.2.1.3',
@@ -59,8 +60,9 @@ class JuniperFirewall(JuniperDevice):
     }
 
     XLATE = {
-        'Counter': 'cntr',
-        'jnxFW': '',
+        'Counter': '',
+        'jnxFW': 'fw',
+        'Count': '',
     }
 
     SNMP_QUERY_CHUNKS = 1
@@ -68,9 +70,9 @@ class JuniperFirewall(JuniperDevice):
     def __init__(self, snmp):
         self.snmp = snmp
         self.data = dict()
-        t = Timer("snmp inspect %s %s" % (JuniperFirewall.NAME, snmp.host))
+        t = Timer("snmp inspect %s %s" % (Jfirewall.NAME, snmp.host))
         t.start_timer()
-        super(JuniperFirewall, self).__init__(snmp)
+        super(Jfirewall, self).__init__(snmp)
         if JuniperDevice.BASE_OID not in str(self.sysObjectID):
             logging.debug("skipping firweall check on non-juniper device %s", self.sysName)
             return None
@@ -83,17 +85,17 @@ class JuniperFirewall(JuniperDevice):
     def _get_configuration(self):
         ''' get junos firewall objects '''
         data = dict()
-        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, JuniperFirewall.NAME,
-                                             JuniperFirewall.ATTRS, JuniperFirewall.CONVERSION)
-        metrics = netspryte.snmp.get_snmp_data(self.snmp, self, JuniperFirewall.NAME,
-                                               JuniperFirewall.STAT, JuniperFirewall.CONVERSION)
+        attrs = netspryte.snmp.get_snmp_data(self.snmp, self, Jfirewall.NAME,
+                                             Jfirewall.ATTRS, Jfirewall.CONVERSION)
+        metrics = netspryte.snmp.get_snmp_data(self.snmp, self, Jfirewall.NAME,
+                                               Jfirewall.STAT, Jfirewall.CONVERSION)
         for k, v in list(attrs.items()):
             title = attrs[k].get('jnxFWCounterDisplayName', 'NA')
             descr = "{0}: {1}".format(title, attrs[k].get('jnxFWCounterDisplayType', 'NA'))
             # the normal convention is to use the index when initializing the instance.
             # because the snmp table index for this mib is unbelievably long, I need to use something else.
             # i've opted to use the title variable.
-            data[k] = self.initialize_instance(JuniperFirewall.NAME, title)
+            data[k] = self.initialize_instance(Jfirewall.NAME, k, altkey=mk_secure_hash(k))
             data[k]['attrs'] = v
             data[k]['title'] = title
             data[k]['description'] = descr
