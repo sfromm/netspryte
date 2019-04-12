@@ -83,6 +83,7 @@ DEFAULT_SNMP_AUTHKEY   = get_config(p, DEFAULTS, "snmp_authkey",   "NETSPRYTE_SN
 DEFAULT_SNMP_PRIVKEY   = get_config(p, DEFAULTS, "snmp_privkey",   "NETSPRYTE_SNMP_PRIVKEY",   "na")
 DEFAULT_SNMP_BULK      = get_config(p, DEFAULTS, "snmp_bulk",      "NETSPRYTE_SNMP_BULK",      20)
 DEFAULT_SNMP_CACHE_TIMEOUT = get_config(p, DEFAULTS, "snmp_cache_timeout", "NETSPRYTE_SNMP_CACHE_TIMEOUT", 60, integer=True)
+DEFAULT_SNMP_INDEX_LENGTH  = get_config(p, DEFAULTS, "snmp_index_length", "NETSPRYTE_SNMP_INDEX_LENGTH", 100, integer=True)
 
 DEFAULT_VERBOSE        = get_config(p, DEFAULTS, "verbose",        "NETSPRYTE_VERBOSE",        0, integer=True)
 DEFAULT_LOG_LEVEL      = get_config(p, DEFAULTS, "loglevel",       "NETSPRYTE_LOG_LEVEL",      0)

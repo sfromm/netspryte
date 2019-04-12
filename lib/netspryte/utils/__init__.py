@@ -217,6 +217,11 @@ def safe_update(dict1, dict2):
     return newdict
 
 
+def check_hash_snmp_index(arg):
+    ''' return boolean on whether the snmp index should be hashed due to length '''
+    return len(arg) > C.DEFAULT_SNMP_INDEX_LENGTH
+
+
 def mk_measurement_instance_filename(device, *args):
     ''' create a filename based on the collected object '''
     parts = list()
@@ -225,7 +230,11 @@ def mk_measurement_instance_filename(device, *args):
     else:
         dev_name = device
     for arg in args:
-        parts.append(arg.replace(".", "-"))
+        if check_hash_snmp_index(arg):
+            arg = mk_secure_hash(arg)
+        else:
+            arg = arg.replace(".", "-")
+        parts.append(arg)
     return os.path.join(C.DEFAULT_DATADIR, dev_name, "{0}".format("-".join(parts)))
 
 
@@ -257,9 +266,7 @@ def mk_secure_hash(arg, hash_func=sha1):
     This comes from ansible/lib/ansible/utils/hashing.py '''
     digest = hash_func()
     try:
-        if not isinstance(arg, str):
-            arg = "%s" % arg
-        digest.update(arg)
+        digest.update(arg.encode('utf-8'))
     except UnicodeEncodeError:
         digest.update(arg.encode('utf-8'))
     return digest.hexdigest()
