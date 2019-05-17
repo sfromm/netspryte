@@ -23,6 +23,7 @@ from netspryte.snmp.vendor.cisco import CiscoDevice
 from netspryte.utils import safe_update, mk_data_instance_id
 from netspryte.utils.timer import Timer
 from pysnmp.proto.rfc1902 import Counter32
+from netspryte.utils import json_ready
 
 class CiscoCBQOS(CiscoDevice):
 
@@ -32,7 +33,6 @@ class CiscoCBQOS(CiscoDevice):
     METRIC_MODEL = "CBQOSMetrics"
 
     ATTRS = {
-        'cbQosIfType'                 : '1.3.6.1.4.1.9.9.166.1.1.1.1.2',
         'cbQosPolicyDirection'        : '1.3.6.1.4.1.9.9.166.1.1.1.1.3',
         'cbQosIfIndex'                : '1.3.6.1.4.1.9.9.166.1.1.1.1.4',
         'cbQosConfigIndex'            : '1.3.6.1.4.1.9.9.166.1.5.1.1.2',
@@ -40,24 +40,16 @@ class CiscoCBQOS(CiscoDevice):
         'cbQosParentObjectsIndex'     : '1.3.6.1.4.1.9.9.166.1.5.1.1.4',
         'cbQosPolicyMapName'          : '1.3.6.1.4.1.9.9.166.1.6.1.1.1',
         'cbQosCMName'                 : '1.3.6.1.4.1.9.9.166.1.7.1.1.1',
-        'cbQosPoliceCfgBurstSize'     : '1.3.6.1.4.1.9.9.166.1.12.1.1.2',
-        'cbQosPoliceCfgExtBurstSize'  : '1.3.6.1.4.1.9.9.166.1.12.1.1.3',
-        'cbQosPoliceCfgConformAction' : '1.3.6.1.4.1.9.9.166.1.12.1.1.4',
-        'cbQosPoliceCfgExceedAction'  : '1.3.6.1.4.1.9.9.166.1.12.1.1.6',
-        'cbQosPoliceCfgViolateAction' : '1.3.6.1.4.1.9.9.166.1.12.1.1.8',
         'cbQosPoliceCfgRate64'        : '1.3.6.1.4.1.9.9.166.1.12.1.1.11',
     }
 
     STAT = {
-        'cbQosPoliceConformedPkt64'   : '1.3.6.1.4.1.9.9.166.1.17.1.1.3',
-        'cbQosPoliceConformedByte64'  : '1.3.6.1.4.1.9.9.166.1.17.1.1.6',
-        'cbQosPoliceConformedBitRate' : '1.3.6.1.4.1.9.9.166.1.17.1.1.7',
-        'cbQosPoliceExceededPkt64'    : '1.3.6.1.4.1.9.9.166.1.17.1.1.10',
-        'cbQosPoliceExceededByte64'   : '1.3.6.1.4.1.9.9.166.1.17.1.1.13',
-        'cbQosPoliceExceededBitRate'  : '1.3.6.1.4.1.9.9.166.1.17.1.1.14',
-        'cbQosPoliceViolatedPkt64'    : '1.3.6.1.4.1.9.9.166.1.17.1.1.17',
-        'cbQosPoliceViolatedByte64'   : '1.3.6.1.4.1.9.9.166.1.17.1.1.20',
-        'cbQosPoliceViolatedBitRate'  : '1.3.6.1.4.1.9.9.166.1.17.1.1.21',
+        'cbQosCMPrePolicyPkt64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.3',    # count of inbound packets prior to executing qos policies
+        'cbQosCMPrePolicyByte64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.6',   # count of inbound octets ...
+        'cbQosCMPostPolicyByte64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.10', # count of outbound octets after executing qos policies
+        'cbQosCMDropPkt64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.14',        # count of dropped packets as result of all features that can produce drops
+        'cbQosCMDropByte64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.17',       # count of dropped octets ...
+        'cbQosCMNoBufDropPkt64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.21',   # count of dropped packets due to lack of SRAM buffers during output processing
     }
 
     CONVERSION = {
@@ -76,54 +68,12 @@ class CiscoCBQOS(CiscoDevice):
             8 : 'set',
             9 : 'compression'
         },
-        'cbQosPoliceCfgConformAction': {
-            1 : 'transmit',
-            2 : 'setIpDSCP',
-            3 : 'setIpPrecedence',
-            4 : 'setQosGroup',
-            5 : 'drop',
-            6 : 'setMplsExp',
-            7 : 'setAtmClp',
-            8 : 'setFrDe',
-            9 : 'setL2Cos',
-            10 : 'setDiscardClass',
-            11 : 'setMplsExpTopMost',
-            12 : 'setIpDscpTunnel',
-            13 : 'setIpPrecedenceTunnel',
-        },
-        'cbQosPoliceCfgExceedAction': {
-            1 : 'transmit',
-            2 : 'setIpDSCP',
-            3 : 'setIpPrecedence',
-            4 : 'setQosGroup',
-            5 : 'drop',
-            6 : 'setMplsExp',
-            7 : 'setAtmClp',
-            8 : 'setFrDe',
-            9 : 'setL2Cos',
-            10 : 'setDiscardClass',
-            11 : 'setMplsExpTopMost',
-            12 : 'setIpDscpTunnel',
-            13 : 'setIpPrecedenceTunnel',
-        },
-        'cbQosPoliceCfgViolateAction': {
-            1 : 'transmit',
-            2 : 'setIpDSCP',
-            3 : 'setIpPrecedence',
-            4 : 'setQosGroup',
-            5 : 'drop',
-            6 : 'setMplsExp',
-            7 : 'setAtmClp',
-            8 : 'setFrDe',
-            9 : 'setL2Cos',
-            10 : 'setDiscardClass',
-            11 : 'setMplsExpTopMost',
-            12 : 'setIpDscpTunnel',
-            13 : 'setIpPrecedenceTunnel',
-        },
     }
 
     XLATE = {
+        'cbQosIfIndex': 'ifindex',
+        'cbQosConfigIndex': 'cfgindex',
+        'cbQosPolicyDirection': 'policydirection',
         'cbQos' : '',
         '64'    : '',
         'Bit'   : '',
@@ -154,6 +104,7 @@ class CiscoCBQOS(CiscoDevice):
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
                                              CiscoCBQOS.ATTRS, CiscoCBQOS.CONVERSION,
                                              CiscoCBQOS.SNMP_QUERY_CHUNKS)
+        print(attrs)
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
                                                CiscoCBQOS.STAT, CiscoCBQOS.CONVERSION,
                                                CiscoCBQOS.SNMP_QUERY_CHUNKS)
@@ -164,10 +115,18 @@ class CiscoCBQOS(CiscoDevice):
         for k, v in list(attrs.items()):
             if k in skip_instances:
                 continue
+            # print("---")
+            # print("instance %s" % k)
             data[k] = self.initialize_instance(CiscoCBQOS.NAME, k)
             local_attrs = v.copy()
             if 'cbQosParentObjectsIndex' in v and v['cbQosParentObjectsIndex'] != 0:
-                local_attrs['parent'] = k.split('.')[0] + "." + str(v['cbQosParentObjectsIndex'])
+                parent = k.split('.')[0] + "." + str(v['cbQosParentObjectsIndex'])
+                local_attrs['parent'] = parent
+                if parent in attrs and 'cbQosConfigIndex' in attrs[parent]:
+                    parent_cfg_index = str(attrs[parent]['cbQosConfigIndex'])
+                    if 'cbQosPolicyMapName' in attrs[parent_cfg_index]:
+                        local_attrs['cbQosPolicyMapName'] = attrs[parent_cfg_index]['cbQosPolicyMapName']
+
 
             # Pull in attributes from the cbqos config index.
             # The cbQosConfigIndex is used to identify the configuration,
@@ -226,8 +185,10 @@ class CiscoCBQOS(CiscoDevice):
             data[key]['title'] = self.get_policy_map_name(key, data)
             data[key]['description'] = "{0}:{1}".format(data[key]['title'], data[key]['attrs'].get('ifAlias', 'NA'))
         for key in list(data.keys()):
-            if data[key]['attrs']['cbQosObjectsType'] != 'police':
+            if data[key]['attrs']['cbQosObjectsType'] not in ['classmap']:
                 del(data[key])
+        import pprint
+        pprint.pprint(data)
         return data
 
     @property
