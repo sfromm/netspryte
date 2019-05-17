@@ -67,23 +67,23 @@ class Host(BaseModel):
 
 
 class HostSnmpAttrs(BaseModel):
-    sysDescr = CharField(null=True)
-    sysObjectID = CharField()
-    sysUpTime = BigIntegerField(null=True)
-    sysContact = CharField(null=True)
-    sysName = CharField()
-    sysLocation = CharField(null=True)
-    sysServices = CharField(null=True)
+    sysdescr = CharField(null=True)
+    sysobjectid = CharField()
+    sysuptime = BigIntegerField(null=True)
+    syscontact = CharField(null=True)
+    sysname = CharField()
+    syslocation = CharField(null=True)
+    sysservices = CharField(null=True)
     host = ForeignKeyField(Host, backref='host_snmp_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = 'host_snmp_attrs'
 
     def __repr__(self):
-        return '<HostSnmpAttrs: %s>' % self.sysName
+        return '<HostSnmpAttrs: %s>' % self.sysname
 
     def __str__(self):
-        return '<HostSnmpAttrs: %s>' % self.sysName
+        return '<HostSnmpAttrs: %s>' % self.sysname
 
 
 class MeasurementClass(BaseModel):
@@ -172,70 +172,66 @@ class IPAddressAttrs(BaseModel):
     A PeeWee model for a IP Network
     """
 
-    ipAddressAddrType = CharField(null=True)
-    ipAddressAddr = CharField()
-    ipAddressIfIndex = IntegerField(null=True)
-    ipAddressType = CharField(null=True)
-    ipAddressPrefix = CharField(null=True)
-    ipAddressOrigin = CharField(null=True)
-    ipAddressStatus = CharField(null=True)
+    addresstype = CharField(null=True)
+    ipaddress = CharField()
+    ifindex = IntegerField(null=True)
+    ipaddresstype = CharField(null=True)
+    prefix = CharField(null=True)
+    origin = CharField(null=True)
+    status = CharField(null=True)
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='ipaddress_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "ipaddress_attrs"
 
     def __repr__(self):
-        return '<IPAddressAttrs: %s>' % (self.ipAddressAddr)
+        return '<IPAddressAttrs: %s>' % (self.ipaddress)
 
     def __str__(self):
-        return '<IPAddressAttrs: %s>' % (self.ipAddressAddr)
+        return '<IPAddressAttrs: %s>' % (self.ipaddress)
 
 
 class InterfaceAttrs(BaseModel):
-    ifIndex = IntegerField()
-    ifDescr = CharField(null=True)
-    ifType = IntegerField(null=True)
-    ifMtu = IntegerField(null=True)
-    ifSpeed = BigIntegerField(null=True)
-    ifPhysAddress = CharField(null=True)
-    ifAdminStatus = CharField(null=True)
-    ifOperStatus = CharField(null=True)
-    ifName = CharField(null=True)
-    ifHighSpeed = IntegerField(null=True)
-    ifAlias = TextField(null=True)
+    ifindex = IntegerField()
+    ifdescr = CharField(null=True)
+    iftype = IntegerField(null=True)
+    ifmtu = IntegerField(null=True)
+    ifspeed = BigIntegerField(null=True)
+    ifphysaddress = CharField(null=True)
+    ifadminstatus = CharField(null=True)
+    ifoperstatus = CharField(null=True)
+    ifname = CharField(null=True)
+    ifhighspeed = IntegerField(null=True)
+    ifalias = TextField(null=True)
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='interface_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "interface_attrs"
 
     def __repr__(self):
-        return '<InterfaceAttrs: %s:%s>' % (self.ifIndex, self.ifName)
+        return '<InterfaceAttrs: %s:%s>' % (self.ifindex, self.ifname)
 
     def __str__(self):
-        return '<InterfaceAttrs: %s:%s>' % (self.ifIndex, self.ifName)
+        return '<InterfaceAttrs: %s:%s>' % (self.ifindex, self.ifname)
 
 
 class InterfaceMetrics(BaseModel):
-    ifInNUcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifInDiscards = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifInErrors = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifInUnknownProtos = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifOutNUcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifOutDiscards = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifOutErrors = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifOutQLen = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifInMulticastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifInBroadcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifOutMulticastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifOutBroadcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifHCInOctets = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifHCInUcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifHCInMulticastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifHCInBroadcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifHCOutOctets = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifHCOutUcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifHCOutMulticastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
-    ifHCOutBroadcastPkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    innucastpkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    indiscards = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inerrors = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inunknownprotos = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outnucastpkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outdiscards = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outerrors = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outqlen = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inoctets = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inucastpkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inmulticastpkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inbroadcastpkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outoctets = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outucastpkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outmulticastpkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outbroadcastpkts = DecimalField(max_digits=20, decimal_places=0, null=True)
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='interface_metrics', null=False, on_delete='CASCADE')
 
@@ -251,45 +247,45 @@ class InterfaceMetrics(BaseModel):
 
 
 class UPSAttrs(BaseModel):
-    upsIdentManufacturer = CharField()
-    upsIdentModel = CharField()
-    upsIdentUPSSoftwareVersion = CharField()
-    upsIdentAgentSoftwareVersion = CharField()
-    upsIdentName = CharField()
-    upsIdentAttachedDevices = CharField()
-    upsInputNumLines = CharField()
-    upsOutputSource = CharField()
-    upsOutputFrequency = IntegerField()
-    upsOutputNumLines = CharField()
+    upsidentmanufacturer = CharField()
+    upsidentmodel = CharField()
+    upsidentupssoftwareversion = CharField()
+    upsidentagentsoftwareversion = CharField()
+    upsidentname = CharField()
+    upsidentattacheddevices = CharField()
+    upsinputnumlines = CharField()
+    upsoutputsource = CharField()
+    upsoutputfrequency = IntegerField()
+    upsoutputnumlines = CharField()
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='ups_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
         db_table = "hostups_attrs"
 
     def __repr__(self):
-        return '<UPSAttrs: %s>' % self.upsIdentName
+        return '<UPSAttrs: %s>' % self.upsidentname
 
     def __str__(self):
-        return '<UPSAttrs: %s>' % self.upsIdentName
+        return '<UPSAttrs: %s>' % self.upsidentname
 
 
 class UPSMetrics(BaseModel):
-    upsBatteryStatus = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsSecondsOnBattery = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsEstimatedMinutesRemaining = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsEstimatedChargeRemaining = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsBatteryVoltage = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsBatteryCurrent = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsBatteryTemperature = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsInputLineBads = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsInputFrequency = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsInputVoltage = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsInputCurrent = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsInputTruePower = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsOutputVoltage = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsOutputCurrent = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsOutputPower = DecimalField(max_digits=20, decimal_places=0, null=True)
-    upsOutputPercentLoad = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsbatterystatus = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upssecondsonbattery = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsestimatedminutesremaining = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsestimatedchargeremaining = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsbatteryvoltage = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsbatterycurrent = DecimalField(max_digits=20, decimal_places=0, null=True)
+    upsbatterytemperature = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inputlinebads = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inputfrequency = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inputvoltage = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inputcurrent = DecimalField(max_digits=20, decimal_places=0, null=True)
+    inputtruepower = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outputvoltage = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outputcurrent = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outputpower = DecimalField(max_digits=20, decimal_places=0, null=True)
+    outputpercentload = DecimalField(max_digits=20, decimal_places=0, null=True)
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='ups_metrics', null=False, on_delete='CASCADE')
 
