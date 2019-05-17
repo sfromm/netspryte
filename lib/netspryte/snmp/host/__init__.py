@@ -29,30 +29,30 @@ class HostSystem(object):
     ATTR_MODEL = "HostSnmpAttrs"
 
     ATTRS = {
-        'sysDescr'    : '1.3.6.1.2.1.1.1',
-        'sysObjectID' : '1.3.6.1.2.1.1.2',
-        'sysUpTime'   : '1.3.6.1.2.1.1.3',
-        'sysContact'  : '1.3.6.1.2.1.1.4',
-        'sysName'     : '1.3.6.1.2.1.1.5',
-        'sysLocation' : '1.3.6.1.2.1.1.6',
-        'sysServices' : '1.3.6.1.2.1.1.7',
+        'sysdescr': '1.3.6.1.2.1.1.1',
+        'sysobjectid': '1.3.6.1.2.1.1.2',
+        'sysuptime': '1.3.6.1.2.1.1.3',
+        'syscontact': '1.3.6.1.2.1.1.4',
+        'sysname': '1.3.6.1.2.1.1.5',
+        'syslocation': '1.3.6.1.2.1.1.6',
+        'sysservices': '1.3.6.1.2.1.1.7',
     }
 
-    STAT = { }
+    STAT = {}
 
-    XLATE = { }
+    XLATE = {}
 
-    CONVERSION = { }
+    CONVERSION = {}
 
     def __init__(self, snmp):
-        self._sysDescr    = None
-        self._sysObjectID = None
-        self._sysUpTime   = None
-        self._sysContact  = None
-        self._sysName     = None
-        self._sysLocation = None
-        self._sysServices = None
-        self.snmp         = snmp
+        self._sysdescr = None
+        self._sysobjectid = None
+        self._sysuptime = None
+        self._syscontact = None
+        self._sysname = None
+        self._syslocation = None
+        self._sysservices = None
+        self.snmp = snmp
         logging.info("inspecting %s for sys data", snmp.host)
         self.data = self._get_system()
         if not self.data:
@@ -66,8 +66,8 @@ class HostSystem(object):
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostSystem.NAME, HostSystem.ATTRS, HostSystem.CONVERSION)
         for k, v in list(attrs.items()):
             host = None
-            if 'sysName' in v:
-                host = v['sysName']
+            if 'sysname' in v:
+                host = v['sysname']
             data[k] = self.initialize_instance(HostSystem.NAME, k, host)
             data[k]['attrs'] = v
         return data
@@ -75,7 +75,7 @@ class HostSystem(object):
     def initialize_instance(self, measurement_class, index, host=None):
         ''' return a dictionary with the basics of a measurement instance '''
         data = dict()
-        data['host'] = self.sysName or self.snmp.host
+        data['host'] = self.sysname or self.snmp.host
         if host:
             data['host'] = host
         data['class'] = measurement_class
@@ -100,57 +100,57 @@ class HostSystem(object):
             self._data = arg
 
     @property
-    def sysDescr(self):
-        return self._sysDescr
+    def sysdescr(self):
+        return self._sysdescr
 
-    @sysDescr.setter
-    def sysDescr(self, arg):
-        self._sysDescr = arg
-
-    @property
-    def sysObjectID(self):
-        return self._sysObjectID
-
-    @sysObjectID.setter
-    def sysObjectID(self, arg):
-        self._sysObjectID = arg
+    @sysdescr.setter
+    def sysdescr(self, arg):
+        self._sysdescr = arg
 
     @property
-    def sysUpTime(self):
-        return self._sysUpTime
+    def sysobjectid(self):
+        return self._sysobjectid
 
-    @sysUpTime.setter
-    def sysUpTime(self, arg):
-        self._sysUpTime = arg
-
-    @property
-    def sysContact(self):
-        return self._sysContact
-
-    @sysContact.setter
-    def sysContact(self, arg):
-        self._sysContact = arg
+    @sysobjectid.setter
+    def sysobjectid(self, arg):
+        self._sysobjectid = arg
 
     @property
-    def sysName(self):
-        return self._sysName
+    def sysuptime(self):
+        return self._sysuptime
 
-    @sysName.setter
-    def sysName(self, arg):
-        self._sysName = arg
-
-    @property
-    def sysLocation(self):
-        return self._sysLocation
-
-    @sysLocation.setter
-    def sysLocation(self, arg):
-        self._sysLocation = arg
+    @sysuptime.setter
+    def sysuptime(self, arg):
+        self._sysuptime = arg
 
     @property
-    def sysServices(self):
-        return self._sysServices
+    def syscontact(self):
+        return self._syscontact
 
-    @sysServices.setter
-    def sysServices(self, arg):
-        self._sysServices = arg
+    @syscontact.setter
+    def syscontact(self, arg):
+        self._syscontact = arg
+
+    @property
+    def sysname(self):
+        return self._sysname
+
+    @sysname.setter
+    def sysname(self, arg):
+        self._sysname = arg
+
+    @property
+    def syslocation(self):
+        return self._syslocation
+
+    @syslocation.setter
+    def syslocation(self, arg):
+        self._syslocation = arg
+
+    @property
+    def sysservices(self):
+        return self._sysservices
+
+    @sysservices.setter
+    def sysservices(self, arg):
+        self._sysservices = arg

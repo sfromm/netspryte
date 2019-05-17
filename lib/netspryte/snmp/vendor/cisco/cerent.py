@@ -272,7 +272,7 @@ class CiscoCerent(HostSystem):
         self.snmp = snmp
         self.data = dict()
         super(CiscoCerent, self).__init__(snmp)
-        if CiscoCerent.BASE_OID in str(self.sysObjectID):
+        if CiscoCerent.BASE_OID in str(self.sysobjectid):
             logging.info("inspecting %s for cerent data", snmp.host)
             self.data = self._get_configuration()
             logging.info("done inspecting %s for cerent data", snmp.host)

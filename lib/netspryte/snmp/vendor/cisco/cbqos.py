@@ -139,8 +139,8 @@ class CiscoCBQOS(CiscoDevice):
         t = Timer("snmp inspect %s %s" % (CiscoCBQOS.NAME, snmp.host))
         t.start_timer()
         super(CiscoCBQOS, self).__init__(snmp)
-        if CiscoDevice.BASE_OID not in str(self.sysObjectID):
-            logging.debug("skipping cbqos check on non-cisco device %s", self.sysName)
+        if CiscoDevice.BASE_OID not in str(self.sysobjectid):
+            logging.debug("skipping cbqos check on non-cisco device %s", self.sysname)
             return None
         logging.info("inspecting %s for cbqos data", snmp.host)
         host = netspryte.snmp.host.interface.HostInterface(self.snmp)

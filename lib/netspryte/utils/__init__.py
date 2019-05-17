@@ -225,8 +225,8 @@ def check_hash_snmp_index(arg):
 def mk_measurement_instance_filename(device, *args):
     ''' create a filename based on the collected object '''
     parts = list()
-    if hasattr(device, 'sysName'):
-        dev_name = device.sysName
+    if hasattr(device, 'sysname'):
+        dev_name = device.sysname
     else:
         dev_name = device
     for arg in args:

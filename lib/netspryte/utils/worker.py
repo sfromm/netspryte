@@ -148,7 +148,7 @@ class DataWorker(multiprocessing.Process):
         attrs = json_ready(attrs)
         attrs['host'] = host
         cls = getattr(netspryte.model, HostSystem.ATTR_MODEL)
-        m = self.mgr.get_or_create(cls, sysName=attrs['sysName'], sysObjectID=attrs['sysObjectID'], host=host)
+        m = self.mgr.get_or_create(cls, sysname=attrs['sysname'], sysobjectid=attrs['sysobjectid'], host=host)
         if m is None:
             logging.error("failed to get or create attributes for host %s", host.name)
             return None
