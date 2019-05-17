@@ -74,7 +74,7 @@ class JFirewall(JuniperDevice):
         super(JFirewall, self).__init__(snmp)
         if JuniperDevice.BASE_OID not in str(self.sysObjectID):
             logging.debug("skipping firweall check on non-juniper device %s", self.sysName)
-            return None
+            return
         logging.info("inspecting %s for firewall data", snmp.host)
         host = netspryte.snmp.host.interface.HostInterface(self.snmp)
         self.interfaces = host.interfaces

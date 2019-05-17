@@ -305,19 +305,12 @@ class UPSMetrics(BaseModel):
 
 
 class CBQOSAttrs(BaseModel):
-    cbQosIfType = CharField(null=True)
-    cbQosPolicyDirection = CharField(null=True)
+    qbQosPolicyDirection = CharField(null=True)
     cbQosIfIndex = IntegerField()
     cbQosConfigIndex = CharField(null=True)
     cbQosObjectsType = CharField()
-    cbQosParentObjectsIndex = CharField(null=True)
     cbQosPolicyMapName = CharField(null=True)
     cbQosCMName = CharField(null=True)
-    cbQosPoliceCfgBurstSize = IntegerField(null=True)
-    cbQosPoliceCfgExtBurstSize = CharField(null=True)
-    cbQosPoliceCfgConformAction = CharField(null=True)
-    cbQosPoliceCfgExceedAction = CharField(null=True)
-    cbQosPoliceCfgViolateAction = CharField(null=True)
     cbQosPoliceCfgRate64 = DecimalField(max_digits=20, decimal_places=0, null=True)
     measurement_instance = ForeignKeyField(MeasurementInstance, backref='cbqos_attrs', null=False, on_delete='CASCADE')
 
