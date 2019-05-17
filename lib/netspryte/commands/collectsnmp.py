@@ -99,17 +99,20 @@ class CollectSnmpWorker(DataWorker):
             try:
                 msnmp = netspryte.snmp.SNMPSession(host=device)
                 for cls, module in list(CollectSnmpCommand.SNMP_MODULES.items()):
+                    if cls is None:
+                        continue
                     if not cls.STAT:
                         logging.info("skipping module %s that does not collect measurement data", cls.NAME)
                         continue
                     try:
                         snmp_mod = cls(msnmp)
                         hostname = snmp_mod.sysName or msnmp.host
+                        modname = cls.__name__
                         if snmp_mod and hasattr(snmp_mod, 'data'):
                             has_metrics = self.process_module_data(snmp_mod)
                             self.process_metrics(has_metrics, snmp_mod, hostname)
                     except Exception as e:
-                        logging.error("module %s failed against device %s: %s", cls.__name__, device, traceback.format_exc())
+                        logging.error("module %s failed against device %s: %s", modname, device, traceback.format_exc())
                         continue
             except Exception as e:
                 logging.error("encountered error with %s; skipping to next device: %s", device, traceback.format_exc())
