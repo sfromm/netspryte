@@ -31,61 +31,57 @@ class HostInterface(HostSystem):
     METRIC_MODEL = "InterfaceMetrics"
 
     ATTRS = {
-        'ifIndex'       : '1.3.6.1.2.1.2.2.1.1',
-        'ifDescr'       : '1.3.6.1.2.1.2.2.1.2',
-        'ifType'        : '1.3.6.1.2.1.2.2.1.3',
-        'ifMtu'         : '1.3.6.1.2.1.2.2.1.4',
-        'ifSpeed'       : '1.3.6.1.2.1.2.2.1.5',
-        'ifPhysAddress' : '1.3.6.1.2.1.2.2.1.6',
-        'ifAdminStatus' : '1.3.6.1.2.1.2.2.1.7',
-        'ifOperStatus'  : '1.3.6.1.2.1.2.2.1.8',
-        'ifName'        : '1.3.6.1.2.1.31.1.1.1.1',
-        'ifHighSpeed'   : '1.3.6.1.2.1.31.1.1.1.15',
-        'ifAlias'       : '1.3.6.1.2.1.31.1.1.1.18',
+        'ifindex': '1.3.6.1.2.1.2.2.1.1',
+        'ifdescr': '1.3.6.1.2.1.2.2.1.2',
+        'iftype': '1.3.6.1.2.1.2.2.1.3',
+        'ifmtu': '1.3.6.1.2.1.2.2.1.4',
+        'ifspeed': '1.3.6.1.2.1.2.2.1.5',
+        'ifphysaddress': '1.3.6.1.2.1.2.2.1.6',
+        'ifadminstatus': '1.3.6.1.2.1.2.2.1.7',
+        'ifoperstatus': '1.3.6.1.2.1.2.2.1.8',
+        'ifname': '1.3.6.1.2.1.31.1.1.1.1',
+        'ifhighspeed': '1.3.6.1.2.1.31.1.1.1.15',
+        'ifalias': '1.3.6.1.2.1.31.1.1.1.18',
     }
 
     STAT = {
-        'ifInNUcastPkts'       : '1.3.6.1.2.1.2.2.1.12',
-        'ifInDiscards'         : '1.3.6.1.2.1.2.2.1.13',
-        'ifInErrors'           : '1.3.6.1.2.1.2.2.1.14',
-        'ifInUnknownProtos'    : '1.3.6.1.2.1.2.2.1.15',
-        'ifOutNUcastPkts'      : '1.3.6.1.2.1.2.2.1.18',
-        'ifOutDiscards'        : '1.3.6.1.2.1.2.2.1.19',
-        'ifOutErrors'          : '1.3.6.1.2.1.2.2.1.20',
-        'ifOutQLen'            : '1.3.6.1.2.1.2.2.1.21',
-        'ifInMulticastPkts'    : '1.3.6.1.2.1.31.1.1.1.2',
-        'ifInBroadcastPkts'    : '1.3.6.1.2.1.31.1.1.1.3',
-        'ifOutMulticastPkts'   : '1.3.6.1.2.1.31.1.1.1.4',
-        'ifOutBroadcastPkts'   : '1.3.6.1.2.1.31.1.1.1.5',
-        'ifHCInOctets'         : '1.3.6.1.2.1.31.1.1.1.6',
-        'ifHCInUcastPkts'      : '1.3.6.1.2.1.31.1.1.1.7',
-        'ifHCInMulticastPkts'  : '1.3.6.1.2.1.31.1.1.1.8',
-        'ifHCInBroadcastPkts'  : '1.3.6.1.2.1.31.1.1.1.9',
-        'ifHCOutOctets'        : '1.3.6.1.2.1.31.1.1.1.10',
-        'ifHCOutUcastPkts'     : '1.3.6.1.2.1.31.1.1.1.11',
-        'ifHCOutMulticastPkts' : '1.3.6.1.2.1.31.1.1.1.12',
-        'ifHCOutBroadcastPkts' : '1.3.6.1.2.1.31.1.1.1.13',
+        'innucastpkts': '1.3.6.1.2.1.2.2.1.12',
+        'indiscards': '1.3.6.1.2.1.2.2.1.13',
+        'inerrors': '1.3.6.1.2.1.2.2.1.14',
+        'inunknownprotos': '1.3.6.1.2.1.2.2.1.15',
+        'outnucastpkts': '1.3.6.1.2.1.2.2.1.18',
+        'outdiscards': '1.3.6.1.2.1.2.2.1.19',
+        'outerrors': '1.3.6.1.2.1.2.2.1.20',
+        'outqlen': '1.3.6.1.2.1.2.2.1.21',
+        'inoctets': '1.3.6.1.2.1.31.1.1.1.6',   # ifHCInOctets
+        'inucastpkts': '1.3.6.1.2.1.31.1.1.1.7',   # ifHCInUcastPkts
+        'inmulticastpkts': '1.3.6.1.2.1.31.1.1.1.8',   # ifHCInMulticastPkts
+        'inbroadcastpkts': '1.3.6.1.2.1.31.1.1.1.9',   # ifHCInBroadcastPkts
+        'outoctets': '1.3.6.1.2.1.31.1.1.1.10',  # ifHCOutOctets
+        'outucastpkts': '1.3.6.1.2.1.31.1.1.1.11',  # ifHCOutUcastPkts
+        'outmulticastpkts': '1.3.6.1.2.1.31.1.1.1.12',  # ifHCOutMulticastPkts
+        'outbroadcastpkts': '1.3.6.1.2.1.31.1.1.1.13',  # ifHCOutBroadcastPkts
     }
 
     XLATE = {
-        'ifHC' : '',
-        'if'   : '',
+        'ifHC': '',
+        'if': '',
     }
 
     CONVERSION = {
-        'ifAdminStatus': {
-            1 : 'up',
-            2 : 'down',
-            3 : 'testing',
+        'ifadminstatus': {
+            1: 'up',
+            2: 'down',
+            3: 'testing',
         },
-        'ifOperStatus': {
-            1 : 'up',
-            2 : 'down',
-            3 : 'testing',
-            4 : 'unknown',
-            5 : 'dormant',
-            6 : 'notPresent',
-            7 : 'lowerLayerDown',
+        'ifoperstatus': {
+            1: 'up',
+            2: 'down',
+            3: 'testing',
+            4: 'unknown',
+            5: 'dormant',
+            6: 'notPresent',
+            7: 'lowerLayerDown',
         },
     }
 
@@ -107,12 +103,12 @@ class HostInterface(HostSystem):
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME, HostInterface.STAT, HostInterface.CONVERSION)
         for k, v in list(attrs.items()):
             ifdescr = attrs[k].get('ifDescr', 'NA')
-            title = "{0}:{1}".format(self.sysName, ifdescr)
+            title = "{0}:{1}".format(self.sysname, ifdescr)
             descr = attrs[k].get('ifAlias', ifdescr)
             data[k] = self.initialize_instance(HostInterface.NAME, k)
             data[k]['attrs'] = v
-            if 'ifPhysAddress' in v and v['ifPhysAddress']:
-                data[k]['attrs']['ifPhysAddress'] = ':'.join(['%x' % ord(x) for x in v['ifPhysAddress']])
+            if 'ifphysaddress' in v and v['ifphysaddress']:
+                data[k]['attrs']['ifphysaddress'] = ':'.join(['%x' % ord(x) for x in v['ifphysaddress']])
             data[k]['title'] = title
             data[k]['description'] = descr
             if k in metrics:

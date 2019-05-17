@@ -31,58 +31,51 @@ class HostIpAddress(HostSystem):
     ATTR_MODEL = "IPAddressAttrs"
 
     ATTRS = {
-        'ipAdEntIfIndex'        : '1.3.6.1.2.1.4.20.1.2',
-        'ipAdEntNetMask'        : '1.3.6.1.2.1.4.20.1.3',
-        'ipAddressAddrType'     : '1.3.6.1.2.1.4.34.1.1',
-        'ipAddressAddr'         : '1.3.6.1.2.1.4.34.1.2',
-        'ipAddressIfIndex'      : '1.3.6.1.2.1.4.34.1.3',
-        'ipAddressType'         : '1.3.6.1.2.1.4.34.1.4',
-        'ipAddressPrefix'       : '1.3.6.1.2.1.4.34.1.5',
-        'ipAddressOrigin'       : '1.3.6.1.2.1.4.34.1.6',
-        'ipAddressStatus'       : '1.3.6.1.2.1.4.34.1.7',
+        'ipadentifindex': '1.3.6.1.2.1.4.20.1.2',  # ipAdEntIfIndex
+        'netmask': '1.3.6.1.2.1.4.20.1.3',  # ipAdEntNetMask
+        'addresstype': '1.3.6.1.2.1.4.34.1.1',  # ipAddressAddrType
+        'ipaddress': '1.3.6.1.2.1.4.34.1.2',  # ipAddressAddr
+        'ifindex': '1.3.6.1.2.1.4.34.1.3',  # ipAddressIfIndex
+        'ipaddresstype': '1.3.6.1.2.1.4.34.1.4',  # ipAddressType
+        'prefix': '1.3.6.1.2.1.4.34.1.5',  # ipAddressPrefix
+        'origin': '1.3.6.1.2.1.4.34.1.6',  # ipAddressOrigin
+        'status': '1.3.6.1.2.1.4.34.1.7',  # ipAddressStatus
     }
 
-    STAT = { }
+    STAT = {}
 
-    XLATE = { }
+    XLATE = {}
 
     CONVERSION = {
-        'ipAddressAddrType' : {
-            0 : 'unknown',
-            1 : 'ipv4',
-            2 : 'ipv6',
-            3 : 'ipv4z',
-            4 : 'ipv6z',
-            16 : 'dns',
+        'addresstype': {
+            0: 'unknown',
+            1: 'ipv4',
+            2: 'ipv6',
+            3: 'ipv4z',
+            4: 'ipv6z',
+            16: 'dns',
         },
-        'ipAddressType' : {
-            1 : 'unicast',
-            2 : 'anycast',
-            3 : 'broadcast',
+        'ipaddresstype': {
+            1: 'unicast',
+            2: 'anycast',
+            3: 'broadcast',
         },
-        'ipAddressOrigin' : {
-            1 : 'other',
-            2 : 'manual',
-            4 : 'dhcp',
-            5 : 'linklayer',
-            6 : 'random',
+        'origin': {
+            1: 'other',
+            2: 'manual',
+            4: 'dhcp',
+            5: 'linklayer',
+            6: 'random',
         },
-        'ipAddressStatus' : {
-            1 : 'preferred',
-            2 : 'deprecated',
-            3 : 'invalid',
-            4 : 'inaccessible',
-            5 : 'unknown',
-            6 : 'tentative',
-            7 : 'duplicate',
-            8 : 'optimistic',
-        },
-        'ipAddressPrefixOrigin' : {
-            1 : 'other',
-            2 : 'manual',
-            3 : 'wellknown',
-            4 : 'dhcp',
-            5 : 'routeradv',
+        'status': {
+            1: 'preferred',
+            2: 'deprecated',
+            3: 'invalid',
+            4: 'inaccessible',
+            5: 'unknown',
+            6: 'tentative',
+            7: 'duplicate',
+            8: 'optimistic',
         },
     }
 
@@ -99,29 +92,29 @@ class HostIpAddress(HostSystem):
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostIpAddress.NAME,
                                              HostIpAddress.ATTRS, HostIpAddress.CONVERSION)
         for k, v in list(attrs.items()):
-            if 'ipAdEntIfIndex' in v:
-                netmask = v['ipAdEntNetMask']
-                ifindex = v['ipAdEntIfIndex']
+            if 'ipadentifindex' in v:
+                netmask = v['netmask']
+                ifindex = v['ipadentifindex']
                 net = ipaddress.ip_network('%s/%s' % (k, netmask), strict=False)
                 data[k] = self.initialize_instance(HostInterface.NAME, ifindex)
                 data[k]['attrs'] = dict()
-                data[k]['attrs']['ipAddressAddr'] = k
-                data[k]['attrs']['ipAddressPrefix'] = net.prefixlen
-                data[k]['attrs']['ipAddressAddrType'] = 'ipv4'
-                data[k]['attrs']['ipAddressIfIndex'] = ifindex
+                data[k]['attrs']['ipaddress'] = k
+                data[k]['attrs']['prefix'] = net.prefixlen
+                data[k]['attrs']['addresstype'] = 'ipv4'
+                data[k]['attrs']['ifindex'] = ifindex
 
         for k, v in list(attrs.items()):
-            if 'ipAdEntIfIndex' in v:
+            if 'ipadentifindex' in v:
                 continue
-            if 'ipAddressPrefix' not in v:
+            if 'prefix' not in v:
                 continue
-            ifindex = v['ipAddressIfIndex']
+            ifindex = v['ifindex']
             (addr_type, sub1, addr1) = k.split('.', 2)
-            attrs[k]['ipAddressAddrType'] = HostIpAddress.CONVERSION['ipAddressAddrType'][int(addr_type)]
+            attrs[k]['addresstype'] = HostIpAddress.CONVERSION['addresstype'][int(addr_type)]
             addr2 = ""
-            if attrs[k]['ipAddressAddrType'] == 'ipv4':
+            if attrs[k]['addresstype'] == 'ipv4':
                 addr2 = addr1
-            if attrs[k]['ipAddressAddrType'] == 'ipv6':
+            if attrs[k]['addresstype'] == 'ipv6':
                 addrt = addr1.split(".")
                 for j, val in enumerate(addrt):
                     addrt[j] = hex(int(val))[2:].zfill(2)
@@ -130,6 +123,6 @@ class HostIpAddress(HostSystem):
 
             data[addr2] = self.initialize_instance(HostInterface.NAME, ifindex)
             data[addr2]['attrs'] = v
-            data[addr2]['attrs']['ipAddressAddr'] = addr2
-            data[addr2]['attrs']['ipAddressPrefix'] = str(attrs[k]['ipAddressPrefix']).split(".")[-1]
+            data[addr2]['attrs']['ipaddress'] = addr2
+            data[addr2]['attrs']['prefix'] = str(attrs[k]['prefix']).split(".")[-1]
         return data

@@ -29,42 +29,42 @@ class HostEntity(HostSystem):
     DESCRIPTION = "Device Physical and Logical Components"
 
     ATTRS = {
-        'entPhysicalDescr'       : '1.3.6.1.2.1.47.1.1.1.1.2',
-        'entPhysicalVendorType'  : '1.3.6.1.2.1.47.1.1.1.1.3',
-        'entPhysicalContainedIn' : '1.3.6.1.2.1.47.1.1.1.1.4',
-        'entPhysicalClass'       : '1.3.6.1.2.1.47.1.1.1.1.5',
-        'entPhysicalName'        : '1.3.6.1.2.1.47.1.1.1.1.7',
-        'entPhysicalHardwareRev' : '1.3.6.1.2.1.47.1.1.1.1.8',
-        'entPhysicalFirmwareRev' : '1.3.6.1.2.1.47.1.1.1.1.9',
-        'entPhysicalSoftwareRev' : '1.3.6.1.2.1.47.1.1.1.1.10',
-        'entPhysicalSerialNum'   : '1.3.6.1.2.1.47.1.1.1.1.11',
-        'entPhysicalMfgName'     : '1.3.6.1.2.1.47.1.1.1.1.12',
-        'entPhysicalModelName'   : '1.3.6.1.2.1.47.1.1.1.1.13',
-        'entPhysicalAssetID'     : '1.3.6.1.2.1.47.1.1.1.1.15',
-        'entPhysicalIsFRU'       : '1.3.6.1.2.1.47.1.1.1.1.16',
-        'entPhysicalMfgDate'     : '1.3.6.1.2.1.47.1.1.1.1.17',
+        'entphysicaldescr': '1.3.6.1.2.1.47.1.1.1.1.2',
+        'entphysicalvendortype': '1.3.6.1.2.1.47.1.1.1.1.3',
+        'entphysicalcontainedin': '1.3.6.1.2.1.47.1.1.1.1.4',
+        'entphysicalclass': '1.3.6.1.2.1.47.1.1.1.1.5',
+        'entphysicalname': '1.3.6.1.2.1.47.1.1.1.1.7',
+        'entphysicalhardwarerev': '1.3.6.1.2.1.47.1.1.1.1.8',
+        'entphysicalfirmwarerev': '1.3.6.1.2.1.47.1.1.1.1.9',
+        'entphysicalsoftwarerev': '1.3.6.1.2.1.47.1.1.1.1.10',
+        'entphysicalserialnum': '1.3.6.1.2.1.47.1.1.1.1.11',
+        'entphysicalmfgname': '1.3.6.1.2.1.47.1.1.1.1.12',
+        'entphysicalmodelname': '1.3.6.1.2.1.47.1.1.1.1.13',
+        'entphysicalassetid': '1.3.6.1.2.1.47.1.1.1.1.15',
+        'entphysicalisfru': '1.3.6.1.2.1.47.1.1.1.1.16',
+        'entphysicalmfgdate': '1.3.6.1.2.1.47.1.1.1.1.17',
     }
 
-    STAT = { }
+    STAT = {}
 
     CONVERSION = {
         'entPhysicalClass': {
-            1  : 'other',
-            2  : 'unknown',
-            3  : 'chassis',
-            4  : 'backplane',
-            5  : 'container',
-            6  : 'powerSupply',
-            7  : 'fan',
-            8  : 'sensor',
-            9  : 'module',
-            10 : 'port',
-            11 : 'stack',
-            12 : 'cpu',
+            1: 'other',
+            2: 'unknown',
+            3: 'chassis',
+            4: 'backplane',
+            5: 'container',
+            6: 'powerSupply',
+            7: 'fan',
+            8: 'sensor',
+            9: 'module',
+            10: 'port',
+            11: 'stack',
+            12: 'cpu',
         },
         'entPhysicalIsFRU': {
-            1 : 'true',
-            2 : 'false',
+            1: 'true',
+            2: 'false',
         },
     }
 
@@ -79,6 +79,6 @@ class HostEntity(HostSystem):
         for k, v in list(attrs.items()):
             data[k] = self.initialize_instance(HostEntity.NAME, k)
             data[k]['attrs'] = v
-            if 'entPhysicalMfgDate' in v and v['entPhysicalMfgDate']:
-                data[k]['attrs']['entPhysicalMfgDate'] = binascii.b2a_hex(v['entPhysicalMfgDate'].encode('utf-8'))
+            if 'entphysicalmfgdate' in v and v['entphysicalmfgdate']:
+                data[k]['attrs']['entphysicalmfgdate'] = binascii.b2a_hex(v['entphysicalmfgdate'].encode('utf-8'))
         return data
