@@ -20,6 +20,7 @@ import logging
 import netspryte.snmp
 import netspryte.snmp.host.interface
 from netspryte.snmp.vendor.juniper import JuniperDevice
+from netspryte.utils import mk_data_instance_id
 from netspryte.utils.timer import Timer
 
 
@@ -27,22 +28,22 @@ class JFirewall(JuniperDevice):
 
     NAME = 'jfirewall'
     DESCRIPTION = "Juniper Firewall"
-    ATTR_MODEL = "JFirewallAttrs"
-    METRIC_MODEL = "JFirewallMetrics"
+    ATTR_MODEL = "QOSAttrs"
+    METRIC_MODEL = "QOSMetrics"
 
     ATTRS = {
-        'jnxFWCounterType': '1.3.6.1.4.1.2636.3.5.2.1.3',
-        'jnxFWCounterDisplayName': '1.3.6.1.4.1.2636.3.5.2.1.7',
-        'jnxFWCounterDisplayType': '1.3.6.1.4.1.2636.3.5.2.1.8',
+        'countertype': '1.3.6.1.4.1.2636.3.5.2.1.3',  # jnxFWCounterType
+        'policymapname': '1.3.6.1.4.1.2636.3.5.2.1.7',  # jnxFWCounterDisplayName
+        'objectstype': '1.3.6.1.4.1.2636.3.5.2.1.8',  # jnxFWCounterDisplayType
     }
 
     STAT = {
-        'jnxFWCounterPacketCount': '1.3.6.1.4.1.2636.3.5.2.1.4',
-        'jnxFWCounterByteCount': '1.3.6.1.4.1.2636.3.5.2.1.5',
+        'postpolicypkts': '1.3.6.1.4.1.2636.3.5.2.1.4',  # jnxFWCounterPacketCount
+        'postpolicybyte': '1.3.6.1.4.1.2636.3.5.2.1.5',  # jnxFWCounterByteCount
     }
 
     CONVERSION = {
-        'jnxFWCounterType': {
+        'objectstype': {
             1: 'other',
             2: 'counter',
             3: 'policer',
@@ -89,15 +90,44 @@ class JFirewall(JuniperDevice):
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, JFirewall.NAME,
                                                JFirewall.STAT, JFirewall.CONVERSION)
         for k, v in list(attrs.items()):
-            title = attrs[k].get('jnxFWCounterDisplayName', 'NA')
-            descr = "{0}: {1}".format(title, attrs[k].get('jnxFWCounterDisplayType', 'NA'))
-            # the normal convention is to use the index when initializing the instance.
+            title = attrs[k].get('policymapname', 'NA')
+            descr = "{0}: {1}".format(title, attrs[k].get('displaytype', 'NA'))
+            policydirection = ""
+            # This module will only focus on those firewall filters applied to interfaces.
+            # These filters will have a "-i" or "-o" suffix that indicates direction that it is applied.
+            # Example: accept-bfd-lo0.0-i
+            if title.endswith('-i'):
+                policydirection = 'input'
+            elif title.endswith('-o'):
+                policydirection = 'output'
+            else:
+                continue
+            # Extract interface name from firewall filter name.
+            # This is the component before the direction indicator.
+            # Example: accept-bfd-lo0.0-i
+            ifname = title.split('-')[-2]
+            ifindex = None
+            for intf in self.interfaces:
+                if intf['attrs']['ifname'] == ifname:
+                    ifindex = intf['attrs']['ifindex']
+            if not ifindex:
+                continue
+            # The normal convention is to use the index when initializing the instance.
             # because the snmp table index for this mib is unbelievably long, I need to use something else.
             # i've opted to use the title variable.
             data[k] = self.initialize_instance(JFirewall.NAME, k)
             data[k]['attrs'] = v
+            data[k]['attrs']['ifindex'] = ifindex
+            data[k]['attrs']['policydirection'] = policydirection
             data[k]['title'] = title
             data[k]['description'] = descr
             if k in metrics:
                 data[k]['metrics'] = metrics[k]
+
+            if 'related' not in data[k]:
+                data[k]['related'] = dict()
+            data[k]['related']['metric_model'] = netspryte.snmp.host.interface.HostInterface.METRIC_MODEL
+            data[k]['related']['name'] = mk_data_instance_id(data[k]['host'],
+                                                             netspryte.snmp.host.interface.HostInterface.NAME,
+                                                             ifindex)
         return data

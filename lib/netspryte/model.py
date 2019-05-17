@@ -300,78 +300,42 @@ class UPSMetrics(BaseModel):
         return '<UPSMetrics: %s>' % self.measurement_instance
 
 
-class CBQOSAttrs(BaseModel):
-    qbQosPolicyDirection = CharField(null=True)
-    cbQosIfIndex = IntegerField()
-    cbQosConfigIndex = CharField(null=True)
-    cbQosObjectsType = CharField()
-    cbQosPolicyMapName = CharField(null=True)
-    cbQosCMName = CharField(null=True)
-    cbQosPoliceCfgRate64 = DecimalField(max_digits=20, decimal_places=0, null=True)
-    measurement_instance = ForeignKeyField(MeasurementInstance, backref='cbqos_attrs', null=False, on_delete='CASCADE')
+class QOSAttrs(BaseModel):
+    policydirection = CharField(null=True)
+    ifindex = IntegerField()
+    configindex = CharField(null=True)
+    objectstype = CharField()
+    policymapname = CharField(null=True)
+    cmname = CharField(null=True)
+    policecfgrate = DecimalField(max_digits=20, decimal_places=0, null=True)
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='qos_attrs', null=False, on_delete='CASCADE')
 
     class Meta:
-        db_table = "cbqos_attrs"
+        db_table = "qos_attrs"
 
     def __repr__(self):
-        return '<CBQOSAttrs: %s>' % self.cbQosConfigIndex
+        return '<QOSAttrs: %s>' % self.policymapname
 
     def __str__(self):
-        return '<CBQOSAttrs: %s>' % self.cbQosConfigIndex
+        return '<QOSAttrs: %s>' % self.policymapname
 
 
-class CBQOSMetrics(BaseModel):
-    cbQosPoliceCfgRate64 = DecimalField(max_digits=20, decimal_places=0, null=True)
-    cbQosPoliceConformedPkt64 = DecimalField(max_digits=20, decimal_places=0, null=True)
-    cbQosPoliceConformedByte64 = DecimalField(max_digits=20, decimal_places=0, null=True)
-    cbQosPoliceConformedBitRate = DecimalField(max_digits=20, decimal_places=0, null=True)
-    cbQosPoliceExceededPkt64 = DecimalField(max_digits=20, decimal_places=0, null=True)
-    cbQosPoliceExceededByte64 = DecimalField(max_digits=20, decimal_places=0, null=True)
-    cbQosPoliceExceededBitRate = DecimalField(max_digits=20, decimal_places=0, null=True)
-    cbQosPoliceViolatedPkt64 = DecimalField(max_digits=20, decimal_places=0, null=True)
-    cbQosPoliceViolatedByte64 = DecimalField(max_digits=20, decimal_places=0, null=True)
-    cbQosPoliceViolatedBitRate = DecimalField(max_digits=20, decimal_places=0, null=True)
+class QOSMetrics(BaseModel):
+    prepolicypkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    prepolicybyte = DecimalField(max_digits=20, decimal_places=0, null=True)
+    postpolicypkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    postpolicybyte = DecimalField(max_digits=20, decimal_places=0, null=True)
+    droppkts = DecimalField(max_digits=20, decimal_places=0, null=True)
+    dropbyte = DecimalField(max_digits=20, decimal_places=0, null=True)
     timestamp = DateTimeField(default=datetime.datetime.now, index=True)
-    measurement_instance = ForeignKeyField(MeasurementInstance, backref='cbqos_metrics', null=False, on_delete='CASCADE')
+    measurement_instance = ForeignKeyField(MeasurementInstance, backref='qos_metrics', null=False, on_delete='CASCADE')
 
     class Meta:
-        db_table = "cbqos_metrics"
+        db_table = "qos_metrics"
         order_by = ("timestamp",)
 
     def __repr__(self):
-        return '<CBQOSMetrics: %s>' % self.measurement_instance
+        return '<QOSMetrics: %s>' % self.measurement_instance
 
     def __str__(self):
-        return '<CBQOSMetrics: %s>' % self.measurement_instance
-
-
-class JFirewallAttrs(BaseModel):
-    measurement_instance = ForeignKeyField(MeasurementInstance, backref='jfirewall_attrs', null=False, on_delete='CASCADE')
-    jnxFWCounterType = CharField(null=True)
-    jnxFWCounterDisplayName = CharField(null=True)
-    jnxFWCounterDisplayType = CharField(null=True)
-
-    class Meta:
-        db_table = "jfirewall_attrs"
-
-    def __repr__(self):
-        return '<JFirewallAttrs: %s>' % self.jnxFWCounterDisplayName
-
-    def __str__(self):
-        return '<JFirewallAttrs: %s>' % self.jnxFWCounterDisplayName
-
-
-class JFirewallMetrics(BaseModel):
-    measurement_instance = ForeignKeyField(MeasurementInstance, backref='jfirewall_metrics', null=False, on_delete='CASCADE')
-    timestamp = DateTimeField(default=datetime.datetime.now, index=True)
-    jnxFWCounterPacketCount = DecimalField(max_digits=20, decimal_places=0, null=True)
-    jnxFWCounterByteCount = DecimalField(max_digits=20, decimal_places=0, null=True)
-
-    class Meta:
-        db_table = "jfirewall_metrics"
-
-    def __repr__(self):
-        return '<JFirewallMetrics: %s>' % self.measurement_instance
-
-    def __str__(self):
-        return '<JFirewallMetrics: %s>' % self.measurement_instance
+        return '<QOSMetrics: %s>' % self.measurement_instance

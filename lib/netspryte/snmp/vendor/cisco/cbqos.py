@@ -23,50 +23,49 @@ from netspryte.snmp.vendor.cisco import CiscoDevice
 from netspryte.utils import safe_update, mk_data_instance_id
 from netspryte.utils.timer import Timer
 from pysnmp.proto.rfc1902 import Counter32
-from netspryte.utils import json_ready
+
 
 class CiscoCBQOS(CiscoDevice):
 
     NAME = 'cbqos'
-    DESCRIPTION = "CBQOS Policers"
-    ATTR_MODEL = "CBQOSAttrs"
-    METRIC_MODEL = "CBQOSMetrics"
+    DESCRIPTION = "QOS Policers"
+    ATTR_MODEL = "QOSAttrs"
+    METRIC_MODEL = "QOSMetrics"
 
     ATTRS = {
-        'cbQosPolicyDirection'        : '1.3.6.1.4.1.9.9.166.1.1.1.1.3',
-        'cbQosIfIndex'                : '1.3.6.1.4.1.9.9.166.1.1.1.1.4',
-        'cbQosConfigIndex'            : '1.3.6.1.4.1.9.9.166.1.5.1.1.2',
-        'cbQosObjectsType'            : '1.3.6.1.4.1.9.9.166.1.5.1.1.3',
-        'cbQosParentObjectsIndex'     : '1.3.6.1.4.1.9.9.166.1.5.1.1.4',
-        'cbQosPolicyMapName'          : '1.3.6.1.4.1.9.9.166.1.6.1.1.1',
-        'cbQosCMName'                 : '1.3.6.1.4.1.9.9.166.1.7.1.1.1',
-        'cbQosPoliceCfgRate64'        : '1.3.6.1.4.1.9.9.166.1.12.1.1.11',
+        'policydirection': '1.3.6.1.4.1.9.9.166.1.1.1.1.3',  # cbQosPolicyDirection
+        'ifindex': '1.3.6.1.4.1.9.9.166.1.1.1.1.4',          # cbQosIfIndex
+        'configindex': '1.3.6.1.4.1.9.9.166.1.5.1.1.2',      # cbQosConfigIndex
+        'objectstype': '1.3.6.1.4.1.9.9.166.1.5.1.1.3',      # cbQosObjectsType
+        'parentobjectsindex': '1.3.6.1.4.1.9.9.166.1.5.1.1.4',  # cbQosParentObjectsIndex
+        'policymapname': '1.3.6.1.4.1.9.9.166.1.6.1.1.1',    # cbQosPolicyMapName
+        'cmname': '1.3.6.1.4.1.9.9.166.1.7.1.1.1',           # cbQosCMName
+        'policecfgrate': '1.3.6.1.4.1.9.9.166.1.12.1.1.11',   # cbQosPoliceCfgRate64
     }
 
     STAT = {
-        'cbQosCMPrePolicyPkt64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.3',    # count of inbound packets prior to executing qos policies
-        'cbQosCMPrePolicyByte64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.6',   # count of inbound octets ...
-        'cbQosCMPostPolicyByte64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.10', # count of outbound octets after executing qos policies
-        'cbQosCMDropPkt64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.14',        # count of dropped packets as result of all features that can produce drops
-        'cbQosCMDropByte64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.17',       # count of dropped octets ...
-        'cbQosCMNoBufDropPkt64' : '1.3.6.1.4.1.9.9.166.1.15.1.1.21',   # count of dropped packets due to lack of SRAM buffers during output processing
+        'prepolicypkts': '1.3.6.1.4.1.9.9.166.1.15.1.1.3',    # cbQosCMPrePolicyPkt64, count of inbound packets prior to executing qos policies
+        'prepolicybyte': '1.3.6.1.4.1.9.9.166.1.15.1.1.6',    # cbQosCMPrePolicyByte64, count of inbound octets ...
+        'postpolicybyte': '1.3.6.1.4.1.9.9.166.1.15.1.1.10',  # cbQosCMPostPolicyByte64, count of outbound octets after executing qos policies
+        'droppkts': '1.3.6.1.4.1.9.9.166.1.15.1.1.14',        # cbQosCMDropPkt64, count of dropped packets as result of all features that can produce drops
+        'dropbyte': '1.3.6.1.4.1.9.9.166.1.15.1.1.17',        # cbQosCMDropByte64, count of dropped octets ...
     }
 
     CONVERSION = {
-        'cbQosPolicyDirection': {
-            1 : 'input',
-            2 : 'output'
+        'policydirection': {
+            1: 'input',
+            2: 'output'
         },
-        'cbQosObjectsType': {
-            1 : 'policymap',
-            2 : 'classmap',
-            3 : 'matchStatement',
-            4 : 'queueing',
-            5 : 'randomDetect',
-            6 : 'trafficShaping',
-            7 : 'police',
-            8 : 'set',
-            9 : 'compression'
+        'objectstype': {
+            1: 'policymap',
+            2: 'classmap',
+            3: 'matchStatement',
+            4: 'queueing',
+            5: 'randomDetect',
+            6: 'trafficShaping',
+            7: 'police',
+            8: 'set',
+            9: 'compression'
         },
     }
 
@@ -74,11 +73,11 @@ class CiscoCBQOS(CiscoDevice):
         'cbQosIfIndex': 'ifindex',
         'cbQosConfigIndex': 'cfgindex',
         'cbQosPolicyDirection': 'policydirection',
-        'cbQos' : '',
-        '64'    : '',
-        'Bit'   : '',
-        'ifHC' : '',
-        'if'   : '',
+        'cbQos': '',
+        '64': '',
+        'Bit': '',
+        'ifHC': '',
+        'if': '',
     }
 
     SNMP_QUERY_CHUNKS = 1
@@ -104,7 +103,6 @@ class CiscoCBQOS(CiscoDevice):
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
                                              CiscoCBQOS.ATTRS, CiscoCBQOS.CONVERSION,
                                              CiscoCBQOS.SNMP_QUERY_CHUNKS)
-        print(attrs)
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, CiscoCBQOS.NAME,
                                                CiscoCBQOS.STAT, CiscoCBQOS.CONVERSION,
                                                CiscoCBQOS.SNMP_QUERY_CHUNKS)
@@ -115,23 +113,20 @@ class CiscoCBQOS(CiscoDevice):
         for k, v in list(attrs.items()):
             if k in skip_instances:
                 continue
-            # print("---")
-            # print("instance %s" % k)
             data[k] = self.initialize_instance(CiscoCBQOS.NAME, k)
             local_attrs = v.copy()
-            if 'cbQosParentObjectsIndex' in v and v['cbQosParentObjectsIndex'] != 0:
-                parent = k.split('.')[0] + "." + str(v['cbQosParentObjectsIndex'])
+            if 'parentobjectsindex' in v and v['parentobjectsindex'] != 0:
+                parent = k.split('.')[0] + "." + str(v['parentobjectsindex'])
                 local_attrs['parent'] = parent
-                if parent in attrs and 'cbQosConfigIndex' in attrs[parent]:
-                    parent_cfg_index = str(attrs[parent]['cbQosConfigIndex'])
-                    if 'cbQosPolicyMapName' in attrs[parent_cfg_index]:
-                        local_attrs['cbQosPolicyMapName'] = attrs[parent_cfg_index]['cbQosPolicyMapName']
-
+                if parent in attrs and 'configindex' in attrs[parent]:
+                    parent_cfg_index = str(attrs[parent]['configindex'])
+                    if 'policymapname' in attrs[parent_cfg_index]:
+                        local_attrs['policymapname'] = attrs[parent_cfg_index]['policymapname']
 
             # Pull in attributes from the cbqos config index.
-            # The cbQosConfigIndex is used to identify the configuration,
+            # The configindex is used to identify the configuration,
             # which does not change regardless of number of times and where it is used.
-            cfg_index = str(v['cbQosConfigIndex'])
+            cfg_index = str(v['configindex'])
             if cfg_index in skip_instances:
                 local_attrs = safe_update(local_attrs, attrs[cfg_index])
 
@@ -142,10 +137,10 @@ class CiscoCBQOS(CiscoDevice):
             if base in attrs:
                 local_attrs = safe_update(local_attrs, attrs[base])
 
-            # If the cbQosIfIndex is present, pull in the related attributes for the
+            # If the ifindex is present, pull in the related attributes for the
             # interface in question.
-            if 'cbQosIfIndex' in local_attrs:
-                ifidx = str(local_attrs['cbQosIfIndex'])
+            if 'ifindex' in local_attrs:
+                ifidx = str(local_attrs['ifindex'])
                 local_attrs = safe_update(local_attrs, interfaces[ifidx]['attrs'])
                 if 'related' not in data[k]:
                     data[k]['related'] = dict()
@@ -157,17 +152,17 @@ class CiscoCBQOS(CiscoDevice):
             # The MIB erroneously marks this as a COUNTER64 to get the requisite number of bits
             # but it behaves like a GAUGE.  Unfortunately, there is no GAUGE64 object.  So ...
             # convert it to an int() so that it is treated like a GAUGE.
-            if 'cbQosPoliceCfgRate64' in local_attrs:
-                local_attrs['cbQosPoliceCfgRate64'] = int(local_attrs['cbQosPoliceCfgRate64'])
+            if 'policecfgrate' in local_attrs:
+                local_attrs['policecfgrate'] = int(local_attrs['policecfgrate'])
             data[k]['attrs'] = local_attrs
             if k in metrics:
                 local_metrics = metrics[k].copy()
                 local_metrics = safe_update(local_metrics, interfaces[ifidx]['metrics'])
                 # Push the policer configured rate into the metrics dict
-                if 'cbQosPoliceCfgRate64' in local_attrs:
-                    local_metrics['cbQosPoliceCfgRate64'] = local_attrs['cbQosPoliceCfgRate64']
+                if 'policecfgrate' in local_attrs:
+                    local_metrics['policecfgrate'] = local_attrs['policecfgrate']
                 else:
-                    local_metrics['cbQosPoliceCfgRate64'] = int(0)
+                    local_metrics['policecfgrate'] = int(0)
 
                 # Finally, attach metrics to this measurement instance
                 data[k]['metrics'] = local_metrics
@@ -183,12 +178,10 @@ class CiscoCBQOS(CiscoDevice):
             if key in skip_instances:
                 continue
             data[key]['title'] = self.get_policy_map_name(key, data)
-            data[key]['description'] = "{0}:{1}".format(data[key]['title'], data[key]['attrs'].get('ifAlias', 'NA'))
+            data[key]['description'] = "{0}:{1}".format(data[key]['title'], data[key]['attrs'].get('ifalias', 'NA'))
         for key in list(data.keys()):
-            if data[key]['attrs']['cbQosObjectsType'] not in ['classmap']:
+            if data[key]['attrs']['objectstype'] not in ['classmap']:
                 del(data[key])
-        import pprint
-        pprint.pprint(data)
         return data
 
     @property
@@ -206,19 +199,19 @@ class CiscoCBQOS(CiscoDevice):
         ''' get policer information '''
         policers = list()
         for data in self.data:
-            if 'cbQosObjectsType' in data['attrs'] and data['attrs']['cbQosObjectsType'] == 'police':
+            if 'objectstype' in data['attrs'] and data['attrs']['objectstype'] == 'police':
                 policers.append(data)
         return policers
 
     def get_policy_map_name(self, idx, data_dict):
-        key = 'cbQosPolicyMapName'
+        key = 'policymapname'
         if key not in data_dict[idx]['attrs']:
             return self.get_policy_map_name(data_dict[idx]['attrs']['parent'], data_dict)
         else:
             return data_dict[idx]['attrs'][key]
 
     def get_class_map_name(self, idx, data_dict):
-        key = 'cbQosCMName'
+        key = 'cmname'
         if key not in data_dict[idx]['attrs']:
             return self.get_policy_map_name(data_dict[idx]['attrs']['parent'], data_dict)
         else:
