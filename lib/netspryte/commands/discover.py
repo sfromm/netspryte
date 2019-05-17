@@ -22,7 +22,6 @@ import os
 import sys
 import logging
 import glob
-import pprint
 import traceback
 import multiprocessing
 
@@ -93,10 +92,11 @@ class DiscoverWorker(DataWorker):
                 for cls, module in list(DiscoverCommand.SNMP_MODULES.items()):
                     try:
                         snmp_mod = cls(msnmp)
+                        modname = cls.__name__
                         if snmp_mod and hasattr(snmp_mod, 'data'):
                             self.process_module_data(snmp_mod)
                     except Exception as e:
-                        logging.error("module %s failed against device %s: %s", cls.__name__, device, traceback.format_exc())
+                        logging.error("module %s failed against device %s: %s", modname, device, traceback.format_exc())
                         continue
             except Exception as e:
                 logging.error("encountered error with %s; skipping to next device: %s", device, traceback.format_exc())
