@@ -60,7 +60,10 @@ class RrdDatabaseBackend(BaseDatabaseBackend):
             self.path = mk_rrd_filename(host, mcls, inst)
         if not os.path.exists(self.path):
             mcls_types = self.measurement_instance.measurement_class.metric_type
-            mcls_types = netspryte.utils.xlate_metric_names(mcls_types, xlate)
+            related = self.measurement_instance.relationships.get().to_measurement_instance
+            if related is not None:
+                related_mcls_types = related.measurement_class.metric_type
+                mcls_types = netspryte.utils.safe_update(mcls_types, related_mcls_types)
             rrd_create(self.path, C.DEFAULT_RRD_STEP, mcls_types, C.DEFAULT_RRD_RRA)
         return rrd_update(self.path, data)
 
@@ -134,8 +137,10 @@ def rrd_dump(path):
         logging.info("dumping xml %s", path)
         cmd = ['rrdtool', 'dump', path]
         popen = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        stdout = iter(popen.stdout.readline, "")
-        for line in stdout:
+        for line in iter(popen.stdout.readline, ""):
+            line = line.decode()
+            if line == "" and popen.poll() is not None:
+                break
             yield line
         popen.stdout.close()
         rc = popen.wait()
