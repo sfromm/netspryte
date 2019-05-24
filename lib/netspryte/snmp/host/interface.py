@@ -102,9 +102,9 @@ class HostInterface(HostSystem):
         attrs = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME, HostInterface.ATTRS, HostInterface.CONVERSION)
         metrics = netspryte.snmp.get_snmp_data(self.snmp, self, HostInterface.NAME, HostInterface.STAT, HostInterface.CONVERSION)
         for k, v in list(attrs.items()):
-            ifdescr = attrs[k].get('ifDescr', 'NA')
+            ifdescr = attrs[k].get('ifdescr', 'NA')
             title = "{0}:{1}".format(self.sysname, ifdescr)
-            descr = attrs[k].get('ifAlias', ifdescr)
+            descr = attrs[k].get('ifalias', ifdescr)
             data[k] = self.initialize_instance(HostInterface.NAME, k)
             data[k]['attrs'] = v
             if 'ifphysaddress' in v and v['ifphysaddress']:
