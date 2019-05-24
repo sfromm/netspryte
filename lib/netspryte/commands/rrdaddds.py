@@ -95,4 +95,3 @@ class RrdAddDsCommand(BaseCommand):
             return 0
         os.rename(rrd_path, "{0}.bak".format(rrd_path))
         rrd_restore(xml_path, rrd_path)
-
