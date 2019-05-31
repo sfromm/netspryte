@@ -106,7 +106,7 @@ class CollectSnmpWorker(DataWorker):
                         continue
                     try:
                         snmp_mod = cls(msnmp)
-                        hostname = snmp_mod.sysName or msnmp.host
+                        hostname = snmp_mod.sysname or msnmp.host
                         modname = cls.__name__
                         if snmp_mod and hasattr(snmp_mod, 'data'):
                             has_metrics = self.process_module_data(snmp_mod)
@@ -150,7 +150,7 @@ class CollectSnmpWorker(DataWorker):
         for field in m.__class__._meta.sorted_fields:
             if not isinstance(field, BigIntegerField) and not isinstance(field, DecimalField):
                 del(data[field.name])
-        metrics = xlate_metric_names(data, xlate)
+        metrics = data.copy()
         dbs = get_db_backend()
         for db in dbs:
             db.measurement_instance = measurement_instance
