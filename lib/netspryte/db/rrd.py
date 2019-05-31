@@ -60,8 +60,8 @@ class RrdDatabaseBackend(BaseDatabaseBackend):
             self.path = mk_rrd_filename(host, mcls, inst)
         if not os.path.exists(self.path):
             mcls_types = self.measurement_instance.measurement_class.metric_type
-            related = self.measurement_instance.relationships.get().to_measurement_instance
-            if related is not None:
+            if self.measurement_instance.relationships.count() > 0:
+                related = self.measurement_instance.relationships.get().to_measurement_instance
                 related_mcls_types = related.measurement_class.metric_type
                 mcls_types = netspryte.utils.safe_update(mcls_types, related_mcls_types)
             rrd_create(self.path, C.DEFAULT_RRD_STEP, mcls_types, C.DEFAULT_RRD_RRA)
